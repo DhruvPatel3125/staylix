@@ -8,12 +8,12 @@ exports.createRequest = async(req,res) =>{
         document:req.body.document,
     });
     res.json(request);
-}
+};
 
 exports.getAllRequests = async (req,res) =>{
     const requests = await OwnerRequest.find().populate("userId");
     res.json(requests);
-}
+};
 
 exports.approveRequest = async(req,res) =>{
     const request = await OwnerRequest.findById(req.params.id);
@@ -21,11 +21,11 @@ exports.approveRequest = async(req,res) =>{
     await request.save();
     await User.findByIdAndUpdate(request.userId, {role:"owner"})
     res.json({message:"Owner approved"})
-}
+};
 
 exports.rejectRequest = async(req,res) =>{
     const request = await OwnerRequest.findById(req.params.id);
     request.status = "rejected";
     await request.save();
     res.json({message:"Owner rejected"})
-}
+};

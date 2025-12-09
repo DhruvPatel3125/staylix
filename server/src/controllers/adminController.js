@@ -11,7 +11,7 @@ exports.blockUser = async(req,res) =>{
     user.isBlocked = true;
     await user.save();
     res.json({message:'user blocked'})
-}
+};
 
 exports.getDashbordStats = async(req,res)=>{
     const totalUsers = await User.countDocuments();
@@ -24,4 +24,4 @@ exports.getDashbordStats = async(req,res)=>{
          totalBookings,
          revenue:revenue[0]?.total || 0
      })
-}
+};

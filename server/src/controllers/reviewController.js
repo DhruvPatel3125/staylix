@@ -12,4 +12,4 @@ exports.getHotelReviews = async(req,res) =>{
     const reviews = await Review.find({hotelId:req.params.hotelId})
     .populate("userId","name");
     res.json(reviews);
-}
+};

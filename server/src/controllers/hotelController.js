@@ -24,7 +24,7 @@ exports.getSingleHotel = async(req,res)=>{
         console.log(error.message);
         res.status(500).json({message:error.message})
     }
-}
+};
 
 exports.updateHotel = async(req,res)=>{
     try{
@@ -34,7 +34,7 @@ exports.updateHotel = async(req,res)=>{
         console.log(error.message);
         res.status(500).json({message:error.message})
     }
-}
+};
 
 exports.deleteHotel = async(req,res)=>{
     try{
@@ -44,4 +44,4 @@ exports.deleteHotel = async(req,res)=>{
         console.log(error.message);
         res.status(500).json({message:error.message})
     }
-}
+};

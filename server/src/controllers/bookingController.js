@@ -32,17 +32,17 @@ exports.createBooking = async(req,res) =>{
     catch(err){
           res.status(500).json({ message: "Booking failed" });
     }
-}
+};
 
 exports.getUserBookings = async(req,res) =>{
     try{
-        const bookings = await Booking.find({userId:req.user._id}).populate("HotelId roomId");
+        const bookings = await Booking.find({userId:req.user._id}).populate("hotelId roomId");
         res.json(bookings)
     }
     catch(err){
          res.status(500).json({ message: err.message });
     }
-}
+};
 
 exports.getOwnerBookings = async(req,res) =>{
     try {
@@ -51,7 +51,7 @@ exports.getOwnerBookings = async(req,res) =>{
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
-}
+};
 
 exports.cancelBooking = async(req,res) =>{
     try{
@@ -63,4 +63,4 @@ exports.cancelBooking = async(req,res) =>{
     catch(error){
         res.status(500).json({ message:error.message});
     }
-}
+};

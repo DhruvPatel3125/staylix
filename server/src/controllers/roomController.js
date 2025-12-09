@@ -13,9 +13,9 @@ exports.getRoomsByHotel = async (req,res) =>{
 exports.updateRoom = async(req,res) =>{
     const room = await Room.findByIdAndUpdate(req.params.id, req.body, {new:true});
     res.json(room);
-}
+};
 
 exports.deleteRoom = async(req,res)=>{
     const room = await Room.findByIdAndDelete(req.params.id);
     res.json({message:"Room deleted"});
-}
+};

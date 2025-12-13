@@ -5,13 +5,14 @@ const {
     createBooking,
     getUserBookings,
     getOwnerBookings,
-    cancleBooking,
+    cancelBooking,
 } = require('../controllers/bookingController');
 
-const {protect,owner} = require("../middleware/authMiddleware");
+const { protect, owner } = require("../middlewares/authMiddleWare");
 
-router.post('/', protect,createBooking);
-router.get("/my",protect,getUserBookings);
-router.get("/owner",protect,owner,getOwnerBookings)
-router.put("/cancel/:id",protect,cancleBooking);
-module.exports=router;
+router.post('/', protect, createBooking);
+router.get("/my", protect, getUserBookings);
+router.get("/owner", protect, owner, getOwnerBookings);
+router.put("/cancel/:id", protect, cancelBooking);
+
+module.exports = router;

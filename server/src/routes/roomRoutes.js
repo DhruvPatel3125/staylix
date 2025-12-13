@@ -7,11 +7,11 @@ const {
     deleteRoom
 } = require('../controllers/roomController');
 
-const {protect,owner} = require("../middlewares/authMiddleWare");
+const { protect, owner } = require("../middlewares/authMiddleWare");
 
-router.post("/:hotelId",protect,owner,addRoom)
-router.get("/:hotelId",getRoomsByHotel);
-router.put("/:roomId",protect,owner,updateRoom);
-router.delete("/:roomId",protect,owner,deleteRoom);
+router.post("/", protect, owner, addRoom);
+router.get("/:hotelId", getRoomsByHotel);
+router.put("/:id", protect, owner, updateRoom);
+router.delete("/:id", protect, owner, deleteRoom);
 
 module.exports = router;

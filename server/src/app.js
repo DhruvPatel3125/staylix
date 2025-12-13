@@ -38,12 +38,13 @@ app.get('/',(req,res)=>{
     res.send("Welcome to Staylix")
 })
 
-app.use((err,req,res,next)=>{
-    console.log("ERROR:",err.message);
-    res.status(err.statusCode || 500).json({
-        success:false,
-        message: err.message || "Internal Server Error" 
-    })
+app.use((err, req, res, next) => {
+    console.error("ERROR:", err.message);
+    const statusCode = err.statusCode || err.status || 500;
+    res.status(statusCode).json({
+        success: false,
+        message: err.message || "Internal Server Error"
+    });
 })
 
 module.exports = app;

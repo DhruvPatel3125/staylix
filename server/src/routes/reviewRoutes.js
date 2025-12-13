@@ -8,7 +8,7 @@ const {
 
 const { protect } = require('../middlewares/authMiddleWare');
 
-router.post("/:hotelId", protect, addReview)
-router.get("/:hotelId", getHotelReviews)
+router.post("/", protect, addReview);
+router.get("/:hotelId", getHotelReviews);
 
 module.exports = router;

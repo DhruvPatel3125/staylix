@@ -35,7 +35,12 @@ const roomSchema = new mongoose.Schema({
 
   amenities: [String],
 
-  photos: [String]
+  photos: [String],
+
+  isAvailable: {
+    type: Boolean,
+    default: true
+  }
 
 }, { timestamps: true });
 

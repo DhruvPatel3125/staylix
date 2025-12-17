@@ -9,7 +9,35 @@ exports.createHotel = async(req, res) => {
             });
         }
 
-        const hotel = await Hotel.create({ ...req.body, ownerId: req.user._id });
+        let amenities = [];
+        if (req.body.amenities) {
+            try {
+                amenities = typeof req.body.amenities === 'string' 
+                    ? JSON.parse(req.body.amenities) 
+                    : req.body.amenities;
+            } catch (e) {
+                amenities = [];
+            }
+        }
+
+        const hotelData = {
+            name: req.body.name,
+            description: req.body.description || '',
+            amenities: amenities,
+            ownerId: req.user._id,
+            address: {
+                city: req.body.city || '',
+                state: req.body.state || '',
+                country: req.body.country || '',
+                pincode: req.body.pincode || ''
+            }
+        };
+
+        if (req.files && req.files.length > 0) {
+            hotelData.photos = req.files.map(file => `/uploads/hotels/${file.filename}`);
+        }
+
+        const hotel = await Hotel.create(hotelData);
         res.status(201).json({
             success: true,
             hotel
@@ -18,7 +46,7 @@ exports.createHotel = async(req, res) => {
         console.error("Hotel creation error:", error);
         res.status(500).json({
             success: false,
-            message: "Hotel creation failed"
+            message: error.message || "Hotel creation failed"
         });
     }
 };
@@ -93,7 +121,37 @@ exports.updateHotel = async(req, res) => {
             });
         }
 
-        const updatedHotel = await Hotel.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        let amenities = hotel.amenities || [];
+        if (req.body.amenities) {
+            try {
+                amenities = typeof req.body.amenities === 'string' 
+                    ? JSON.parse(req.body.amenities) 
+                    : req.body.amenities;
+            } catch (e) {
+                amenities = hotel.amenities || [];
+            }
+        }
+
+        const updateData = {
+            name: req.body.name || hotel.name,
+            description: req.body.description !== undefined ? req.body.description : hotel.description,
+            amenities: amenities,
+            address: {
+                city: req.body.city || hotel.address?.city || '',
+                state: req.body.state || hotel.address?.state || '',
+                country: req.body.country || hotel.address?.country || '',
+                pincode: req.body.pincode || hotel.address?.pincode || ''
+            }
+        };
+
+        if (req.files && req.files.length > 0) {
+            const newPhotos = req.files.map(file => `/uploads/hotels/${file.filename}`);
+            updateData.photos = req.body.keepExistingPhotos === 'true' 
+                ? [...(hotel.photos || []), ...newPhotos]
+                : newPhotos;
+        }
+
+        const updatedHotel = await Hotel.findByIdAndUpdate(req.params.id, updateData, { new: true });
         res.json({
             success: true,
             hotel: updatedHotel
@@ -141,6 +199,22 @@ exports.deleteHotel = async(req, res) => {
         res.status(500).json({
             success: false,
             message: error.message || "Failed to delete hotel"
+        });
+    }
+};
+
+exports.getOwnerHotels = async(req, res) => {
+    try {
+        const hotels = await Hotel.find({ ownerId: req.user._id });
+        res.json({
+            success: true,
+            hotels
+        });
+    } catch (error) {
+        console.error("Get owner hotels error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch owner hotels"
         });
     }
 };

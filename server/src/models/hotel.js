@@ -13,19 +13,26 @@ const hotelSchema = new mongoose.Schema({
   },
 
   address: {
-    city: String,
-    state: String,
-    country: String,
-    pincode: String
+    city: { type: String, default: '' },
+    state: { type: String, default: '' },
+    country: { type: String, default: '' },
+    pincode: { type: String, default: '' }
   },
 
   description: {
-    type: String
+    type: String,
+    default: ''
   },
 
-  amenities: [String],
+  amenities: {
+    type: [String],
+    default: []
+  },
 
-  photos: [String],
+  photos: {
+    type: [String],
+    default: []
+  },
 
   rating: {
     type: Number,

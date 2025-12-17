@@ -1,0 +1,258 @@
+/* ---------- GLOBAL ---------- */
+.hotel-details-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.loading-container,
+.error-container {
+  text-align: center;
+  padding: 60px;
+  font-size: 18px;
+  color: #555;
+}
+
+/* ---------- HEADER ---------- */
+.hotel-header {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.hotel-main-image {
+  width: 420px;
+  height: 280px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.hotel-info {
+  flex: 1;
+}
+
+.hotel-info h1 {
+  margin-bottom: 8px;
+  font-size: 28px;
+}
+
+.location {
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.description {
+  margin-bottom: 16px;
+  line-height: 1.5;
+  color: #444;
+}
+
+.amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.amenity-badge {
+  background: #edf2f7;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+.rating {
+  font-weight: 600;
+  color: #f59e0b;
+}
+
+/* ---------- CONTENT ---------- */
+.hotel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* ---------- ROOMS ---------- */
+.rooms-section h2,
+.reviews-section h2 {
+  margin-bottom: 16px;
+}
+
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.no-rooms,
+.no-reviews {
+  color: #666;
+}
+
+/* ---------- REVIEWS ---------- */
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.review-item {
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 10px;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.review-comment {
+  color: #444;
+}
+
+/* ---------- MODAL ---------- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-content {
+  background: #fff;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 14px;
+  padding: 24px;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  border: none;
+  background: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.booking-price {
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+/* ---------- FORM ---------- */
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.form-group input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* ---------- DISCOUNT ---------- */
+.discount-apply-btn {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  background: #667eea;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.discount-apply-btn:disabled {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+.discount-error {
+  color: #e53e3e;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.discount-success {
+  color: #38a169;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* ---------- PRICE BREAKDOWN ---------- */
+.price-breakdown {
+  background: #f7fafc;
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 12px;
+  margin-bottom: 16px;
+}
+
+.price-breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.price-breakdown-item.discount {
+  color: #e53e3e;
+}
+
+.price-breakdown-item.total {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* ---------- SUBMIT ---------- */
+.booking-submit-btn {
+  width: 100%;
+  padding: 12px;
+  background: #48bb78;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.booking-submit-btn:hover {
+  background: #38a169;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 768px) {
+  .hotel-header {
+    flex-direction: column;
+  }
+
+  .hotel-main-image {
+    width: 100%;
+    height: 240px;
+  }
+}

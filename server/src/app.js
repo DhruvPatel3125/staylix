@@ -11,14 +11,23 @@ const bookingRoutes = require('./routes/bookingRoutes')
 const reviewRoutes = require('./routes/reviewRoutes')
 const ownerRequestRoutes = require('./routes/ownerRequestRoutes')
 const adminRoutes = require('./routes/adminRoutes')
+const discountRoutes = require('./routes/discountRoutes')
 
 dotenv.config();
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? [process.env.FRONTEND_URL]
+  : [/localhost:\d+$/, 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
+
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
+app.use('/uploads', express.static('uploads'));
 
 
 if(process.env.NODE_ENV === 'development'){
@@ -33,6 +42,7 @@ app.use('/api/bookings',bookingRoutes);
 app.use('/api/reviews',reviewRoutes);
 app.use('/api/owner-request',ownerRequestRoutes);
 app.use('/api/admin',adminRoutes);
+app.use('/api/discounts',discountRoutes);
 
 app.get('/',(req,res)=>{
     res.send("Welcome to Staylix")

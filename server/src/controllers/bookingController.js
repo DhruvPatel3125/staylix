@@ -1,9 +1,10 @@
 const Booking = require("../models/booking");
 const Room = require("../models/room");
+const Discount = require("../models/discount");
 
 exports.createBooking = async(req, res) => {
     try {
-        const { roomId, checkIn, checkOut, guests, totalAmount, hotelId, ownerId } = req.body;
+        const { roomId, checkIn, checkOut, guests, totalAmount, hotelId, ownerId, discountCode } = req.body;
 
         if (!roomId || !checkIn || !checkOut || !guests || !totalAmount || !hotelId || !ownerId) {
             return res.status(400).json({
@@ -51,6 +52,39 @@ exports.createBooking = async(req, res) => {
             });
         }
 
+        // Handle discount if provided
+        let discountAmount = 0;
+        let finalAmount = totalAmount;
+        let validatedDiscountCode = null;
+
+        if (discountCode) {
+            const discount = await Discount.findOne({ code: discountCode.toUpperCase() });
+
+            if (discount && discount.requestStatus === "approved" && discount.isActive) {
+                const now = new Date();
+                const isDateValid = now >= new Date(discount.startDate) && now <= new Date(discount.endDate);
+                const isUsageLimitOk = !discount.usageLimit || discount.usageCount < discount.usageLimit;
+                const isMinAmountMet = totalAmount >= discount.minBookingAmount;
+                const isHotelApplicable = !discount.applicableHotels || discount.applicableHotels.length === 0 || discount.applicableHotels.includes(hotelId);
+
+                if (isDateValid && isUsageLimitOk && isMinAmountMet && isHotelApplicable) {
+                    // Calculate discount
+                    if (discount.discountType === "percentage") {
+                        discountAmount = (totalAmount * discount.discountValue) / 100;
+                    } else {
+                        discountAmount = discount.discountValue;
+                    }
+                    discountAmount = Math.min(discountAmount, totalAmount);
+                    finalAmount = totalAmount - discountAmount;
+                    validatedDiscountCode = discount.code;
+
+                    // Increment usage count
+                    discount.usageCount += 1;
+                    await discount.save();
+                }
+            }
+        }
+
         const booking = await Booking.create({
             userId: req.user._id,
             ownerId,
@@ -59,7 +93,10 @@ exports.createBooking = async(req, res) => {
             checkIn: checkInDate,
             checkOut: checkOutDate,
             guests,
-            totalAmount
+            originalAmount: totalAmount,
+            discountCode: validatedDiscountCode,
+            discountAmount,
+            totalAmount: finalAmount
         });
 
         res.status(201).json({

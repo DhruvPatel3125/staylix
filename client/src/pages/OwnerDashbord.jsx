@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/authContext';
 import api from '../services/api';
+import { getImageUrl } from '../utils/imageUrl';
 import './OwnerDashbord.css';
 
 export default function OwnerDashboard() {
@@ -8,17 +9,22 @@ export default function OwnerDashboard() {
   const [hotels, setHotels] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
-  const [roomRequests, setRoomRequests] = useState([]);
+  const [adminRequests, setAdminRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [showHotelForm, setShowHotelForm] = useState(false);
   const [showRoomForm, setShowRoomForm] = useState(false);
-  const [showRoomRequestForm, setShowRoomRequestForm] = useState(false);
+  const [showAdminRequestForm, setShowAdminRequestForm] = useState(false);
   const [editingHotel, setEditingHotel] = useState(null);
   const [editingRoom, setEditingRoom] = useState(null);
   const [processingId, setProcessingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [submittingRequest, setSubmittingRequest] = useState(false);
+  const [adminRequestData, setAdminRequestData] = useState({
+    businessName: '',
+    document: ''
+  });
   const [formData, setFormData] = useState({
     name: '',
     city: '',
@@ -36,18 +42,11 @@ export default function OwnerDashboard() {
     pricePerNight: '',
     totalRooms: '',
     availableRooms: '',
-    amenities: ''
-  });
-  const [roomRequestData, setRoomRequestData] = useState({
-    hotelId: '',
-    roomType: 'single',
-    pricePerNight: '',
-    totalRooms: '',
-    availableRooms: '',
     amenities: '',
-    description: ''
+    image: null
   });
   const [photoFileNames, setPhotoFileNames] = useState([]);
+  const [roomImageFileName, setRoomImageFileName] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -58,10 +57,10 @@ export default function OwnerDashboard() {
       setLoading(true);
       setError(null);
       const [hotelsRes, roomsRes, bookingsRes, requestsRes] = await Promise.all([
-        api.hotels.getOwnerHotels(), // Changed from getAll() to getOwnerHotels()
+        api.hotels.getOwnerHotels(),
         api.rooms.getOwnerRooms(),
         api.bookings.getOwnerBookings(),
-        api.rooms.getOwnerRequests()
+        api.ownerRequest.getAll()
       ]);
 
       if (hotelsRes.success) {
@@ -73,8 +72,8 @@ export default function OwnerDashboard() {
       if (bookingsRes.success) {
         setBookings(bookingsRes.bookings || []);
       }
-      if (requestsRes.success) {
-        setRoomRequests(requestsRes.requests || []);
+      if (requestsRes.success && requestsRes.requests) {
+        setAdminRequests(requestsRes.requests || []);
       }
     } catch (_err) {
       setError('Failed to load dashboard data');
@@ -203,8 +202,10 @@ export default function OwnerDashboard() {
       pricePerNight: '',
       totalRooms: '',
       availableRooms: '',
-      amenities: ''
+      amenities: '',
+      image: null
     });
+    setRoomImageFileName('');
     setShowRoomForm(true);
   };
 
@@ -217,8 +218,10 @@ export default function OwnerDashboard() {
       pricePerNight: room.pricePerNight,
       totalRooms: room.totalRooms,
       availableRooms: room.availableRooms,
-      amenities: room.amenities?.join(', ') || ''
+      amenities: room.amenities?.join(', ') || '',
+      image: null
     });
+    setRoomImageFileName('');
     setShowRoomForm(true);
   };
 
@@ -236,15 +239,18 @@ export default function OwnerDashboard() {
         .map(a => a.trim())
         .filter(a => a);
 
-      const submitData = {
-        hotelId: roomFormData.hotelId,
-        title: roomFormData.title,
-        roomType: roomFormData.roomType,
-        pricePerNight: roomFormData.pricePerNight,
-        totalRooms: roomFormData.totalRooms,
-        availableRooms: roomFormData.availableRooms,
-        amenities: amenitiesArray
-      };
+      const submitData = new FormData();
+      submitData.append('hotelId', roomFormData.hotelId);
+      submitData.append('title', roomFormData.title);
+      submitData.append('roomType', roomFormData.roomType);
+      submitData.append('pricePerNight', roomFormData.pricePerNight);
+      submitData.append('totalRooms', roomFormData.totalRooms);
+      submitData.append('availableRooms', roomFormData.availableRooms);
+      submitData.append('amenities', JSON.stringify(amenitiesArray));
+
+      if (roomFormData.image && roomFormData.image instanceof File) {
+        submitData.append('image', roomFormData.image);
+      }
 
       let response;
       if (editingRoom) {
@@ -306,45 +312,28 @@ export default function OwnerDashboard() {
     }
   };
 
-  const handleCreateRoomRequest = async () => {
-    if (!roomRequestData.hotelId || !roomRequestData.pricePerNight || !roomRequestData.totalRooms || roomRequestData.availableRooms === '') {
+
+
+  const handleSubmitAdminRequest = async () => {
+    if (!adminRequestData.businessName.trim() || !adminRequestData.document.trim()) {
       setError('Please fill in all required fields');
       return;
     }
 
     try {
-      setProcessingId('creating-room-request');
-      
-      const amenitiesArray = roomRequestData.amenities
-        .split(',')
-        .map(a => a.trim())
-        .filter(a => a);
-
-      const submitData = {
-        ...roomRequestData,
-        amenities: amenitiesArray
-      };
-
-      const response = await api.rooms.createRequest(submitData);
+      setSubmittingRequest(true);
+      const response = await api.ownerRequest.create(adminRequestData);
       if (response.success) {
-        setRoomRequests([...roomRequests, response.roomRequest]);
-        setRoomRequestData({
-          hotelId: '',
-          roomType: 'single',
-          pricePerNight: '',
-          totalRooms: '',
-          availableRooms: '',
-          amenities: '',
-          description: ''
-        });
-        setShowRoomRequestForm(false);
+        setAdminRequests([...adminRequests, response.request]);
+        setAdminRequestData({ businessName: '', document: '' });
+        setShowAdminRequestForm(false);
       } else {
-        setError(response.message || 'Failed to create room request');
+        setError(response.message || 'Failed to submit request');
       }
-    } catch (_err) {
-      setError('Failed to create room request');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to submit request');
     } finally {
-      setProcessingId(null);
+      setSubmittingRequest(false);
     }
   };
 
@@ -371,7 +360,6 @@ export default function OwnerDashboard() {
   const filteredRooms = rooms.filter(room =>
     room.title?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  const pendingRequests = roomRequests.filter(r => r.status === 'pending');
 
   if (loading) {
     return <div className="owner-dashboard"><div className="loading">Loading dashboard...</div></div>;
@@ -418,12 +406,6 @@ export default function OwnerDashboard() {
                 🛏️ My Rooms
               </button>
               <button
-                className={`nav-item ${activeTab === 'room-requests' ? 'active' : ''}`}
-                onClick={() => setActiveTab('room-requests')}
-              >
-                📝 Room Requests
-              </button>
-              <button
                 className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
                 onClick={() => setActiveTab('bookings')}
               >
@@ -434,6 +416,12 @@ export default function OwnerDashboard() {
                 onClick={() => setActiveTab('revenue')}
               >
                 💰 Revenue Report
+              </button>
+              <button
+                className={`nav-item ${activeTab === 'admin-request' ? 'active' : ''}`}
+                onClick={() => setActiveTab('admin-request')}
+              >
+                📬 Send to Admin
               </button>
             </nav>
           </aside>
@@ -585,7 +573,7 @@ export default function OwnerDashboard() {
                           <p className="label">Current photos:</p>
                           <div className="photos-preview">
                             {editingHotel.photos.map((photo, idx) => (
-                              <img key={idx} src={`http://localhost:5000${photo}`} alt={`Hotel ${idx}`} />
+                              <img key={idx} src={getImageUrl(photo)} alt={`Hotel ${idx}`} />
                             ))}
                           </div>
                         </div>
@@ -631,7 +619,7 @@ export default function OwnerDashboard() {
                       <div key={hotel._id} className="hotel-card">
                         {hotel.photos && hotel.photos.length > 0 && (
                           <div className="hotel-image">
-                            <img src={`http://localhost:5000${hotel.photos[0]}`} alt={hotel.name} />
+                            <img src={getImageUrl(hotel.photos[0])} alt={hotel.name} />
                           </div>
                         )}
                         <div className="hotel-info">
@@ -773,6 +761,20 @@ export default function OwnerDashboard() {
                       />
                     </div>
 
+                    <div className="form-group">
+                      <label>Room Image</label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          setRoomFormData({ ...roomFormData, image: file });
+                          setRoomImageFileName(file?.name || '');
+                        }}
+                      />
+                      {roomImageFileName && <p className="file-name">{roomImageFileName}</p>}
+                    </div>
+
                     <div className="form-actions">
                       <button
                         className="save-btn"
@@ -810,24 +812,31 @@ export default function OwnerDashboard() {
                   <div className="rooms-grid">
                     {filteredRooms.map(room => (
                       <div key={room._id} className="room-card">
-                        <div className="room-header">
-                          <h3>{room.title}</h3>
-                          <span className={`availability-badge ${room.isAvailable ? 'available' : 'unavailable'}`}>
-                            {room.isAvailable ? 'Available' : 'Unavailable'}
-                          </span>
-                        </div>
-                        <div className="room-info">
-                          <p><strong>Hotel:</strong> {room.hotelId?.name}</p>
-                          <p><strong>Type:</strong> {room.roomType}</p>
-                          <p><strong>Price:</strong> ${room.pricePerNight}/night</p>
-                          <p><strong>Availability:</strong> {room.availableRooms}/{room.totalRooms}</p>
-                          {room.amenities && room.amenities.length > 0 && (
-                            <div className="room-amenities">
-                              {room.amenities.map((amenity, idx) => (
-                                <span key={idx} className="amenity-tag">{amenity}</span>
-                              ))}
-                            </div>
-                          )}
+                        {room.image && (
+                          <div className="room-image-container">
+                            <img src={getImageUrl(room.image)} alt={room.title} className="room-image" />
+                          </div>
+                        )}
+                        <div className="room-content">
+                          <div className="room-header">
+                            <h3>{room.title}</h3>
+                            <span className={`availability-badge ${room.isAvailable ? 'available' : 'unavailable'}`}>
+                              {room.isAvailable ? 'Available' : 'Unavailable'}
+                            </span>
+                          </div>
+                          <div className="room-info">
+                            <p><strong>Hotel:</strong> {room.hotelId?.name}</p>
+                            <p><strong>Type:</strong> {room.roomType}</p>
+                            <p><strong>Price:</strong> ${room.pricePerNight}/night</p>
+                            <p><strong>Availability:</strong> {room.availableRooms}/{room.totalRooms}</p>
+                            {room.amenities && room.amenities.length > 0 && (
+                              <div className="room-amenities">
+                                {room.amenities.map((amenity, idx) => (
+                                  <span key={idx} className="amenity-tag">{amenity}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <div className="room-actions">
                           <button
@@ -858,181 +867,7 @@ export default function OwnerDashboard() {
               </div>
             )}
 
-            {activeTab === 'room-requests' && (
-              <div className="requests-section">
-                <div className="section-header">
-                  <h2>Room Requests</h2>
-                  <button className="add-btn" onClick={() => setShowRoomRequestForm(!showRoomRequestForm)}>
-                    {showRoomRequestForm ? '✕ Cancel' : '➕ Request Room'}
-                  </button>
-                </div>
 
-                {showRoomRequestForm && (
-                  <div className="request-form-container">
-                    <h3>Request New Room (Needs Admin Approval)</h3>
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Hotel *</label>
-                        <select
-                          value={roomRequestData.hotelId}
-                          onChange={(e) => setRoomRequestData({ ...roomRequestData, hotelId: e.target.value })}
-                        >
-                          <option value="">Select Hotel</option>
-                          {hotels.map(h => (
-                            <option key={h._id} value={h._id}>{h.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="form-group">
-                        <label>Room Type *</label>
-                        <select
-                          value={roomRequestData.roomType}
-                          onChange={(e) => setRoomRequestData({ ...roomRequestData, roomType: e.target.value })}
-                        >
-                          <option value="single">Single</option>
-                          <option value="double">Double</option>
-                          <option value="deluxe">Deluxe</option>
-                          <option value="suite">Suite</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Price Per Night ($) *</label>
-                        <input
-                          type="number"
-                          value={roomRequestData.pricePerNight}
-                          onChange={(e) => setRoomRequestData({ ...roomRequestData, pricePerNight: e.target.value })}
-                          placeholder="100"
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label>Total Rooms *</label>
-                        <input
-                          type="number"
-                          value={roomRequestData.totalRooms}
-                          onChange={(e) => setRoomRequestData({ ...roomRequestData, totalRooms: e.target.value })}
-                          placeholder="5"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-row">
-                      <div className="form-group">
-                        <label>Available Rooms *</label>
-                        <input
-                          type="number"
-                          value={roomRequestData.availableRooms}
-                          onChange={(e) => setRoomRequestData({ ...roomRequestData, availableRooms: e.target.value })}
-                          placeholder="5"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Amenities (comma-separated)</label>
-                      <input
-                        type="text"
-                        value={roomRequestData.amenities}
-                        onChange={(e) => setRoomRequestData({ ...roomRequestData, amenities: e.target.value })}
-                        placeholder="WiFi, AC, TV, etc."
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Description</label>
-                      <textarea
-                        value={roomRequestData.description}
-                        onChange={(e) => setRoomRequestData({ ...roomRequestData, description: e.target.value })}
-                        placeholder="Additional details about the room"
-                        rows="3"
-                      />
-                    </div>
-
-                    <div className="form-actions">
-                      <button
-                        className="save-btn"
-                        onClick={handleCreateRoomRequest}
-                        disabled={processingId}
-                      >
-                        {processingId ? 'Submitting...' : 'Submit Request'}
-                      </button>
-                      <button
-                        className="cancel-btn"
-                        onClick={() => setShowRoomRequestForm(false)}
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {pendingRequests.length > 0 && (
-                  <div className="pending-requests">
-                    <h3>Pending Requests</h3>
-                    <div className="requests-grid">
-                      {pendingRequests.map(req => (
-                        <div key={req._id} className="request-card pending">
-                          <div className="request-status">
-                            <span className="status-badge pending">Pending</span>
-                          </div>
-                          <div className="request-info">
-                            <p><strong>Hotel:</strong> {req.hotelId?.name}</p>
-                            <p><strong>Room Type:</strong> {req.roomType}</p>
-                            <p><strong>Price:</strong> ${req.pricePerNight}/night</p>
-                            <p><strong>Rooms:</strong> {req.availableRooms}/{req.totalRooms}</p>
-                            <p className="date">Submitted: {new Date(req.createdAt).toLocaleDateString()}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {roomRequests.filter(r => r.status !== 'pending').length > 0 && (
-                  <div className="approved-requests">
-                    <h3>Request History</h3>
-                    <div className="requests-table-wrapper">
-                      <table className="requests-table">
-                        <thead>
-                          <tr>
-                            <th>Hotel</th>
-                            <th>Type</th>
-                            <th>Price</th>
-                            <th>Rooms</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {roomRequests.filter(r => r.status !== 'pending').map(req => (
-                            <tr key={req._id} className={`status-${req.status}`}>
-                              <td>{req.hotelId?.name}</td>
-                              <td>{req.roomType}</td>
-                              <td>${req.pricePerNight}</td>
-                              <td>{req.availableRooms}/{req.totalRooms}</td>
-                              <td>
-                                <span className={`status-badge ${req.status}`}>
-                                  {req.status}
-                                </span>
-                              </td>
-                              <td>{new Date(req.createdAt).toLocaleDateString()}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                )}
-
-                {roomRequests.length === 0 && (
-                  <div className="empty-state">
-                    <p>No room requests yet</p>
-                  </div>
-                )}
-              </div>
-            )}
 
             {activeTab === 'bookings' && (
               <div className="bookings-section">
@@ -1158,6 +993,99 @@ export default function OwnerDashboard() {
                     </table>
                   </div>
                 )}
+              </div>
+            )}
+
+            {activeTab === 'admin-request' && (
+              <div className="admin-request-section">
+                <h2>Send Request to Admin</h2>
+                <p className="section-subtitle">Submit any issues, requests, or messages to the admin</p>
+
+                {adminRequests && adminRequests.length > 0 ? (
+                  <div className="requests-history">
+                    <h3>Your Requests</h3>
+                    {adminRequests.map((req) => (
+                      <div key={req._id} className="request-status-card">
+                        <div className="status-header">
+                          <h4>Request #{req._id.substring(0, 8)}</h4>
+                          <span className={`status-badge ${req.status}`}>
+                            {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+                          </span>
+                        </div>
+                        <div className="status-details">
+                          <div className="detail-item">
+                            <span className="label">Subject</span>
+                            <span className="value">{req.businessName}</span>
+                          </div>
+                          <div className="detail-item">
+                            <span className="label">Details</span>
+                            <span className="value">{req.document}</span>
+                          </div>
+                          <div className="detail-item">
+                            <span className="label">Submitted On</span>
+                            <span className="value">{new Date(req.createdAt).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+
+                <div className="request-form-container">
+                  {!showAdminRequestForm ? (
+                    <button
+                      className="submit-btn"
+                      onClick={() => setShowAdminRequestForm(true)}
+                      style={{ padding: '12px 24px', fontSize: '16px' }}
+                    >
+                      ✉️ Send New Request
+                    </button>
+                  ) : (
+                    <div className="form-content">
+                      <h3>Submit Your Request</h3>
+                      <div className="form-group">
+                        <label>Subject/Issue Title *</label>
+                        <input
+                          type="text"
+                          value={adminRequestData.businessName}
+                          onChange={(e) => setAdminRequestData({ ...adminRequestData, businessName: e.target.value })}
+                          placeholder="Enter request subject"
+                          style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e0' }}
+                        />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Details/Description *</label>
+                        <textarea
+                          value={adminRequestData.document}
+                          onChange={(e) => setAdminRequestData({ ...adminRequestData, document: e.target.value })}
+                          placeholder="Describe your request or issue in detail"
+                          rows="4"
+                          style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e0', fontFamily: 'Arial' }}
+                        />
+                      </div>
+
+                      <div className="form-actions" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                        <button
+                          className="submit-btn"
+                          onClick={handleSubmitAdminRequest}
+                          disabled={submittingRequest}
+                          style={{ flex: 1 }}
+                        >
+                          {submittingRequest ? 'Submitting...' : '✓ Send Request'}
+                        </button>
+                        <button
+                          className="cancel-btn"
+                          onClick={() => setShowAdminRequestForm(false)}
+                          disabled={submittingRequest}
+                          style={{ flex: 1 }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </main>

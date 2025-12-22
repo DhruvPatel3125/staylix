@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema({
     isBlocked:{
         type:Boolean,
         default:false,
+    },
+    isApproved:{
+        type:Boolean,
+        default:false,
     }
 
 },{

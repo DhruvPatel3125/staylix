@@ -35,6 +35,11 @@ const roomSchema = new mongoose.Schema({
 
   amenities: [String],
 
+  image: {
+    type: String,
+    default: null
+  },
+
   photos: [String],
 
   isAvailable: {

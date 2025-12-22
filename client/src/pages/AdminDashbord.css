@@ -1057,6 +1057,117 @@
   }
 }
 
+.owner-requests-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 0.8rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.owner-requests-section h2 {
+  color: #333;
+  font-size: 1.8rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.section-subtitle {
+  color: #666;
+  font-size: 1rem;
+  margin: 0 0 2rem 0;
+}
+
+.requests-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.requests-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.requests-table th {
+  background: #f8f9fa;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #eee;
+}
+
+.requests-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  color: #555;
+}
+
+.requests-table .document-cell {
+  font-size: 0.9rem;
+  color: #999;
+}
+
+.requests-table .status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 0.4rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.requests-table .status-badge.pending {
+  background: #feebc8;
+  color: #7c2d12;
+}
+
+.requests-table .status-badge.approved {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.requests-table .status-badge.rejected {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+.requests-table .action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.requests-table .action-btn {
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 0.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.9rem;
+}
+
+.requests-table .approve-btn {
+  background: #48bb78;
+  color: white;
+}
+
+.requests-table .approve-btn:hover:not(:disabled) {
+  background: #38a169;
+}
+
+.requests-table .reject-btn {
+  background: #f56565;
+  color: white;
+}
+
+.requests-table .reject-btn:hover:not(:disabled) {
+  background: #e53e3e;
+}
+
+.requests-table .action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 @media (max-width: 480px) {
   .dashboard-sidebar {
     flex-direction: column;

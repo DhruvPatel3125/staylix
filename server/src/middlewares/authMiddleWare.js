@@ -56,6 +56,22 @@ exports.owner = (req, res, next) => {
     }
 }
 
+exports.approvedOwner = (req, res, next) => {
+    if (req.user && req.user.role === "owner" && req.user.isApproved) {
+        next();
+    } else if (req.user && req.user.role === "owner" && !req.user.isApproved) {
+        res.status(403).json({
+            success: false,
+            message: "Your owner request is pending approval. Please wait for admin to approve your request."
+        });
+    } else {
+        res.status(403).json({
+            success: false,
+            message: "Owner access only"
+        });
+    }
+}
+
 exports.checkRole = (...roles) => {
     return (req, res, next) => {
         if (req.user && roles.includes(req.user.role)) {

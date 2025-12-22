@@ -30,10 +30,6 @@ export default function AdminDashboard() {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectingDiscountId, setRejectingDiscountId] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
-  const [roomRequests, setRoomRequests] = useState([]);
-  const [showRejectRoomModal, setShowRejectRoomModal] = useState(false);
-  const [rejectingRoomId, setRejectingRoomId] = useState(null);
-  const [roomRejectionReason, setRoomRejectionReason] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -43,14 +39,13 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       setError(null);
-      const [statsRes, usersRes, hotelsRes, roomsRes, requestsRes, discountsRes, roomRequestsRes] = await Promise.all([
+      const [statsRes, usersRes, hotelsRes, roomsRes, requestsRes, discountsRes] = await Promise.all([
         api.admin.getDashboardStats(),
         api.admin.getAllUsers(),
         api.admin.getAllHotels(),
         api.admin.getAllRooms(),
         api.admin.getOwnerRequests(),
-        api.discounts.getAll(),
-        api.admin.getRoomRequests()
+        api.discounts.getAll()
       ]);
 
       if (statsRes.success) {
@@ -70,9 +65,6 @@ export default function AdminDashboard() {
       }
       if (discountsRes.success) {
         setDiscounts(discountsRes.discounts || []);
-      }
-      if (roomRequestsRes.success) {
-        setRoomRequests(roomRequestsRes.roomRequests || []);
       }
     } catch (_err) {
       setError('Failed to load dashboard data');
@@ -317,69 +309,10 @@ export default function AdminDashboard() {
     }
   };
 
-
   const filteredUsers = users.filter(user =>
     user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const handleApproveRoomRequest = async (requestId) => {
-    if (!window.confirm('Are you sure you want to approve this room request? This will create the room.')) return;
-
-    try {
-      setProcessingId(requestId);
-      const response = await api.admin.approveRoomRequest(requestId);
-      if (response.success) {
-        setRoomRequests(roomRequests.map(r =>
-          r._id === requestId ? { ...r, status: 'approved' } : r
-        ));
-        // Refresh rooms list
-        const roomsRes = await api.admin.getAllRooms();
-        if (roomsRes.success) {
-          setRooms(roomsRes.rooms || []);
-        }
-      } else {
-        setError(response.message || 'Failed to approve room request');
-      }
-    } catch (_err) {
-      setError('Failed to approve room request');
-    } finally {
-      setProcessingId(null);
-    }
-  };
-
-  const handleInitiateRejectRoom = (requestId) => {
-    setRejectingRoomId(requestId);
-    setRoomRejectionReason('');
-    setShowRejectRoomModal(true);
-  };
-
-  const handleRejectRoomRequest = async () => {
-    if (!roomRejectionReason.trim()) {
-      setError('Please provide a reason for rejection');
-      return;
-    }
-
-    try {
-      setProcessingId(rejectingRoomId);
-      const response = await api.admin.rejectRoomRequest(rejectingRoomId, roomRejectionReason);
-      if (response.success) {
-        setRoomRequests(roomRequests.map(r =>
-          r._id === rejectingRoomId ? { ...r, status: 'rejected', rejectionReason: roomRejectionReason } : r
-        ));
-        setShowRejectRoomModal(false);
-        setRejectingRoomId(null);
-        setRoomRejectionReason('');
-      } else {
-        setError(response.message || 'Failed to reject room request');
-      }
-    } catch (_err) {
-      setError('Failed to reject room request');
-    } finally {
-      setProcessingId(null);
-    }
-  };
-
 
   const filteredHotels = hotels.filter(hotel =>
     hotel.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -452,12 +385,6 @@ export default function AdminDashboard() {
                 onClick={() => setActiveTab('reports')}
               >
                 📈 Reports
-              </button>
-              <button
-                className={`nav-item ${activeTab === 'room-requests' ? 'active' : ''}`}
-                onClick={() => setActiveTab('room-requests')}
-              >
-                📝 Room Requests
               </button>
               <button
                 className={`nav-item ${activeTab === 'discounts' ? 'active' : ''}`}
@@ -1096,130 +1023,74 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {activeTab === 'room-requests' && (
-              <div className="room-requests-section">
-                <h2>Room Addition Requests</h2>
-                
-                {roomRequests.filter(r => r.status === 'pending').length === 0 ? (
+            {activeTab === 'owner-requests' && (
+              <div className="owner-requests-section">
+                <h2>Owner Requests</h2>
+                <p className="section-subtitle">Review and manage owner requests from users</p>
+
+                {ownerRequests.length === 0 ? (
                   <div className="empty-state">
-                    <p>No pending room requests</p>
+                    <p>No owner requests yet</p>
                   </div>
                 ) : (
-                  <div className="requests-grid">
-                    {roomRequests.filter(r => r.status === 'pending').map(request => (
-                      <div key={request._id} className="request-card">
-                        <div className="request-header">
-                          <h3>{request.hotelId?.name || 'Hotel'}</h3>
-                          <span className="status-badge pending">Pending</span>
-                        </div>
-                        <div className="request-info">
-                          <p><strong>Owner:</strong> {request.ownerId?.name}</p>
-                          <p><strong>Room Type:</strong> {request.roomType}</p>
-                          <p><strong>Price/Night:</strong> ${request.pricePerNight}</p>
-                          <p><strong>Total Rooms:</strong> {request.totalRooms}</p>
-                          <p><strong>Available:</strong> {request.availableRooms}</p>
-                          {request.amenities && request.amenities.length > 0 && (
-                            <p><strong>Amenities:</strong> {request.amenities.join(', ')}</p>
-                          )}
-                          {request.description && (
-                            <p><strong>Description:</strong> {request.description}</p>
-                          )}
-                          <p className="date"><strong>Requested:</strong> {new Date(request.createdAt).toLocaleDateString()}</p>
-                        </div>
-                        <div className="request-actions">
-                          <button
-                            className="action-btn approve-btn"
-                            onClick={() => handleApproveRoomRequest(request._id)}
-                            disabled={processingId === request._id}
-                          >
-                            {processingId === request._id ? 'Processing...' : 'Approve & Create Room'}
-                          </button>
-                          <button
-                            className="action-btn reject-btn"
-                            onClick={() => handleInitiateRejectRoom(request._id)}
-                            disabled={processingId === request._id}
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {roomRequests.filter(r => r.status !== 'pending').length > 0 && (
-                  <div className="request-history">
-                    <h3>Request History</h3>
-                    <div className="requests-table-wrapper">
-                      <table className="requests-table">
-                        <thead>
-                          <tr>
-                            <th>Hotel</th>
-                            <th>Owner</th>
-                            <th>Room Type</th>
-                            <th>Price</th>
-                            <th>Rooms</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Reason</th>
+                  <div className="requests-table">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>User Name</th>
+                          <th>Email</th>
+                          <th>Business Name</th>
+                          <th>Document</th>
+                          <th>Status</th>
+                          <th>Submitted Date</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {ownerRequests.map((request) => (
+                          <tr key={request._id}>
+                            <td><strong>{request.userId?.name || 'N/A'}</strong></td>
+                            <td>{request.userId?.email || 'N/A'}</td>
+                            <td>{request.businessName || 'N/A'}</td>
+                            <td className="document-cell">{request.document?.substring(0, 50) || 'N/A'}{request.document?.length > 50 ? '...' : ''}</td>
+                            <td>
+                              <span className={`status-badge ${request.status}`}>
+                                {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                              </span>
+                            </td>
+                            <td>{new Date(request.createdAt).toLocaleDateString()}</td>
+                            <td>
+                              {request.status === 'pending' && (
+                                <div className="action-buttons">
+                                  <button
+                                    className="action-btn approve-btn"
+                                    onClick={() => handleApproveOwner(request._id)}
+                                    disabled={processingId === request._id}
+                                  >
+                                    {processingId === request._id ? 'Processing...' : 'Approve'}
+                                  </button>
+                                  <button
+                                    className="action-btn reject-btn"
+                                    onClick={() => handleRejectOwner(request._id)}
+                                    disabled={processingId === request._id}
+                                  >
+                                    {processingId === request._id ? 'Processing...' : 'Reject'}
+                                  </button>
+                                </div>
+                              )}
+                              {request.status !== 'pending' && (
+                                <span style={{ color: '#999' }}>—</span>
+                              )}
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody>
-                          {roomRequests.filter(r => r.status !== 'pending').map(request => (
-                            <tr key={request._id} className={`status-${request.status}`}>
-                              <td>{request.hotelId?.name}</td>
-                              <td>{request.ownerId?.name}</td>
-                              <td>{request.roomType}</td>
-                              <td>${request.pricePerNight}</td>
-                              <td>{request.availableRooms}/{request.totalRooms}</td>
-                              <td>
-                                <span className={`status-badge ${request.status}`}>
-                                  {request.status}
-                                </span>
-                              </td>
-                              <td>{new Date(request.createdAt).toLocaleDateString()}</td>
-                              <td>{request.rejectionReason || '-'}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 )}
               </div>
             )}
 
-            {showRejectRoomModal && (
-              <div className="modal-overlay" onClick={() => setShowRejectRoomModal(false)}>
-                <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                  <h3>Reject Room Request</h3>
-                  <p>Please provide a reason for rejecting this room request:</p>
-                  <textarea
-                    value={roomRejectionReason}
-                    onChange={(e) => setRoomRejectionReason(e.target.value)}
-                    placeholder="Enter rejection reason..."
-                    rows="4"
-                    style={{ width: '100%', padding: '8px', marginTop: '12px', borderRadius: '4px', border: '1px solid #cbd5e0' }}
-                  />
-                  <div className="modal-actions" style={{ marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                    <button
-                      className="action-btn"
-                      onClick={() => setShowRejectRoomModal(false)}
-                      style={{ backgroundColor: '#cbd5e0', color: '#2d3748' }}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      className="action-btn reject-btn"
-                      onClick={handleRejectRoomRequest}
-                      disabled={processingId === rejectingRoomId}
-                    >
-                      {processingId === rejectingRoomId ? 'Rejecting...' : 'Confirm Rejection'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </main>
         </div>
       </div>

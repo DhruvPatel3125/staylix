@@ -76,17 +76,7 @@ export default function Register() {
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="role">I want to register as</label>
-            <select 
-              id="role" 
-              value={role} 
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <option value="user">Guest</option>
-              <option value="owner">Hotel Owner</option>
-            </select>
-          </div>
+         
 
           <button type="submit" disabled={loading} className="submit-btn">
             {loading ? 'Registering...' : 'Register'}

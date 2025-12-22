@@ -3,7 +3,6 @@ const Booking = require('../models/booking')
 const Hotel = require('../models/hotel')
 const Room = require('../models/room')
 const OwnerRequest = require('../models/ownerRequest')
-const RoomRequest = require('../models/roomRequest')
 
 exports.getAllUsers = async(req, res) => {
     try {
@@ -264,7 +263,7 @@ exports.approveOwnerRequest = async(req, res) => {
 
         request.status = "approved";
         await request.save();
-        await User.findByIdAndUpdate(request.userId, { role: "owner" });
+        await User.findByIdAndUpdate(request.userId, { role: "owner", isApproved: true });
 
         res.json({
             success: true,
@@ -319,116 +318,4 @@ exports.rejectOwnerRequest = async(req, res) => {
     }
 };
 
-exports.getRoomRequests = async (req, res) => {
-    try {
-        const requests = await RoomRequest.find()
-            .populate('ownerId', 'name email')
-            .populate('hotelId', 'name')
-            .sort({ createdAt: -1 });
-        
-        res.json({
-            success: true,
-            roomRequests: requests
-        });
-    } catch (error) {
-        console.error("Get room requests error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch room requests"
-        });
-    }
-};
 
-exports.approveRoomRequest = async (req, res) => {
-    try {
-        if (!req.params.id) {
-            return res.status(400).json({
-                success: false,
-                message: "Request ID is required"
-            });
-        }
-
-        const roomRequest = await RoomRequest.findById(req.params.id);
-        if (!roomRequest) {
-            return res.status(404).json({
-                success: false,
-                message: "Room request not found"
-            });
-        }
-
-        if (roomRequest.status === "approved") {
-            return res.status(400).json({
-                success: false,
-                message: "Request is already approved"
-            });
-        }
-
-        roomRequest.status = "approved";
-        await roomRequest.save();
-
-        const room = await Room.create({
-            hotelId: roomRequest.hotelId,
-            title: `${roomRequest.roomType.charAt(0).toUpperCase() + roomRequest.roomType.slice(1)} Room`,
-            roomType: roomRequest.roomType,
-            pricePerNight: roomRequest.pricePerNight,
-            totalRooms: roomRequest.totalRooms,
-            availableRooms: roomRequest.availableRooms,
-            amenities: roomRequest.amenities,
-            isAvailable: true
-        });
-
-        res.json({
-            success: true,
-            message: "Room request approved and room created successfully",
-            room
-        });
-    } catch (error) {
-        console.error("Approve room request error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to approve room request"
-        });
-    }
-};
-
-exports.rejectRoomRequest = async (req, res) => {
-    try {
-        if (!req.params.id) {
-            return res.status(400).json({
-                success: false,
-                message: "Request ID is required"
-            });
-        }
-
-        const roomRequest = await RoomRequest.findById(req.params.id);
-        if (!roomRequest) {
-            return res.status(404).json({
-                success: false,
-                message: "Room request not found"
-            });
-        }
-
-        if (roomRequest.status === "rejected") {
-            return res.status(400).json({
-                success: false,
-                message: "Request is already rejected"
-            });
-        }
-
-        const { reason } = req.body;
-        roomRequest.status = "rejected";
-        roomRequest.rejectionReason = reason || "";
-        await roomRequest.save();
-
-        res.json({
-            success: true,
-            message: "Room request rejected successfully"
-        });
-    } catch (error) {
-        console.error("Reject room request error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to reject room request"
-        });
-    }
-};

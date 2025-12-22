@@ -1,10 +1,9 @@
 const Room = require("../models/room");
-const RoomRequest = require("../models/roomRequest");
 const Hotel = require("../models/hotel");
 
 exports.addRoom = async (req, res) => {
     try {
-        const { hotelId, title, roomType, pricePerNight, totalRooms, availableRooms } = req.body;
+        const { hotelId, title, roomType, pricePerNight, totalRooms, availableRooms, amenities } = req.body;
 
         if (!hotelId || !title || !roomType || !pricePerNight || !totalRooms || availableRooms === undefined) {
             return res.status(400).json({
@@ -20,7 +19,32 @@ exports.addRoom = async (req, res) => {
             });
         }
 
-        const room = await Room.create(req.body);
+        let amenitiesList = [];
+        if (amenities) {
+            try {
+                amenitiesList = typeof amenities === 'string' 
+                    ? JSON.parse(amenities) 
+                    : amenities;
+            } catch (e) {
+                amenitiesList = [];
+            }
+        }
+
+        const roomData = {
+            hotelId,
+            title,
+            roomType,
+            pricePerNight,
+            totalRooms,
+            availableRooms,
+            amenities: amenitiesList
+        };
+
+        if (req.file) {
+            roomData.image = `/uploads/rooms/${req.file.filename}`;
+        }
+
+        const room = await Room.create(roomData);
         res.status(201).json({
             success: true,
             room
@@ -74,7 +98,22 @@ exports.updateRoom = async(req, res) => {
             });
         }
 
-        const updatedRoom = await Room.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const updateData = { ...req.body };
+
+        if (req.file) {
+            updateData.image = `/uploads/rooms/${req.file.filename}`;
+        }
+
+        let amenities = updateData.amenities;
+        if (amenities && typeof amenities === 'string') {
+            try {
+                updateData.amenities = JSON.parse(amenities);
+            } catch (e) {
+                updateData.amenities = [];
+            }
+        }
+
+        const updatedRoom = await Room.findByIdAndUpdate(req.params.id, updateData, { new: true });
         res.json({
             success: true,
             room: updatedRoom
@@ -172,56 +211,3 @@ exports.toggleRoomAvailability = async (req, res) => {
     }
 };
 
-exports.createRoomRequest = async (req, res) => {
-    try {
-        const { hotelId, roomType, pricePerNight, totalRooms, availableRooms, amenities, description } = req.body;
-
-        if (!hotelId || !roomType || !pricePerNight || !totalRooms || availableRooms === undefined) {
-            return res.status(400).json({
-                success: false,
-                message: "All required fields must be filled"
-            });
-        }
-
-        const roomRequest = await RoomRequest.create({
-            ownerId: req.user._id,
-            hotelId,
-            roomType,
-            pricePerNight,
-            totalRooms,
-            availableRooms,
-            amenities: amenities || [],
-            description
-        });
-
-        res.status(201).json({
-            success: true,
-            roomRequest
-        });
-    } catch (error) {
-        console.error("Create room request error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to create room request"
-        });
-    }
-};
-
-exports.getOwnerRoomRequests = async (req, res) => {
-    try {
-        const requests = await RoomRequest.find({ ownerId: req.user._id })
-            .populate('hotelId', 'name')
-            .sort({ createdAt: -1 });
-        
-        res.json({
-            success: true,
-            requests
-        });
-    } catch (error) {
-        console.error("Get room requests error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to fetch room requests"
-        });
-    }
-};

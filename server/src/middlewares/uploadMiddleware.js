@@ -2,19 +2,24 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-const uploadsDir = 'uploads/hotels';
-
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadsDir);
+    let dir = 'uploads/hotels';
+    if (req.baseUrl && req.baseUrl.includes('/rooms')) {
+      dir = 'uploads/rooms';
+    }
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, 'hotel-' + uniqueSuffix + path.extname(file.originalname));
+    let prefix = 'hotel-';
+    if (req.baseUrl && req.baseUrl.includes('/rooms')) {
+      prefix = 'room-';
+    }
+    cb(null, prefix + uniqueSuffix + path.extname(file.originalname));
   }
 });
 

@@ -3,13 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/authContext';
 import api from '../services/api';
 import RoomCard from '../components/RoomCard';
+import { getImageUrl } from '../utils/imageUrl';
 import './HotelDetails.css';
-
-const getImageUrl = (photoPath) => {
-  if (!photoPath) return null;
-  if (photoPath.startsWith('http')) return photoPath;
-  return `http://localhost:5000${photoPath}`;
-};
 
 export default function HotelDetails() {
   const { id } = useParams();

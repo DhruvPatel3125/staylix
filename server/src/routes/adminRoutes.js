@@ -12,10 +12,7 @@ const {
     deleteRoom,
     getOwnerRequests,
     approveOwnerRequest,
-    rejectOwnerRequest,
-    getRoomRequests,
-    approveRoomRequest,
-    rejectRoomRequest
+    rejectOwnerRequest
 } = require('../controllers/adminController');
 const { protect, admin } = require('../middlewares/authMiddleWare');
 
@@ -33,9 +30,5 @@ router.delete("/rooms/:id", protect, admin, deleteRoom);
 router.get("/owner-requests", protect, admin, getOwnerRequests);
 router.put("/owner-requests/approve/:id", protect, admin, approveOwnerRequest);
 router.put("/owner-requests/reject/:id", protect, admin, rejectOwnerRequest);
-
-router.get("/room-requests", protect, admin, getRoomRequests);
-router.put("/room-requests/approve/:id", protect, admin, approveRoomRequest);
-router.put("/room-requests/reject/:id", protect, admin, rejectRoomRequest);
 
 module.exports = router;

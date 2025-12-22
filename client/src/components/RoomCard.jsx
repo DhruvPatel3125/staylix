@@ -1,4 +1,5 @@
 import './RoomCard.css';
+import { getImageUrl } from '../utils/imageUrl';
 
 export default function RoomCard({ room, onBooking }) {
   const isAvailable = room.availableRooms > 0;
@@ -6,8 +7,8 @@ export default function RoomCard({ room, onBooking }) {
   return (
     <div className="room-card">
       <div className="room-card-image">
-        {room.photos?.[0] ? (
-          <img src={room.photos[0]} alt={room.title} />
+        {room.image || room.photos?.[0] ? (
+          <img src={getImageUrl(room.image || room.photos?.[0])} alt={room.title} />
         ) : (
           <div className="room-placeholder">🛏️</div>
         )}

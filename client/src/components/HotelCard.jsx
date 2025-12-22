@@ -1,11 +1,6 @@
 import { Link } from 'react-router-dom';
 import './HotelCard.css';
-
-const getImageUrl = (photoPath) => {
-  if (!photoPath) return null;
-  if (photoPath.startsWith('http')) return photoPath;
-  return `http://localhost:5000${photoPath}`;
-};
+import { getImageUrl } from '../utils/imageUrl';
 
 export default function HotelCard({ hotel }) {
   return (

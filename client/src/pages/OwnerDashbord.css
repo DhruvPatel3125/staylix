@@ -810,9 +810,11 @@
   background: white;
   border: 1px solid #ddd;
   border-radius: 0.8rem;
-  padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .room-card:hover {
@@ -823,7 +825,7 @@
 .room-header {
   display: flex;
   justify-content: space-between;
-  align-items: start;
+  align-items: flex-start;
   margin-bottom: 1rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #eee;
@@ -883,6 +885,8 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #eee;
 }
 
 .action-btn {
@@ -1246,4 +1250,216 @@
 
 .cancel-btn:hover {
   background: #a0aec0;
+}
+
+.admin-request-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 0.8rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  min-height: 300px;
+}
+
+.admin-request-section h2 {
+  color: #333;
+  font-size: 1.8rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.section-subtitle {
+  color: #666;
+  font-size: 1rem;
+  margin: 0 0 2rem 0;
+}
+
+.admin-request-section .request-form-container {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 0.6rem;
+  margin-top: 2rem;
+}
+
+.admin-request-section .form-content {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.6rem;
+}
+
+.admin-request-section .form-content h3 {
+  margin: 0 0 1.5rem 0;
+  color: #333;
+  font-size: 1.3rem;
+}
+
+.admin-request-section .form-group {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-request-section .form-group label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.admin-request-section .form-group input,
+.admin-request-section .form-group textarea {
+  padding: 0.75rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 0.4rem;
+  font-size: 0.95rem;
+  font-family: Arial, sans-serif;
+}
+
+.admin-request-section .form-group input:focus,
+.admin-request-section .form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.admin-request-section .submit-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.95rem;
+}
+
+.admin-request-section .submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.admin-request-section .submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.requests-history {
+  margin-top: 2rem;
+}
+
+.requests-history h3 {
+  color: #333;
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+}
+
+.request-status-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.6rem;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.status-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #eee;
+}
+
+.status-header h3,
+.status-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.status-badge {
+  padding: 0.5rem 1rem;
+  border-radius: 0.4rem;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.status-badge.pending {
+  background: #feebc8;
+  color: #7c2d12;
+}
+
+.status-badge.approved {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.status-badge.rejected {
+  background: #fed7d7;
+  color: #742a2a;
+}
+
+.status-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.status-details .detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.status-details .label {
+  font-size: 0.85rem;
+  color: #999;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.status-details .value {
+  font-size: 1rem;
+  color: #333;
+  word-break: break-word;
+}
+
+.room-form-container input[type="file"] {
+  padding: 0.5rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+
+.room-form-container .file-name {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #48bb78;
+  font-weight: 500;
+}
+
+.room-image-container {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.room-image-container .room-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.room-image-container .room-image:not([src]),
+.room-image-container .room-image[src=""] {
+  display: none;
+}
+
+.room-content {
+  padding: 1.5rem;
+  flex: 1;
 }

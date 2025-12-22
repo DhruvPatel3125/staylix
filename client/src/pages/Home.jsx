@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context/authContext';
 import api from '../services/api';
 import HotelCard from '../components/HotelCard';
 import './Home.css';
 
 export default function Home() {
+  const { user, isAuthenticated } = useAuth();
   const [hotels, setHotels] = useState([]);
   const [filteredHotels, setFilteredHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [checkInDate, setCheckInDate] = useState('');
@@ -65,6 +67,14 @@ export default function Home() {
   }, [hotels, searchTerm, selectedCity, minRating, sortBy]);
 
   const uniqueCities = [...new Set(hotels.map(h => h.address?.city).filter(Boolean))].sort();
+
+  if (isAuthenticated && user?.role === 'admin') {
+    return <Navigate to="/admin-dashboard" />;
+  }
+
+  if (isAuthenticated && user?.role === 'owner') {
+    return <Navigate to="/owner-dashboard" />;
+  }
 
   return (
     <div className="home-container">

@@ -103,16 +103,6 @@ const api = {
     toggleAvailability: async (id) => {
       const response = await instance.put(`/rooms/${id}/toggle`);
       return response.data;
-    },
-
-    createRequest: async (requestData) => {
-      const response = await instance.post('/rooms/request/create', requestData);
-      return response.data;
-    },
-
-    getOwnerRequests: async () => {
-      const response = await instance.get('/rooms/request/all');
-      return response.data;
     }
   },
 
@@ -225,21 +215,6 @@ const api = {
 
     rejectOwnerRequest: async (id) => {
       const response = await instance.put(`/admin/owner-requests/reject/${id}`);
-      return response.data;
-    },
-
-    getRoomRequests: async () => {
-      const response = await instance.get('/admin/room-requests');
-      return response.data;
-    },
-
-    approveRoomRequest: async (id) => {
-      const response = await instance.put(`/admin/room-requests/approve/${id}`);
-      return response.data;
-    },
-
-    rejectRoomRequest: async (id, reason) => {
-      const response = await instance.put(`/admin/room-requests/reject/${id}`, { reason });
       return response.data;
     }
   },

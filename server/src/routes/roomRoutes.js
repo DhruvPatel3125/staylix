@@ -6,21 +6,18 @@ const {
     updateRoom,
     deleteRoom,
     getOwnerRooms,
-    toggleRoomAvailability,
-    createRoomRequest,
-    getOwnerRoomRequests
+    toggleRoomAvailability
 } = require('../controllers/roomController');
 
-const { protect, owner } = require("../middlewares/authMiddleWare");
+const { protect, owner, approvedOwner } = require("../middlewares/authMiddleWare");
+const upload = require("../middlewares/uploadMiddleware");
 
-router.post("/", protect, owner, addRoom);
+router.post("/", protect, approvedOwner, upload.single('image'), addRoom);
 router.get("/:hotelId", getRoomsByHotel);
-router.put("/:id", protect, owner, updateRoom);
-router.delete("/:id", protect, owner, deleteRoom);
+router.put("/:id", protect, approvedOwner, upload.single('image'), updateRoom);
+router.delete("/:id", protect, approvedOwner, deleteRoom);
 
-router.get("/owner/all", protect, owner, getOwnerRooms);
-router.put("/:id/toggle", protect, owner, toggleRoomAvailability);
-router.post("/request/create", protect, owner, createRoomRequest);
-router.get("/request/all", protect, owner, getOwnerRoomRequests);
+router.get("/owner/all", protect, approvedOwner, getOwnerRooms);
+router.put("/:id/toggle", protect, approvedOwner, toggleRoomAvailability);
 
 module.exports = router;

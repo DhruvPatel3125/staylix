@@ -41,7 +41,12 @@ exports.createRequest = async(req, res) => {
 
 exports.getAllRequests = async (req, res) => {
     try {
-        const requests = await OwnerRequest.find().populate("userId", "name email");
+        let requests;
+        if (req.user.role === "admin") {
+            requests = await OwnerRequest.find().populate("userId", "name email");
+        } else {
+            requests = await OwnerRequest.find({ userId: req.user._id }).populate("userId", "name email");
+        }
         res.json({
             success: true,
             requests
@@ -81,7 +86,7 @@ exports.approveRequest = async(req, res) => {
 
         request.status = "approved";
         await request.save();
-        await User.findByIdAndUpdate(request.userId, { role: "owner" });
+        await User.findByIdAndUpdate(request.userId, { role: "owner", isApproved: true });
 
         res.json({
             success: true,

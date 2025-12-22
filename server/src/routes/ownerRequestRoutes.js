@@ -11,7 +11,7 @@ const {
 const {protect,admin} = require('../middlewares/authMiddleWare');
 
 router.post("/",protect,createRequest);
-router.get("/",protect,admin,getAllRequests);
+router.get("/",protect,getAllRequests);
 router.put("/approve/:id",protect,admin,approveRequest);
 router.put("/reject/:id",protect,admin,rejectRequest);
 

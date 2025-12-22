@@ -3,7 +3,6 @@ import { useAuth } from '../context/authContext';
 import api from '../services/api';
 import './UserDashbord.css';
 
-/* ---------- SAFE DATE FORMATTER ---------- */
 const formatDate = (dateValue) => {
   if (!dateValue) return 'N/A';
 
@@ -18,25 +17,59 @@ export default function UserDashboard() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('bookings');
   const [cancelingId, setCancelingId] = useState(null);
+  const [ownerRequest, setOwnerRequest] = useState(null);
+  const [showOwnerRequestForm, setShowOwnerRequestForm] = useState(false);
+  const [submittingRequest, setSubmittingRequest] = useState(false);
+  const [ownerRequestData, setOwnerRequestData] = useState({
+    businessName: '',
+    document: ''
+  });
 
   useEffect(() => {
-    fetchBookings();
+    fetchData();
   }, []);
 
-  const fetchBookings = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.bookings.getMyBookings();
-      if (response.success) {
-        setBookings(response.bookings || []);
-      } else {
-        setError(response.message || 'Failed to fetch bookings');
+      const [bookingsRes, requestRes] = await Promise.all([
+        api.bookings.getMyBookings(),
+        api.ownerRequest.getAll()
+      ]);
+      if (bookingsRes.success) {
+        setBookings(bookingsRes.bookings || []);
+      }
+      if (requestRes.success && requestRes.requests && requestRes.requests.length > 0) {
+        setOwnerRequest(requestRes.requests[0]);
       }
     } catch {
-      setError('Failed to load bookings');
+      setError('Failed to load data');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubmitOwnerRequest = async () => {
+    if (!ownerRequestData.businessName.trim() || !ownerRequestData.document.trim()) {
+      setError('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      setSubmittingRequest(true);
+      const response = await api.ownerRequest.create(ownerRequestData);
+      if (response.success) {
+        setOwnerRequest(response.request);
+        setOwnerRequestData({ businessName: '', document: '' });
+        setShowOwnerRequestForm(false);
+      } else {
+        setError(response.message || 'Failed to submit request');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to submit request');
+    } finally {
+      setSubmittingRequest(false);
     }
   };
 
@@ -119,6 +152,12 @@ export default function UserDashboard() {
                 onClick={() => setActiveTab('bookings')}
               >
                 📅 My Bookings
+              </button>
+              <button
+                className={`nav-item ${activeTab === 'owner-request' ? 'active' : ''}`}
+                onClick={() => setActiveTab('owner-request')}
+              >
+                🏢 Become Owner
               </button>
               <button
                 className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
@@ -212,6 +251,120 @@ export default function UserDashboard() {
                       );
                     })}
                   </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'owner-request' && (
+              <div className="owner-request-section">
+                <h2>Become an Owner</h2>
+                <p className="section-subtitle">Submit your application to become a hotel owner and manage your properties</p>
+
+                {ownerRequest ? (
+                  <div className="request-status-card">
+                    <div className="status-header">
+                      <h3>Your Owner Request</h3>
+                      <span className={`status-badge ${ownerRequest.status}`}>
+                        {ownerRequest.status.charAt(0).toUpperCase() + ownerRequest.status.slice(1)}
+                      </span>
+                    </div>
+                    <div className="status-details">
+                      <div className="detail-item">
+                        <span className="label">Business Name</span>
+                        <span className="value">{ownerRequest.businessName}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Document</span>
+                        <span className="value">{ownerRequest.document}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="label">Submitted On</span>
+                        <span className="value">{new Date(ownerRequest.createdAt).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    {ownerRequest.status === 'pending' && (
+                      <p className="pending-message">
+                        ⏳ Your request is under review. Admin will approve or reject it soon.
+                      </p>
+                    )}
+                    {ownerRequest.status === 'approved' && (
+                      <p className="approved-message" style={{ color: '#48bb78', marginTop: '12px' }}>
+                        ✅ Congratulations! Your request has been approved. You can now manage hotels and rooms.
+                      </p>
+                    )}
+                    {ownerRequest.status === 'rejected' && (
+                      <p className="rejected-message" style={{ color: '#f56565', marginTop: '12px' }}>
+                        ❌ Your request was rejected. Please contact support for more information.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <div className="request-form-container">
+                      {!showOwnerRequestForm ? (
+                        <button
+                          className="submit-btn"
+                          onClick={() => setShowOwnerRequestForm(true)}
+                          style={{ padding: '12px 24px', fontSize: '16px' }}
+                        >
+                          📝 Submit Owner Request
+                        </button>
+                      ) : (
+                        <div className="form-content">
+                          <h3>Submit Your Application</h3>
+                          <div className="form-group">
+                            <label>Business Name *</label>
+                            <input
+                              type="text"
+                              value={ownerRequestData.businessName}
+                              onChange={(e) => setOwnerRequestData({ ...ownerRequestData, businessName: e.target.value })}
+                              placeholder="Enter your business name"
+                              style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e0' }}
+                            />
+                          </div>
+
+                          <div className="form-group">
+                            <label>Document/License *</label>
+                            <textarea
+                              value={ownerRequestData.document}
+                              onChange={(e) => setOwnerRequestData({ ...ownerRequestData, document: e.target.value })}
+                              placeholder="Enter your business document details or license number"
+                              rows="4"
+                              style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e0', fontFamily: 'Arial' }}
+                            />
+                          </div>
+
+                          <div className="form-actions" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                            <button
+                              className="submit-btn"
+                              onClick={handleSubmitOwnerRequest}
+                              disabled={submittingRequest}
+                              style={{ flex: 1 }}
+                            >
+                              {submittingRequest ? 'Submitting...' : '✓ Submit Request'}
+                            </button>
+                            <button
+                              className="cancel-btn"
+                              onClick={() => setShowOwnerRequestForm(false)}
+                              disabled={submittingRequest}
+                              style={{ flex: 1 }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="info-box" style={{ marginTop: '24px', padding: '16px', backgroundColor: '#edf2f7', borderRadius: '8px', borderLeft: '4px solid #667eea' }}>
+                      <h4 style={{ marginTop: 0 }}>What you'll need:</h4>
+                      <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+                        <li>Business name or hotel name</li>
+                        <li>Valid business license or registration number</li>
+                        <li>Proof of ownership or authorization</li>
+                      </ul>
+                    </div>
+                  </>
                 )}
               </div>
             )}

@@ -4,6 +4,13 @@ const Discount = require("../models/discount");
 
 exports.createBooking = async(req, res) => {
     try {
+        if (req.user.role === "owner" || req.user.role === "admin") {
+            return res.status(403).json({
+                success: false,
+                message: "Owners and admins cannot book rooms"
+            });
+        }
+
         const { roomId, checkIn, checkOut, guests, totalAmount, hotelId, ownerId, discountCode } = req.body;
 
         if (!roomId || !checkIn || !checkOut || !guests || !totalAmount || !hotelId || !ownerId) {

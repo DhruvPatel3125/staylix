@@ -245,6 +245,23 @@
   background: #38a169;
 }
 
+.date-picker-input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.date-picker-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 768px) {
   .hotel-header {

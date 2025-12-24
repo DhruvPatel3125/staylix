@@ -443,6 +443,16 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="stat-card">
+                    <div className="stat-icon" style={{ backgroundColor: '#e53e3e' }}>
+                      ❌
+                    </div>
+                    <div className="stat-content">
+                      <h3>Cancelled Bookings</h3>
+                      <p className="stat-value">{stats?.cancelledBookings || 0}</p>
+                    </div>
+                  </div>
+
+                  <div className="stat-card">
                     <div className="stat-icon" style={{ backgroundColor: '#38b6ff' }}>
                       ⭐
                     </div>
@@ -581,7 +591,7 @@ export default function AdminDashboard() {
                         <div className="request-info">
                           <p><strong>Email:</strong> {request.userId?.email}</p>
                           <p><strong>Business Name:</strong> {request.businessName}</p>
-                          <p><strong>Document:</strong> {request.document}</p>
+                          <p><strong>Document:</strong> <a href={`http://localhost:5000/${request.document.replace(/\\/g, '/')}`} target="_blank" rel="noopener noreferrer" style={{ color: '#3182ce', textDecoration: 'underline' }}>View Document</a></p>
                           <p><strong>Applied:</strong> {new Date(request.createdAt).toLocaleDateString()}</p>
                         </div>
                         <div className="request-actions">
@@ -1023,7 +1033,7 @@ export default function AdminDashboard() {
               </div>
             )}
 
-            {activeTab === 'owner-requests' && (
+            {/* {activeTab === 'owner-requests' && (
               <div className="owner-requests-section">
                 <h2>Owner Requests</h2>
                 <p className="section-subtitle">Review and manage owner requests from users</p>
@@ -1089,7 +1099,7 @@ export default function AdminDashboard() {
                   </div>
                 )}
               </div>
-            )}
+            )} */}
 
           </main>
         </div>

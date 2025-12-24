@@ -1,0 +1,83 @@
+.about-us-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.about-header {
+  text-align: center;
+  margin-bottom: 60px;
+  background-color: #f8f9fa;
+  padding: 60px 20px;
+  border-radius: 12px;
+}
+
+.about-header h1 {
+  font-size: 3rem;
+  color: #2d3748;
+  margin-bottom: 16px;
+}
+
+.about-header p {
+  font-size: 1.25rem;
+  color: #718096;
+}
+
+.about-content {
+  display: grid;
+  gap: 40px;
+}
+
+.about-content section {
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.about-content h2 {
+  color: #2d3748;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 10px;
+}
+
+.about-content p {
+  line-height: 1.8;
+  color: #4a5568;
+  font-size: 1.1rem;
+}
+
+.values-section ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.values-section li {
+  padding: 20px;
+  background: #f7fafc;
+  border-radius: 8px;
+  color: #4a5568;
+}
+
+.values-section strong {
+  display: block;
+  color: #2d3748;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .about-header h1 {
+    font-size: 2rem;
+  }
+  
+  .values-section ul {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,5 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
+dotenv.config();
 const cors = require("cors");
 const morgan = require('morgan');
 
@@ -12,8 +13,6 @@ const reviewRoutes = require('./routes/reviewRoutes')
 const ownerRequestRoutes = require('./routes/ownerRequestRoutes')
 const adminRoutes = require('./routes/adminRoutes')
 const discountRoutes = require('./routes/discountRoutes')
-
-dotenv.config();
 
 const app = express();
 

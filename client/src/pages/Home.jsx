@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 import { useAuth } from '../context/authContext';
 import api from '../services/api';
 import HotelCard from '../components/HotelCard';
@@ -13,8 +15,8 @@ export default function Home() {
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
-  const [checkInDate, setCheckInDate] = useState('');
-  const [checkOutDate, setCheckOutDate] = useState('');
+  const [checkInDate, setCheckInDate] = useState(null);
+  const [checkOutDate, setCheckOutDate] = useState(null);
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState('name');
 
@@ -116,22 +118,30 @@ export default function Home() {
 
           <div className="filter-group">
             <label htmlFor="check-in">Check-in:</label>
-            <input
+            <DatePicker
               id="check-in"
-              type="date"
-              value={checkInDate}
-              onChange={(e) => setCheckInDate(e.target.value)}
+              selected={checkInDate}
+              onChange={(date) => setCheckInDate(date)}
+              selectsStart
+              startDate={checkInDate}
+              endDate={checkOutDate}
+              minDate={new Date()}
+              placeholderText="Select date"
               className="filter-input"
             />
           </div>
 
           <div className="filter-group">
             <label htmlFor="check-out">Check-out:</label>
-            <input
+            <DatePicker
               id="check-out"
-              type="date"
-              value={checkOutDate}
-              onChange={(e) => setCheckOutDate(e.target.value)}
+              selected={checkOutDate}
+              onChange={(date) => setCheckOutDate(date)}
+              selectsEnd
+              startDate={checkInDate}
+              endDate={checkOutDate}
+              minDate={checkInDate || new Date()}
+              placeholderText="Select date"
               className="filter-input"
             />
           </div>

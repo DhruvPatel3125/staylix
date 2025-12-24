@@ -95,3 +95,20 @@
   font-weight: 600;
   color: #667eea;
 }
+
+.view-details-btn {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.8rem;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 0.4rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.view-details-btn:hover {
+  background-color: #5a67d8;
+}

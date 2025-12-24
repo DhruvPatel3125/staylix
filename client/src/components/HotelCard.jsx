@@ -30,6 +30,7 @@ export default function HotelCard({ hotel }) {
           <div className="hotel-rating">
             ⭐ {hotel.rating || 'Not rated'}
           </div>
+          <button className="view-details-btn">View Details</button>
         </div>
       </div>
     </Link>

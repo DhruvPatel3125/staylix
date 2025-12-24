@@ -87,7 +87,8 @@ exports.deleteUser = async(req, res) => {
 exports.getDashboardStats = async(req, res) => {
     try {
         const totalUsers = await User.countDocuments();
-        const totalBookings = await Booking.countDocuments();
+        const cancelledBookings = await Booking.countDocuments({ bookingStatus: 'cancelled' });
+        const totalBookings = await Booking.countDocuments({ bookingStatus: { $ne: 'cancelled' } });
         const totalHotels = await Hotel.countDocuments();
         const totalRooms = await Room.countDocuments();
         const activeUsers = await User.countDocuments({ isBlocked: false });
@@ -104,6 +105,7 @@ exports.getDashboardStats = async(req, res) => {
             stats: {
                 totalUsers,
                 totalBookings,
+                cancelledBookings,
                 totalHotels,
                 totalRooms,
                 activeUsers,

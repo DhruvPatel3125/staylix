@@ -9,22 +9,18 @@ export default function OwnerDashboard() {
   const [hotels, setHotels] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
-  const [adminRequests, setAdminRequests] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [showHotelForm, setShowHotelForm] = useState(false);
   const [showRoomForm, setShowRoomForm] = useState(false);
-  const [showAdminRequestForm, setShowAdminRequestForm] = useState(false);
+
   const [editingHotel, setEditingHotel] = useState(null);
   const [editingRoom, setEditingRoom] = useState(null);
   const [processingId, setProcessingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [submittingRequest, setSubmittingRequest] = useState(false);
-  const [adminRequestData, setAdminRequestData] = useState({
-    businessName: '',
-    document: ''
-  });
+
   const [formData, setFormData] = useState({
     name: '',
     city: '',
@@ -56,11 +52,10 @@ export default function OwnerDashboard() {
     try {
       setLoading(true);
       setError(null);
-      const [hotelsRes, roomsRes, bookingsRes, requestsRes] = await Promise.all([
+      const [hotelsRes, roomsRes, bookingsRes] = await Promise.all([
         api.hotels.getOwnerHotels(),
         api.rooms.getOwnerRooms(),
-        api.bookings.getOwnerBookings(),
-        api.ownerRequest.getAll()
+        api.bookings.getOwnerBookings()
       ]);
 
       if (hotelsRes.success) {
@@ -71,9 +66,6 @@ export default function OwnerDashboard() {
       }
       if (bookingsRes.success) {
         setBookings(bookingsRes.bookings || []);
-      }
-      if (requestsRes.success && requestsRes.requests) {
-        setAdminRequests(requestsRes.requests || []);
       }
     } catch (_err) {
       setError('Failed to load dashboard data');
@@ -314,35 +306,18 @@ export default function OwnerDashboard() {
 
 
 
-  const handleSubmitAdminRequest = async () => {
-    if (!adminRequestData.businessName.trim() || !adminRequestData.document.trim()) {
-      setError('Please fill in all required fields');
-      return;
-    }
 
-    try {
-      setSubmittingRequest(true);
-      const response = await api.ownerRequest.create(adminRequestData);
-      if (response.success) {
-        setAdminRequests([...adminRequests, response.request]);
-        setAdminRequestData({ businessName: '', document: '' });
-        setShowAdminRequestForm(false);
-      } else {
-        setError(response.message || 'Failed to submit request');
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit request');
-    } finally {
-      setSubmittingRequest(false);
-    }
-  };
 
   const getStats = () => {
+    const activeBookings = bookings.filter(b => b.bookingStatus !== 'cancelled');
+    const cancelledBookings = bookings.filter(b => b.bookingStatus === 'cancelled');
+    
     return {
       totalHotels: hotels.length,
       totalRooms: rooms.length,
-      totalBookings: bookings.length,
-      totalRevenue: bookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0)
+      totalBookings: activeBookings.length,
+      cancelledBookings: cancelledBookings.length,
+      totalRevenue: activeBookings.reduce((sum, b) => sum + (b.totalAmount || 0), 0)
     };
   };
 
@@ -417,12 +392,7 @@ export default function OwnerDashboard() {
               >
                 💰 Revenue Report
               </button>
-              <button
-                className={`nav-item ${activeTab === 'admin-request' ? 'active' : ''}`}
-                onClick={() => setActiveTab('admin-request')}
-              >
-                📬 Send to Admin
-              </button>
+
             </nav>
           </aside>
 
@@ -460,6 +430,16 @@ export default function OwnerDashboard() {
                     <div className="stat-content">
                       <h3>Total Bookings</h3>
                       <p className="stat-value">{stats.totalBookings}</p>
+                    </div>
+                  </div>
+
+                  <div className="stat-card">
+                    <div className="stat-icon" style={{ backgroundColor: '#e53e3e' }}>
+                      ❌
+                    </div>
+                    <div className="stat-content">
+                      <h3>Cancelled Bookings</h3>
+                      <p className="stat-value">{stats.cancelledBookings}</p>
                     </div>
                   </div>
 
@@ -996,98 +976,7 @@ export default function OwnerDashboard() {
               </div>
             )}
 
-            {activeTab === 'admin-request' && (
-              <div className="admin-request-section">
-                <h2>Send Request to Admin</h2>
-                <p className="section-subtitle">Submit any issues, requests, or messages to the admin</p>
 
-                {adminRequests && adminRequests.length > 0 ? (
-                  <div className="requests-history">
-                    <h3>Your Requests</h3>
-                    {adminRequests.map((req) => (
-                      <div key={req._id} className="request-status-card">
-                        <div className="status-header">
-                          <h4>Request #{req._id.substring(0, 8)}</h4>
-                          <span className={`status-badge ${req.status}`}>
-                            {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
-                          </span>
-                        </div>
-                        <div className="status-details">
-                          <div className="detail-item">
-                            <span className="label">Subject</span>
-                            <span className="value">{req.businessName}</span>
-                          </div>
-                          <div className="detail-item">
-                            <span className="label">Details</span>
-                            <span className="value">{req.document}</span>
-                          </div>
-                          <div className="detail-item">
-                            <span className="label">Submitted On</span>
-                            <span className="value">{new Date(req.createdAt).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-
-                <div className="request-form-container">
-                  {!showAdminRequestForm ? (
-                    <button
-                      className="submit-btn"
-                      onClick={() => setShowAdminRequestForm(true)}
-                      style={{ padding: '12px 24px', fontSize: '16px' }}
-                    >
-                      ✉️ Send New Request
-                    </button>
-                  ) : (
-                    <div className="form-content">
-                      <h3>Submit Your Request</h3>
-                      <div className="form-group">
-                        <label>Subject/Issue Title *</label>
-                        <input
-                          type="text"
-                          value={adminRequestData.businessName}
-                          onChange={(e) => setAdminRequestData({ ...adminRequestData, businessName: e.target.value })}
-                          placeholder="Enter request subject"
-                          style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e0' }}
-                        />
-                      </div>
-
-                      <div className="form-group">
-                        <label>Details/Description *</label>
-                        <textarea
-                          value={adminRequestData.document}
-                          onChange={(e) => setAdminRequestData({ ...adminRequestData, document: e.target.value })}
-                          placeholder="Describe your request or issue in detail"
-                          rows="4"
-                          style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e0', fontFamily: 'Arial' }}
-                        />
-                      </div>
-
-                      <div className="form-actions" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                        <button
-                          className="submit-btn"
-                          onClick={handleSubmitAdminRequest}
-                          disabled={submittingRequest}
-                          style={{ flex: 1 }}
-                        >
-                          {submittingRequest ? 'Submitting...' : '✓ Send Request'}
-                        </button>
-                        <button
-                          className="cancel-btn"
-                          onClick={() => setShowAdminRequestForm(false)}
-                          disabled={submittingRequest}
-                          style={{ flex: 1 }}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </main>
         </div>
       </div>

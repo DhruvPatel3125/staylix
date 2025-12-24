@@ -125,6 +125,11 @@ const api = {
     cancel: async (id) => {
       const response = await instance.put(`/bookings/cancel/${id}`);
       return response.data;
+    },
+
+    createPaymentOrder: async (amount) => {
+      const response = await instance.post('/bookings/create-payment-order', { amount });
+      return response.data;
     }
   },
 

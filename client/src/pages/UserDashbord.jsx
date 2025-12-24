@@ -22,7 +22,7 @@ export default function UserDashboard() {
   const [submittingRequest, setSubmittingRequest] = useState(false);
   const [ownerRequestData, setOwnerRequestData] = useState({
     businessName: '',
-    document: ''
+    document: null
   });
 
   useEffect(() => {
@@ -51,17 +51,21 @@ export default function UserDashboard() {
   };
 
   const handleSubmitOwnerRequest = async () => {
-    if (!ownerRequestData.businessName.trim() || !ownerRequestData.document.trim()) {
+    if (!ownerRequestData.businessName.trim() || !ownerRequestData.document) {
       setError('Please fill in all required fields');
       return;
     }
 
     try {
       setSubmittingRequest(true);
-      const response = await api.ownerRequest.create(ownerRequestData);
+      const formData = new FormData();
+      formData.append('businessName', ownerRequestData.businessName);
+      formData.append('document', ownerRequestData.document);
+
+      const response = await api.ownerRequest.create(formData);
       if (response.success) {
         setOwnerRequest(response.request);
-        setOwnerRequestData({ businessName: '', document: '' });
+        setOwnerRequestData({ businessName: '', document: null });
         setShowOwnerRequestForm(false);
       } else {
         setError(response.message || 'Failed to submit request');
@@ -80,7 +84,9 @@ export default function UserDashboard() {
       setCancelingId(bookingId);
       const response = await api.bookings.cancel(bookingId);
       if (response.success) {
-        setBookings(prev => prev.filter(b => b._id !== bookingId));
+        setBookings(prev => prev.map(b => 
+          b._id === bookingId ? { ...b, bookingStatus: 'cancelled' } : b
+        ));
       } else {
         setError(response.message || 'Failed to cancel booking');
       }
@@ -93,7 +99,7 @@ export default function UserDashboard() {
 
   /* ---------- SAFE BOOKING STATUS ---------- */
   const getBookingStatus = (booking) => {
-    if (booking.status === 'cancelled') return 'Cancelled';
+    if (booking.bookingStatus === 'cancelled') return 'Cancelled';
 
     if (!booking.checkOut) return 'Active';
 
@@ -236,7 +242,7 @@ export default function UserDashboard() {
                             </div>
                           </div>
 
-                          {status === 'Active' && booking.status !== 'cancelled' && (
+                          {status === 'Active' && booking.bookingStatus !== 'cancelled' && (
                             <button
                               className="cancel-btn"
                               onClick={() => handleCancelBooking(booking._id)}
@@ -275,7 +281,16 @@ export default function UserDashboard() {
                       </div>
                       <div className="detail-item">
                         <span className="label">Document</span>
-                        <span className="value">{ownerRequest.document}</span>
+                        <span className="value">
+                          <a 
+                            href={`http://localhost:5000/${ownerRequest.document.replace(/\\/g, '/')}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            style={{ color: '#3182ce', textDecoration: 'underline' }}
+                          >
+                            View Document
+                          </a>
+                        </span>
                       </div>
                       <div className="detail-item">
                         <span className="label">Submitted On</span>
@@ -325,13 +340,15 @@ export default function UserDashboard() {
 
                           <div className="form-group">
                             <label>Document/License *</label>
-                            <textarea
-                              value={ownerRequestData.document}
-                              onChange={(e) => setOwnerRequestData({ ...ownerRequestData, document: e.target.value })}
-                              placeholder="Enter your business document details or license number"
-                              rows="4"
-                              style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e0', fontFamily: 'Arial' }}
+                            <input
+                              type="file"
+                              onChange={(e) => setOwnerRequestData({ ...ownerRequestData, document: e.target.files[0] })}
+                              accept="image/*,.pdf"
+                              style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e0' }}
                             />
+                            <small style={{ display: 'block', marginTop: '5px', color: '#718096' }}>
+                              Upload your business license or proof of ownership (Image or PDF)
+                            </small>
                           </div>
 
                           <div className="form-actions" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>

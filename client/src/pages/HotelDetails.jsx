@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 import { useAuth } from '../context/authContext';
 import api from '../services/api';
 import RoomCard from '../components/RoomCard';
@@ -9,7 +11,7 @@ import './HotelDetails.css';
 export default function HotelDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [hotel, setHotel] = useState(null);
   const [rooms, setRooms] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -18,8 +20,8 @@ export default function HotelDetails() {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [bookingData, setBookingData] = useState({
-    checkIn: '',
-    checkOut: '',
+    checkIn: null,
+    checkOut: null,
     guests: 1,
     discountCode: ''
   });
@@ -52,6 +54,12 @@ export default function HotelDetails() {
       navigate('/login');
       return;
     }
+
+    if (user && hotel.ownerId && user._id === hotel.ownerId) {
+      alert("You cannot book a room in your own hotel");
+      return;
+    }
+
     setSelectedRoom(room);
     setShowBookingForm(true);
   };
@@ -113,31 +121,75 @@ export default function HotelDetails() {
     const checkOut = new Date(bookingData.checkOut);
     const nights = (checkOut - checkIn) / (1000 * 60 * 60 * 24);
     const totalAmount = nights * selectedRoom.pricePerNight;
+    
+    const finalAmount = discountInfo ? discountInfo.finalAmount : totalAmount;
 
     try {
-      const response = await api.bookings.create({
-        roomId: selectedRoom._id,
-        hotelId: hotel._id,
-        ownerId: hotel.ownerId,
-        checkIn: bookingData.checkIn,
-        checkOut: bookingData.checkOut,
-        guests: parseInt(bookingData.guests),
-        totalAmount,
-        discountCode: discountInfo ? bookingData.discountCode : undefined
-      });
-
-      if (response.success) {
-        alert('Booking successful!');
-        setShowBookingForm(false);
-        setSelectedRoom(null);
-        setBookingData({ checkIn: '', checkOut: '', guests: 1, discountCode: '' });
-        setDiscountInfo(null);
-        setDiscountError('');
-      } else {
-        alert(response.message || 'Booking failed');
+      // 1. Create Razorpay Order
+      const orderRes = await api.bookings.createPaymentOrder(finalAmount);
+      
+      if (!orderRes.success) {
+        alert('Failed to initiate payment');
+        return;
       }
+
+      const options = {
+        key: "rzp_test_Dz9hd6AMtKfCZE", // Replace with your actual key
+        amount: orderRes.order.amount,
+        currency: "INR",
+        name: "Staylix",
+        description: `Booking for ${hotel.name}`,
+        image: "https://example.com/your_logo",
+        order_id: orderRes.order.id,
+        handler: async function (response) {
+          try {
+            // 2. Create Booking with Payment Details
+            const bookingRes = await api.bookings.create({
+              roomId: selectedRoom._id,
+              hotelId: hotel._id,
+              ownerId: hotel.ownerId,
+              checkIn: bookingData.checkIn,
+              checkOut: bookingData.checkOut,
+              guests: parseInt(bookingData.guests),
+              totalAmount, // Original amount
+              discountCode: discountInfo ? bookingData.discountCode : undefined,
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              signature: response.razorpay_signature
+            });
+
+            if (bookingRes.success) {
+              alert('Booking successful!');
+              setShowBookingForm(false);
+              setSelectedRoom(null);
+              setBookingData({ checkIn: null, checkOut: null, guests: 1, discountCode: '' });
+              setDiscountInfo(null);
+              setDiscountError('');
+            } else {
+              alert(bookingRes.message || 'Booking failed');
+            }
+          } catch (err) {
+            alert(err.response?.data?.message || 'Error creating booking');
+          }
+        },
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+          contact: ""
+        },
+        theme: {
+          color: "#3399cc"
+        }
+      };
+
+      const rzp1 = new window.Razorpay(options);
+      rzp1.on('payment.failed', function (response){
+        alert(response.error.description);
+      });
+      rzp1.open();
+
     } catch (err) {
-      alert('Error creating booking');
+      alert('Error initiating booking process');
     }
   };
 
@@ -216,22 +268,30 @@ export default function HotelDetails() {
             <form onSubmit={handleSubmitBooking}>
               <div className="form-group">
                 <label htmlFor="checkIn">Check-in Date</label>
-                <input
-                  id="checkIn"
-                  type="date"
-                  value={bookingData.checkIn}
-                  onChange={(e) => setBookingData({...bookingData, checkIn: e.target.value})}
+                <DatePicker
+                  selected={bookingData.checkIn}
+                  onChange={(date) => setBookingData({ ...bookingData, checkIn: date })}
+                  selectsStart
+                  startDate={bookingData.checkIn}
+                  endDate={bookingData.checkOut}
+                  minDate={new Date()}
+                  placeholderText="Select check-in date"
+                  className="date-picker-input"
                   required
                 />
               </div>
 
               <div className="form-group">
                 <label htmlFor="checkOut">Check-out Date</label>
-                <input
-                  id="checkOut"
-                  type="date"
-                  value={bookingData.checkOut}
-                  onChange={(e) => setBookingData({...bookingData, checkOut: e.target.value})}
+                <DatePicker
+                  selected={bookingData.checkOut}
+                  onChange={(date) => setBookingData({ ...bookingData, checkOut: date })}
+                  selectsEnd
+                  startDate={bookingData.checkIn}
+                  endDate={bookingData.checkOut}
+                  minDate={bookingData.checkIn ? new Date(bookingData.checkIn.getTime() + 86400000) : new Date()}
+                  placeholderText="Select check-out date"
+                  className="date-picker-input"
                   required
                 />
               </div>
@@ -291,7 +351,7 @@ export default function HotelDetails() {
                   </div>
                   <div className="price-breakdown-item">
                     <span>Number of nights:</span>
-                    <span>{Math.ceil((new Date(bookingData.checkOut) - new Date(bookingData.checkIn)) / (1000 * 60 * 60 * 24))}</span>
+                    <span>{Math.ceil((bookingData.checkOut - bookingData.checkIn) / (1000 * 60 * 60 * 24))}</span>
                   </div>
                   {discountInfo && (
                     <>
@@ -310,7 +370,7 @@ export default function HotelDetails() {
                     <span>
                       ${discountInfo 
                         ? discountInfo.finalAmount.toFixed(2)
-                        : (Math.ceil((new Date(bookingData.checkOut) - new Date(bookingData.checkIn)) / (1000 * 60 * 60 * 24)) * selectedRoom.pricePerNight).toFixed(2)
+                        : (Math.ceil((bookingData.checkOut - bookingData.checkIn) / (1000 * 60 * 60 * 24)) * selectedRoom.pricePerNight).toFixed(2)
                       }
                     </span>
                   </div>

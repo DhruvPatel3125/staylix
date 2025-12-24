@@ -4,6 +4,7 @@ import './Navbar.css';
 
 export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
+  const isAdminOrOwner = isAuthenticated && (user?.role === 'admin' || user?.role === 'owner');
 
   return (
     <nav className="navbar">
@@ -12,8 +13,7 @@ export default function Navbar() {
           🏨 Staylix
         </Link>
         <div className="navbar-menu">
-          <Link to="/" className="nav-link">Home</Link>
-          {isAuthenticated ? (
+          {isAdminOrOwner ? (
             <>
               {user?.role === 'owner' && (
                 <Link to="/owner-dashboard" className="nav-link">Owner Dashboard</Link>
@@ -21,20 +21,31 @@ export default function Navbar() {
               {user?.role === 'admin' && (
                 <Link to="/admin-dashboard" className="nav-link">Admin Dashboard</Link>
               )}
-              {user?.role === 'user' && (
-                <Link to="/user-dashboard" className="nav-link">My Bookings</Link>
-              )}
-              <span className="nav-user">
-                {user?.name}
-              </span>
               <button onClick={logout} className="nav-button logout-btn">
                 Logout
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="nav-button">Login</Link>
-              <Link to="/register" className="nav-button signup-btn">Sign Up</Link>
+              <Link to="/" className="nav-link">Home</Link>
+              <Link to="/about" className="nav-link">About Us</Link>
+              <Link to="/contact" className="nav-link">Contact Us</Link>
+              {isAuthenticated ? (
+                <>
+                  <Link to="/user-dashboard" className="nav-link">My Bookings</Link>
+                  <span className="nav-user">
+                    {user?.name}
+                  </span>
+                  <button onClick={logout} className="nav-button logout-btn">
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="nav-button">Login</Link>
+                  <Link to="/register" className="nav-button signup-btn">Sign Up</Link>
+                </>
+              )}
             </>
           )}
         </div>

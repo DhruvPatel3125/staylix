@@ -10,6 +10,8 @@ import HotelDetails from './pages/HotelDetails';
 import UserDashboard from './pages/UserDashbord';
 import AdminDashbord from './pages/AdminDashbord';
 import OwnerDashboard from './pages/OwnerDashbord';
+import AboutUs from './pages/AboutUs';
+import ContactUs from './pages/ContactUs';
 
 
 import './App.css';
@@ -25,6 +27,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/hotel/:id" element={<HotelDetails />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/contact" element={<ContactUs />} />
             
             <Route 
               path="/user-dashboard" 

@@ -7,6 +7,8 @@ const storage = multer.diskStorage({
     let dir = 'uploads/hotels';
     if (req.baseUrl && req.baseUrl.includes('/rooms')) {
       dir = 'uploads/rooms';
+    } else if (req.baseUrl && req.baseUrl.includes('/owner-request')) {
+      dir = 'uploads/documents';
     }
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
@@ -18,17 +20,19 @@ const storage = multer.diskStorage({
     let prefix = 'hotel-';
     if (req.baseUrl && req.baseUrl.includes('/rooms')) {
       prefix = 'room-';
+    } else if (req.baseUrl && req.baseUrl.includes('/owner-request')) {
+      prefix = 'doc-';
     }
     cb(null, prefix + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
   if (allowedMimes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed (jpeg, png, gif, webp)'), false);
+    cb(new Error('Only image files and PDFs are allowed'), false);
   }
 };
 

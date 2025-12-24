@@ -3,7 +3,8 @@ const User = require('../models/user');
 
 exports.createRequest = async(req, res) => {
     try {
-        const { businessName, document } = req.body;
+        const { businessName } = req.body;
+        const document = req.file ? req.file.path : null;
 
         if (!businessName || !document) {
             return res.status(400).json({

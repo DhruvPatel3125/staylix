@@ -1,6 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/authContext';
-import api from '../services/api';
+import { 
+  Users, 
+  Hotel, 
+  Bed, 
+  Calendar, 
+  X, 
+  Star, 
+  Clock, 
+  PieChart, 
+  Tag, 
+  LayoutDashboard, 
+  ShieldAlert, 
+  CheckCircle, 
+  Trash2, 
+  Search,
+  UserCheck,
+  UserPlus,
+  ArrowRight,
+  MapPin,
+  Plus
+} from 'lucide-react';
+import { showToast, showAlert } from '../utils/swal';
+import api, { API_BASE_URL } from '../services/api';
 import './AdminDashbord.css';
 
 export default function AdminDashboard() {
@@ -74,7 +96,12 @@ export default function AdminDashboard() {
   };
 
   const handleBlockUser = async (userId, currentStatus) => {
-    if (!window.confirm(`Are you sure you want to ${currentStatus === 'blocked' ? 'unblock' : 'block'} this user?`)) return;
+    const confirmed = await showAlert.confirm(
+      'Confirm Action',
+      `Are you sure you want to ${currentStatus === 'blocked' ? 'unblock' : 'block'} this user?`
+    );
+
+    if (!confirmed) return;
 
     try {
       setProcessingId(userId);
@@ -83,72 +110,96 @@ export default function AdminDashboard() {
         setUsers(users.map(u => 
           u._id === userId ? { ...u, isBlocked: !u.isBlocked } : u
         ));
+        showToast.success(`User ${currentStatus === 'blocked' ? 'unblocked' : 'blocked'} successfully`);
       } else {
-        setError(response.message || 'Failed to update user');
+        showAlert.error('Error', response.message || 'Failed to update user');
       }
     } catch (_err) {
-      setError('Failed to update user');
+      showAlert.error('Error', 'Failed to update user');
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+    const confirmed = await showAlert.confirm(
+      'Delete User?',
+      'Are you sure you want to delete this user? This action cannot be undone.'
+    );
+
+    if (!confirmed) return;
 
     try {
       setProcessingId(userId);
       const response = await api.admin.deleteUser(userId);
       if (response.success) {
         setUsers(users.filter(u => u._id !== userId));
+        showToast.success('User deleted successfully');
       } else {
-        setError(response.message || 'Failed to delete user');
+        showAlert.error('Error', response.message || 'Failed to delete user');
       }
     } catch (_err) {
-      setError('Failed to delete user');
+      showAlert.error('Error', 'Failed to delete user');
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleDeleteHotel = async (hotelId) => {
-    if (!window.confirm('Are you sure you want to delete this hotel? This action cannot be undone.')) return;
+    const confirmed = await showAlert.confirm(
+      'Delete Hotel?',
+      'Are you sure you want to delete this hotel? This action cannot be undone.'
+    );
+
+    if (!confirmed) return;
 
     try {
       setProcessingId(hotelId);
       const response = await api.admin.deleteHotel(hotelId);
       if (response.success) {
         setHotels(hotels.filter(h => h._id !== hotelId));
+        showToast.success('Hotel deleted successfully');
       } else {
-        setError(response.message || 'Failed to delete hotel');
+        showAlert.error('Error', response.message || 'Failed to delete hotel');
       }
     } catch (_err) {
-      setError('Failed to delete hotel');
+      showAlert.error('Error', 'Failed to delete hotel');
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleDeleteRoom = async (roomId) => {
-    if (!window.confirm('Are you sure you want to delete this room? This action cannot be undone.')) return;
+    const confirmed = await showAlert.confirm(
+      'Delete Room?',
+      'Are you sure you want to delete this room? This action cannot be undone.'
+    );
+
+    if (!confirmed) return;
 
     try {
       setProcessingId(roomId);
       const response = await api.admin.deleteRoom(roomId);
       if (response.success) {
         setRooms(rooms.filter(r => r._id !== roomId));
+        showToast.success('Room deleted successfully');
       } else {
-        setError(response.message || 'Failed to delete room');
+        showAlert.error('Error', response.message || 'Failed to delete room');
       }
     } catch (_err) {
-      setError('Failed to delete room');
+      showAlert.error('Error', 'Failed to delete room');
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleApproveOwner = async (requestId) => {
-    if (!window.confirm('Are you sure you want to approve this owner request?')) return;
+    const confirmed = await showAlert.confirm(
+      'Approve Request?',
+      'Are you sure you want to approve this owner request?'
+    );
+
+    if (!confirmed) return;
 
     try {
       setProcessingId(requestId);
@@ -157,18 +208,24 @@ export default function AdminDashboard() {
         setOwnerRequests(ownerRequests.map(r =>
           r._id === requestId ? { ...r, status: 'approved' } : r
         ));
+        showToast.success('Owner request approved');
       } else {
-        setError(response.message || 'Failed to approve request');
+        showAlert.error('Error', response.message || 'Failed to approve request');
       }
     } catch (_err) {
-      setError('Failed to approve request');
+      showAlert.error('Error', 'Failed to approve request');
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleRejectOwner = async (requestId) => {
-    if (!window.confirm('Are you sure you want to reject this owner request?')) return;
+    const confirmed = await showAlert.confirm(
+      'Reject Request?',
+      'Are you sure you want to reject this owner request?'
+    );
+
+    if (!confirmed) return;
 
     try {
       setProcessingId(requestId);
@@ -177,11 +234,12 @@ export default function AdminDashboard() {
         setOwnerRequests(ownerRequests.map(r =>
           r._id === requestId ? { ...r, status: 'rejected' } : r
         ));
+        showToast.success('Owner request rejected');
       } else {
-        setError(response.message || 'Failed to reject request');
+        showAlert.error('Error', response.message || 'Failed to reject request');
       }
     } catch (_err) {
-      setError('Failed to reject request');
+      showAlert.error('Error', 'Failed to reject request');
     } finally {
       setProcessingId(null);
     }
@@ -191,7 +249,7 @@ export default function AdminDashboard() {
     e.preventDefault();
     
     if (!newDiscount.code || !newDiscount.description || !newDiscount.discountValue || !newDiscount.startDate || !newDiscount.endDate) {
-      setError('Please fill in all required fields');
+      showToast.error('Please fill in all required fields');
       return;
     }
 
@@ -211,29 +269,36 @@ export default function AdminDashboard() {
           usageLimit: ''
         });
         setShowDiscountForm(false);
+        showToast.success('Discount created successfully');
       } else {
-        setError(response.message || 'Failed to create discount');
+        showAlert.error('Error', response.message || 'Failed to create discount');
       }
     } catch (_err) {
-      setError('Failed to create discount');
+      showAlert.error('Error', 'Failed to create discount');
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleDeleteDiscount = async (discountId) => {
-    if (!window.confirm('Are you sure you want to delete this discount?')) return;
+    const confirmed = await showAlert.confirm(
+      'Delete Discount?',
+      'Are you sure you want to delete this discount?'
+    );
+
+    if (!confirmed) return;
 
     try {
       setProcessingId(discountId);
       const response = await api.discounts.delete(discountId);
       if (response.success) {
         setDiscounts(discounts.filter(d => d._id !== discountId));
+        showToast.success('Discount deleted successfully');
       } else {
-        setError(response.message || 'Failed to delete discount');
+        showAlert.error('Error', response.message || 'Failed to delete discount');
       }
     } catch (_err) {
-      setError('Failed to delete discount');
+      showAlert.error('Error', 'Failed to delete discount');
     } finally {
       setProcessingId(null);
     }
@@ -247,18 +312,24 @@ export default function AdminDashboard() {
         setDiscounts(discounts.map(d =>
           d._id === discountId ? { ...d, isActive: !d.isActive } : d
         ));
+        showToast.success(`Discount ${response.discount.isActive ? 'activated' : 'deactivated'}`);
       } else {
-        setError(response.message || 'Failed to toggle discount');
+        showAlert.error('Error', response.message || 'Failed to toggle discount');
       }
     } catch (_err) {
-      setError('Failed to toggle discount');
+      showAlert.error('Error', 'Failed to toggle discount');
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleApproveDiscountRequest = async (discountId) => {
-    if (!window.confirm('Are you sure you want to approve this discount request?')) return;
+    const confirmed = await showAlert.confirm(
+      'Approve Discount?',
+      'Are you sure you want to approve this discount request?'
+    );
+
+    if (!confirmed) return;
 
     try {
       setProcessingId(discountId);
@@ -267,11 +338,12 @@ export default function AdminDashboard() {
         setDiscounts(discounts.map(d =>
           d._id === discountId ? { ...d, requestStatus: 'approved', isActive: true } : d
         ));
+        showToast.success('Discount request approved');
       } else {
-        setError(response.message || 'Failed to approve discount request');
+        showAlert.error('Error', response.message || 'Failed to approve discount request');
       }
     } catch (_err) {
-      setError('Failed to approve discount request');
+      showAlert.error('Error', 'Failed to approve discount request');
     } finally {
       setProcessingId(null);
     }
@@ -285,7 +357,7 @@ export default function AdminDashboard() {
 
   const handleRejectDiscountRequest = async () => {
     if (!rejectionReason.trim()) {
-      setError('Please provide a reason for rejection');
+      showToast.error('Please provide a reason for rejection');
       return;
     }
 
@@ -299,15 +371,17 @@ export default function AdminDashboard() {
         setShowRejectModal(false);
         setRejectingDiscountId(null);
         setRejectionReason('');
+        showToast.success('Discount request rejected');
       } else {
-        setError(response.message || 'Failed to reject discount request');
+        showAlert.error('Error', response.message || 'Failed to reject discount request');
       }
     } catch (_err) {
-      setError('Failed to reject discount request');
+      showAlert.error('Error', 'Failed to reject discount request');
     } finally {
       setProcessingId(null);
     }
   };
+
 
   const filteredUsers = users.filter(user =>
     user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -354,43 +428,43 @@ export default function AdminDashboard() {
                 className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}
                 onClick={() => setActiveTab('overview')}
               >
-                📊 Overview
+                <PieChart size={20} /> Overview
               </button>
               <button
                 className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
                 onClick={() => setActiveTab('users')}
               >
-                👥 Users
+                <Users size={20} /> Users
               </button>
               <button
                 className={`nav-item ${activeTab === 'owner-requests' ? 'active' : ''}`}
                 onClick={() => setActiveTab('owner-requests')}
               >
-                🏨 Owner Requests
+                <UserPlus size={20} /> Owner Requests
               </button>
               <button
                 className={`nav-item ${activeTab === 'hotels' ? 'active' : ''}`}
                 onClick={() => setActiveTab('hotels')}
               >
-                🏢 Hotels
+                <Hotel size={20} /> Hotels
               </button>
               <button
                 className={`nav-item ${activeTab === 'rooms' ? 'active' : ''}`}
                 onClick={() => setActiveTab('rooms')}
               >
-                🛏️ Rooms
+                <Bed size={20} /> Rooms
               </button>
               <button
                 className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`}
                 onClick={() => setActiveTab('reports')}
               >
-                📈 Reports
+                <LayoutDashboard size={20} /> Reports
               </button>
               <button
                 className={`nav-item ${activeTab === 'discounts' ? 'active' : ''}`}
                 onClick={() => setActiveTab('discounts')}
               >
-                🏷️ Discounts
+                <Tag size={20} /> Discounts
               </button>
             </nav>
           </aside>
@@ -403,8 +477,8 @@ export default function AdminDashboard() {
                 <h2>Overview</h2>
                 <div className="stats-grid">
                   <div className="stat-card">
-                    <div className="stat-icon" style={{ backgroundColor: '#667eea' }}>
-                      👥
+                    <div className="stat-icon" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}>
+                      <Users size={28} />
                     </div>
                     <div className="stat-content">
                       <h3>Total Users</h3>
@@ -413,8 +487,8 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="stat-card">
-                    <div className="stat-icon" style={{ backgroundColor: '#48bb78' }}>
-                      🏨
+                    <div className="stat-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
+                      <Hotel size={28} />
                     </div>
                     <div className="stat-content">
                       <h3>Total Hotels</h3>
@@ -423,8 +497,8 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="stat-card">
-                    <div className="stat-icon" style={{ backgroundColor: '#f6ad55' }}>
-                      🛏️
+                    <div className="stat-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
+                      <Bed size={28} />
                     </div>
                     <div className="stat-content">
                       <h3>Total Rooms</h3>
@@ -433,8 +507,8 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="stat-card">
-                    <div className="stat-icon" style={{ backgroundColor: '#667eea' }}>
-                      📅
+                    <div className="stat-icon" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}>
+                      <Calendar size={28} />
                     </div>
                     <div className="stat-content">
                       <h3>Total Bookings</h3>
@@ -443,8 +517,8 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="stat-card">
-                    <div className="stat-icon" style={{ backgroundColor: '#e53e3e' }}>
-                      ❌
+                    <div className="stat-icon" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
+                      <X size={28} />
                     </div>
                     <div className="stat-content">
                       <h3>Cancelled Bookings</h3>
@@ -453,8 +527,8 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="stat-card">
-                    <div className="stat-icon" style={{ backgroundColor: '#38b6ff' }}>
-                      ⭐
+                    <div className="stat-icon" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+                      <Star size={28} />
                     </div>
                     <div className="stat-content">
                       <h3>Total Reviews</h3>
@@ -463,8 +537,8 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="stat-card">
-                    <div className="stat-icon" style={{ backgroundColor: '#f56565' }}>
-                      ⏳
+                    <div className="stat-icon" style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e' }}>
+                      <Clock size={28} />
                     </div>
                     <div className="stat-content">
                       <h3>Pending Requests</h3>
@@ -538,7 +612,7 @@ export default function AdminDashboard() {
                             <td>{u.email}</td>
                             <td>
                               <span className="role-badge-table">
-                                {u.role === 'owner' ? '🏨' : u.role === 'admin' ? '⚙️' : '👤'} {u.role}
+                                {u.role === 'owner' ? <Hotel size={14} /> : u.role === 'admin' ? <ShieldAlert size={14} /> : <Users size={14} />} {u.role}
                               </span>
                             </td>
                             <td>
@@ -553,14 +627,14 @@ export default function AdminDashboard() {
                                   onClick={() => handleBlockUser(u._id, u.isBlocked ? 'blocked' : 'active')}
                                   disabled={processingId === u._id}
                                 >
-                                  {processingId === u._id ? 'Processing...' : u.isBlocked ? 'Unblock' : 'Block'}
+                                  {processingId === u._id ? '...' : (u.isBlocked ? <UserCheck size={16} /> : <ShieldAlert size={16} />)} {u.isBlocked ? 'Unblock' : 'Block'}
                                 </button>
                                 <button
                                   className="action-btn delete-btn"
                                   onClick={() => handleDeleteUser(u._id)}
                                   disabled={processingId === u._id}
                                 >
-                                  {processingId === u._id ? 'Processing...' : 'Delete'}
+                                  {processingId === u._id ? '...' : <Trash2 size={16} />}
                                 </button>
                               </div>
                             </td>
@@ -591,7 +665,7 @@ export default function AdminDashboard() {
                         <div className="request-info">
                           <p><strong>Email:</strong> {request.userId?.email}</p>
                           <p><strong>Business Name:</strong> {request.businessName}</p>
-                          <p><strong>Document:</strong> <a href={`http://localhost:5000/${request.document.replace(/\\/g, '/')}`} target="_blank" rel="noopener noreferrer" style={{ color: '#3182ce', textDecoration: 'underline' }}>View Document</a></p>
+                          <p><strong>Document:</strong> <a href={`${API_BASE_URL}/${request.document.replace(/\\/g, '/')}`} target="_blank" rel="noopener noreferrer" style={{ color: '#3182ce', textDecoration: 'underline' }}>View Document</a></p>
                           <p><strong>Applied:</strong> {new Date(request.createdAt).toLocaleDateString()}</p>
                         </div>
                         <div className="request-actions">
@@ -651,15 +725,23 @@ export default function AdminDashboard() {
 
             {activeTab === 'hotels' && (
               <div className="hotels-section">
-                <div className="hotels-header">
-                  <h2>Hotel Management</h2>
-                  <input
-                    type="text"
-                    className="search-input"
-                    placeholder="Search hotels by name..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+                <div className="hotels-header section-header-premium">
+                  <div className="header-titles">
+                    <h2>Hotel Management</h2>
+                    <span className="count-badge">{filteredHotels.length} Properties</span>
+                  </div>
+                  <div className="header-actions">
+                    <div className="search-wrapper">
+                      <Search size={18} className="search-icon-inside" />
+                      <input
+                        type="text"
+                        className="search-input-premium"
+                        placeholder="Search hotels by name..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {filteredHotels.length === 0 ? (
@@ -669,26 +751,44 @@ export default function AdminDashboard() {
                 ) : (
                   <div className="hotels-grid">
                     {filteredHotels.map(hotel => (
-                      <div key={hotel._id} className="hotel-card">
-                        <div className="hotel-header">
-                          <h3>{hotel.name}</h3>
-                          <span className={`active-badge ${hotel.isActive ? 'active' : 'inactive'}`}>
+                      <div key={hotel._id} className="hotel-card premium-hotel-card">
+                        <div className="hotel-premium-status">
+                          <span className={`status-pill ${hotel.isActive ? 'active' : 'inactive'}`}>
                             {hotel.isActive ? 'Active' : 'Inactive'}
                           </span>
                         </div>
-                        <div className="hotel-info">
-                          <p><strong>Owner:</strong> {hotel.ownerId?.name}</p>
-                          <p><strong>Location:</strong> {hotel.address?.city}, {hotel.address?.state}, {hotel.address?.country}</p>
-                          <p><strong>Rating:</strong> ⭐ {hotel.rating || 'Not rated'}</p>
-                          <p><strong>Description:</strong> {hotel.description || 'N/A'}</p>
+                        <div className="hotel-card-body">
+                          <h3 className="hotel-title">{hotel.name}</h3>
+                          <div className="hotel-meta">
+                            <div className="meta-item">
+                              <Users size={16} />
+                              <span className="meta-label">Owner:</span>
+                              <span className="meta-value">{hotel.ownerId?.name || 'Unknown'}</span>
+                            </div>
+                            <div className="meta-item">
+                              <MapPin size={16} />
+                              <span className="meta-label">Location:</span>
+                              <span className="meta-value">{hotel.address?.city}, {hotel.address?.country}</span>
+                            </div>
+                            <div className="meta-item">
+                              <Star size={16} className="star-icon" />
+                              <span className="meta-label">Rating:</span>
+                              <span className="meta-value">{hotel.rating || 'N/A'}</span>
+                            </div>
+                          </div>
+                          <p className="hotel-description-compact">
+                            {hotel.description ? (hotel.description.length > 100 ? `${hotel.description.substring(0, 100)}...` : hotel.description) : 'No description available'}
+                          </p>
                         </div>
-                        <button
-                          className="action-btn delete-btn"
-                          onClick={() => handleDeleteHotel(hotel._id)}
-                          disabled={processingId === hotel._id}
-                        >
-                          {processingId === hotel._id ? 'Deleting...' : 'Delete Hotel'}
-                        </button>
+                        <div className="hotel-card-actions">
+                          <button
+                            className="action-btn delete-btn"
+                            onClick={() => handleDeleteHotel(hotel._id)}
+                            disabled={processingId === hotel._id}
+                          >
+                            {processingId === hotel._id ? '...' : <><Trash2 size={16} /> Delete Hotel</>}
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -741,8 +841,9 @@ export default function AdminDashboard() {
                                 className="action-btn delete-btn"
                                 onClick={() => handleDeleteRoom(room._id)}
                                 disabled={processingId === room._id}
+                                title="Delete Room"
                               >
-                                {processingId === room._id ? 'Deleting...' : 'Delete'}
+                                {processingId === room._id ? '...' : <Trash2 size={16} />}
                               </button>
                             </td>
                           </tr>
@@ -759,7 +860,10 @@ export default function AdminDashboard() {
                 <h2>System Reports & Analytics</h2>
                 <div className="reports-grid">
                   <div className="report-card">
-                    <h3>📊 User Analytics</h3>
+                    <div className="report-card-header">
+                      <Users size={24} className="report-icon users" />
+                      <h3>User Analytics</h3>
+                    </div>
                     <div className="analytics-data">
                       <div className="analytics-item">
                         <span>Total Users:</span>
@@ -781,7 +885,10 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="report-card">
-                    <h3>🏢 Property Analytics</h3>
+                    <div className="report-card-header">
+                      <Hotel size={24} className="report-icon hotels" />
+                      <h3>Property Insights</h3>
+                    </div>
                     <div className="analytics-data">
                       <div className="analytics-item">
                         <span>Total Hotels:</span>
@@ -799,7 +906,10 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="report-card">
-                    <h3>📅 Booking Analytics</h3>
+                    <div className="report-card-header">
+                      <Calendar size={24} className="report-icon bookings" />
+                      <h3>Booking Trends</h3>
+                    </div>
                     <div className="analytics-data">
                       <div className="analytics-item">
                         <span>Total Bookings:</span>
@@ -817,7 +927,10 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="report-card">
-                    <h3>⭐ Review Analytics</h3>
+                    <div className="report-card-header">
+                      <Star size={24} className="report-icon reviews" />
+                      <h3>Review Analytics</h3>
+                    </div>
                     <div className="analytics-data">
                       <div className="analytics-item">
                         <span>Total Reviews:</span>
@@ -859,14 +972,29 @@ export default function AdminDashboard() {
 
             {activeTab === 'discounts' && (
               <div className="discounts-section">
-                <div className="discounts-header">
-                  <h2>Discounts & Offers</h2>
-                  <button
-                    className="action-btn approve-btn"
-                    onClick={() => setShowDiscountForm(!showDiscountForm)}
-                  >
-                    {showDiscountForm ? '✕ Cancel' : '+ Create Discount'}
-                  </button>
+                <div className="discounts-header section-header-premium">
+                  <div className="header-titles">
+                    <h2>Discounts & Offers</h2>
+                    <span className="count-badge">{discounts.length} Active Rewards</span>
+                  </div>
+                  <div className="header-actions">
+                    <div className="search-wrapper">
+                      <Search size={18} className="search-icon-inside" />
+                      <input
+                        type="text"
+                        className="search-input-premium"
+                        placeholder="Search discounts by code..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                      />
+                    </div>
+                    <button
+                      className={`action-btn-premium ${showDiscountForm ? 'cancel-btn' : 'approve-btn'}`}
+                      onClick={() => setShowDiscountForm(!showDiscountForm)}
+                    >
+                      {showDiscountForm ? <><X size={18} /> Cancel</> : <><Plus size={18} /> Create Discount</>}
+                    </button>
+                  </div>
                 </div>
 
                 {showDiscountForm && (
@@ -962,10 +1090,10 @@ export default function AdminDashboard() {
 
                       <button
                         type="submit"
-                        className="action-btn approve-btn"
+                        className="action-btn-premium approve-btn"
                         disabled={processingId === 'creating-discount'}
                       >
-                        {processingId === 'creating-discount' ? 'Creating...' : 'Create Discount'}
+                        {processingId === 'creating-discount' ? 'Creating...' : <><Plus size={18} /> Create Discount</>}
                       </button>
                     </form>
                   </div>
@@ -992,35 +1120,65 @@ export default function AdminDashboard() {
                         </tr>
                       </thead>
                       <tbody>
-                        {discounts.map(discount => (
+                        {discounts.filter(d => 
+                          d.code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          d.description?.toLowerCase().includes(searchTerm.toLowerCase())
+                        ).map(discount => (
                           <tr key={discount._id}>
-                            <td><strong>{discount.code}</strong></td>
-                            <td>{discount.description}</td>
-                            <td>{discount.discountType === 'percentage' ? '%' : '$'}</td>
-                            <td>{discount.discountValue}</td>
-                            <td>${discount.minBookingAmount || 0}</td>
-                            <td>{discount.usageCount}{discount.usageLimit ? `/${discount.usageLimit}` : '/∞'}</td>
-                            <td>{new Date(discount.endDate).toLocaleDateString()}</td>
+                            <td className="discount-code-cell">
+                              <div className="code-badge">{discount.code}</div>
+                            </td>
+                            <td className="discount-desc-cell">{discount.description}</td>
                             <td>
-                              <span className={`status-badge ${discount.isActive ? 'active' : 'blocked'}`}>
+                              <span className={`type-pill ${discount.discountType}`}>
+                                {discount.discountType === 'percentage' ? '%' : '$'}
+                              </span>
+                            </td>
+                            <td className="value-cell">
+                              <strong>{discount.discountType === 'percentage' ? `${discount.discountValue}%` : `$${discount.discountValue}`}</strong>
+                            </td>
+                            <td><span className="min-amount-badge">${discount.minBookingAmount || 0}+</span></td>
+                            <td>
+                              <div className="usage-progress">
+                                <div className="usage-stats">{discount.usageCount}{discount.usageLimit ? `/${discount.usageLimit}` : '/∞'}</div>
+                                {discount.usageLimit && (
+                                  <div className="progress-bar-small">
+                                    <div 
+                                      className="progress-fill-small" 
+                                      style={{ width: `${Math.min((discount.usageCount / discount.usageLimit) * 100, 100)}%` }}
+                                    ></div>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="date-cell">
+                              <div className="date-info">
+                                <Calendar size={14} />
+                                {new Date(discount.endDate).toLocaleDateString()}
+                              </div>
+                            </td>
+                            <td>
+                              <span className={`status-badge-premium ${discount.isActive ? 'active' : 'blocked'}`}>
                                 {discount.isActive ? 'Active' : 'Inactive'}
                               </span>
                             </td>
-                            <td>
-                              <div className="action-buttons">
+                            <td className="actions-cell">
+                              <div className="compact-actions">
                                 <button
-                                  className={`action-btn ${discount.isActive ? 'block-btn' : 'unblock-btn'}`}
+                                  className={`icon-action-btn ${discount.isActive ? 'disable' : 'enable'}`}
                                   onClick={() => handleToggleDiscount(discount._id)}
                                   disabled={processingId === discount._id}
+                                  title={discount.isActive ? 'Disable Discount' : 'Enable Discount'}
                                 >
-                                  {processingId === discount._id ? 'Processing...' : discount.isActive ? 'Disable' : 'Enable'}
+                                  {processingId === discount._id ? '...' : (discount.isActive ? <Clock size={18} /> : <CheckCircle size={18} />)}
                                 </button>
                                 <button
-                                  className="action-btn delete-btn"
+                                  className="icon-action-btn delete"
                                   onClick={() => handleDeleteDiscount(discount._id)}
                                   disabled={processingId === discount._id}
+                                  title="Delete Discount"
                                 >
-                                  {processingId === discount._id ? 'Deleting...' : 'Delete'}
+                                  {processingId === discount._id ? '...' : <Trash2 size={18} />}
                                 </button>
                               </div>
                             </td>
@@ -1032,78 +1190,46 @@ export default function AdminDashboard() {
                 )}
               </div>
             )}
-
-            {/* {activeTab === 'owner-requests' && (
-              <div className="owner-requests-section">
-                <h2>Owner Requests</h2>
-                <p className="section-subtitle">Review and manage owner requests from users</p>
-
-                {ownerRequests.length === 0 ? (
-                  <div className="empty-state">
-                    <p>No owner requests yet</p>
-                  </div>
-                ) : (
-                  <div className="requests-table">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>User Name</th>
-                          <th>Email</th>
-                          <th>Business Name</th>
-                          <th>Document</th>
-                          <th>Status</th>
-                          <th>Submitted Date</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {ownerRequests.map((request) => (
-                          <tr key={request._id}>
-                            <td><strong>{request.userId?.name || 'N/A'}</strong></td>
-                            <td>{request.userId?.email || 'N/A'}</td>
-                            <td>{request.businessName || 'N/A'}</td>
-                            <td className="document-cell">{request.document?.substring(0, 50) || 'N/A'}{request.document?.length > 50 ? '...' : ''}</td>
-                            <td>
-                              <span className={`status-badge ${request.status}`}>
-                                {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                              </span>
-                            </td>
-                            <td>{new Date(request.createdAt).toLocaleDateString()}</td>
-                            <td>
-                              {request.status === 'pending' && (
-                                <div className="action-buttons">
-                                  <button
-                                    className="action-btn approve-btn"
-                                    onClick={() => handleApproveOwner(request._id)}
-                                    disabled={processingId === request._id}
-                                  >
-                                    {processingId === request._id ? 'Processing...' : 'Approve'}
-                                  </button>
-                                  <button
-                                    className="action-btn reject-btn"
-                                    onClick={() => handleRejectOwner(request._id)}
-                                    disabled={processingId === request._id}
-                                  >
-                                    {processingId === request._id ? 'Processing...' : 'Reject'}
-                                  </button>
-                                </div>
-                              )}
-                              {request.status !== 'pending' && (
-                                <span style={{ color: '#999' }}>—</span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            )} */}
-
           </main>
         </div>
       </div>
+
+
+      {showRejectModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Reject Discount</h2>
+            </div>
+            <div className="modal-body">
+              <p>Please provide a reason for rejecting this discount request:</p>
+              <textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Reason for rejection..."
+              />
+            </div>
+            <div className="modal-actions">
+              <button
+                className="action-btn delete-btn"
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setRejectingDiscountId(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="action-btn reject-btn"
+                onClick={handleRejectDiscountRequest}
+                disabled={processingId === rejectingDiscountId}
+              >
+                {processingId === rejectingDiscountId ? 'Processing...' : 'Reject Request'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

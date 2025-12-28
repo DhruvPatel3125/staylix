@@ -12,7 +12,7 @@ const razorpay = new Razorpay({
 exports.createPaymentOrder = async (req, res) => {
     try {
         const { amount } = req.body;
-        
+
         if (!amount) {
             return res.status(400).json({ success: false, message: "Amount is required" });
         }
@@ -38,7 +38,7 @@ exports.createPaymentOrder = async (req, res) => {
     }
 };
 
-exports.createBooking = async(req, res) => {
+exports.createBooking = async (req, res) => {
     try {
         const { roomId, checkIn, checkOut, guests, totalAmount, hotelId, ownerId, discountCode, paymentId, orderId, signature } = req.body;
 
@@ -72,17 +72,17 @@ exports.createBooking = async(req, res) => {
                 });
             }
         } else {
-             // For now, we might allow booking without payment if it's not enforced, 
-             // but the requirement says "add a rezorpay for bookinf successfully".
-             // So we should probably enforce it or at least support it.
-             // Let's assume payment is required if we are adding Razorpay.
-             // But for backward compatibility or testing, maybe we can make it optional?
-             // The prompt implies adding it. I'll make it required if env vars are set, or just proceed.
-             // Let's assume it's required for this task.
-             // However, to avoid breaking existing tests/flows if they don't send payment info, 
-             // I'll check if payment info is provided. If not, I'll proceed (maybe cash on arrival?).
-             // But the user asked to "add a rezorpay".
-             // I'll leave it as optional in backend but enforce in frontend.
+            // For now, we might allow booking without payment if it's not enforced, 
+            // but the requirement says "add a rezorpay for bookinf successfully".
+            // So we should probably enforce it or at least support it.
+            // Let's assume payment is required if we are adding Razorpay.
+            // But for backward compatibility or testing, maybe we can make it optional?
+            // The prompt implies adding it. I'll make it required if env vars are set, or just proceed.
+            // Let's assume it's required for this task.
+            // However, to avoid breaking existing tests/flows if they don't send payment info, 
+            // I'll check if payment info is provided. If not, I'll proceed (maybe cash on arrival?).
+            // But the user asked to "add a rezorpay".
+            // I'll leave it as optional in backend but enforce in frontend.
         }
 
         const checkInDate = new Date(checkIn);
@@ -137,7 +137,9 @@ exports.createBooking = async(req, res) => {
                 const isDateValid = now >= new Date(discount.startDate) && now <= new Date(discount.endDate);
                 const isUsageLimitOk = !discount.usageLimit || discount.usageCount < discount.usageLimit;
                 const isMinAmountMet = totalAmount >= discount.minBookingAmount;
-                const isHotelApplicable = !discount.applicableHotels || discount.applicableHotels.length === 0 || discount.applicableHotels.includes(hotelId);
+                const isHotelApplicable = !discount.applicableHotels ||
+                    discount.applicableHotels.length === 0 ||
+                    discount.applicableHotels.some(id => id.toString() === hotelId.toString());
 
                 if (isDateValid && isUsageLimitOk && isMinAmountMet && isHotelApplicable) {
                     // Calculate discount
@@ -189,7 +191,7 @@ exports.createBooking = async(req, res) => {
     }
 };
 
-exports.getUserBookings = async(req, res) => {
+exports.getUserBookings = async (req, res) => {
     try {
         const bookings = await Booking.find({ userId: req.user._id }).populate("hotelId roomId");
         res.json({
@@ -205,7 +207,7 @@ exports.getUserBookings = async(req, res) => {
     }
 };
 
-exports.getOwnerBookings = async(req, res) => {
+exports.getOwnerBookings = async (req, res) => {
     try {
         const bookings = await Booking.find({ ownerId: req.user._id }).populate("userId hotelId roomId");
         res.json({
@@ -221,7 +223,7 @@ exports.getOwnerBookings = async(req, res) => {
     }
 };
 
-exports.cancelBooking = async(req, res) => {
+exports.cancelBooking = async (req, res) => {
     try {
         if (!req.params.id) {
             return res.status(400).json({

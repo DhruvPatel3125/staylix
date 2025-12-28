@@ -1,22 +1,30 @@
 import { Link } from 'react-router-dom';
+import { MapPin, Star, ArrowRight, ShieldCheck } from 'lucide-react';
 import './HotelCard.css';
 import { getImageUrl } from '../utils/imageUrl';
 
 export default function HotelCard({ hotel }) {
   return (
     <Link to={`/hotel/${hotel._id}`} className="hotel-card-link">
-      <div className="hotel-card">
+      <div className="hotel-card premium-hotel-card-main">
         <div className="hotel-card-image">
           {hotel.photos?.[0] ? (
-            <img src={getImageUrl(hotel.photos[0])} alt={hotel.name} />
+            <img src={getImageUrl(hotel.photos[0])} alt={hotel.name} loading="lazy" />
           ) : (
-            <div className="hotel-placeholder">🏨</div>
+            <div className="hotel-placeholder">
+              <ShieldCheck size={48} />
+            </div>
           )}
+          <div className="card-badge-rating">
+            <Star size={14} fill="currentColor" />
+            <span>{hotel.rating || 'N/A'}</span>
+          </div>
         </div>
         <div className="hotel-card-content">
-          <h3>{hotel.name}</h3>
+          <h3 className="card-title">{hotel.name}</h3>
           <p className="hotel-location">
-            📍 {hotel.address?.city}, {hotel.address?.state}
+            <MapPin size={16} />
+            <span>{hotel.address?.city}, {hotel.address?.country || hotel.address?.state}</span>
           </p>
           <p className="hotel-description">{hotel.description}</p>
           <div className="hotel-amenities">
@@ -24,13 +32,14 @@ export default function HotelCard({ hotel }) {
               <span key={i} className="amenity-tag">{amenity}</span>
             ))}
             {hotel.amenities?.length > 3 && (
-              <span className="amenity-tag">+{hotel.amenities.length - 3}</span>
+              <span className="amenity-tag-plus">+{hotel.amenities.length - 3}</span>
             )}
           </div>
-          <div className="hotel-rating">
-            ⭐ {hotel.rating || 'Not rated'}
+          <div className="card-footer-actions">
+            <button className="view-details-btn-premium">
+              View Details <ArrowRight size={16} />
+            </button>
           </div>
-          <button className="view-details-btn">View Details</button>
         </div>
       </div>
     </Link>

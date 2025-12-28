@@ -1,6 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/authContext';
-import api from '../services/api';
+import { 
+  Calendar, 
+  Hotel, 
+  User as UserIcon, 
+  MapPin, 
+  Clock, 
+  Briefcase, 
+  Trash2, 
+  CheckCircle,
+  AlertCircle,
+  FileText,
+  Plus,
+  X
+} from 'lucide-react';
+import { showToast, showAlert } from '../utils/swal';
+import api, { API_BASE_URL } from '../services/api';
 import './UserDashbord.css';
 
 const formatDate = (dateValue) => {
@@ -52,7 +67,7 @@ export default function UserDashboard() {
 
   const handleSubmitOwnerRequest = async () => {
     if (!ownerRequestData.businessName.trim() || !ownerRequestData.document) {
-      setError('Please fill in all required fields');
+      showToast.error('Please fill in all required fields');
       return;
     }
 
@@ -67,18 +82,24 @@ export default function UserDashboard() {
         setOwnerRequest(response.request);
         setOwnerRequestData({ businessName: '', document: null });
         setShowOwnerRequestForm(false);
+        showAlert.success('Success', 'Your owner request has been submitted successfully!');
       } else {
-        setError(response.message || 'Failed to submit request');
+        showAlert.error('Error', response.message || 'Failed to submit request');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit request');
+      showAlert.error('Error', err.response?.data?.message || 'Failed to submit request');
     } finally {
       setSubmittingRequest(false);
     }
   };
 
   const handleCancelBooking = async (bookingId) => {
-    if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+    const confirmed = await showAlert.confirm(
+      'Are you sure?',
+      'Do you really want to cancel this booking? This action cannot be undone.'
+    );
+
+    if (!confirmed) return;
 
     try {
       setCancelingId(bookingId);
@@ -87,15 +108,17 @@ export default function UserDashboard() {
         setBookings(prev => prev.map(b => 
           b._id === bookingId ? { ...b, bookingStatus: 'cancelled' } : b
         ));
+        showToast.success('Booking cancelled successfully');
       } else {
-        setError(response.message || 'Failed to cancel booking');
+        showAlert.error('Error', response.message || 'Failed to cancel booking');
       }
     } catch {
-      setError('Failed to cancel booking');
+      showAlert.error('Error', 'Failed to cancel booking');
     } finally {
       setCancelingId(null);
     }
   };
+
 
   /* ---------- SAFE BOOKING STATUS ---------- */
   const getBookingStatus = (booking) => {
@@ -157,19 +180,19 @@ export default function UserDashboard() {
                 className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
                 onClick={() => setActiveTab('bookings')}
               >
-                📅 My Bookings
+                <Calendar size={20} /> My Bookings
               </button>
               <button
                 className={`nav-item ${activeTab === 'owner-request' ? 'active' : ''}`}
                 onClick={() => setActiveTab('owner-request')}
               >
-                🏢 Become Owner
+                <Briefcase size={20} /> Become Owner
               </button>
               <button
                 className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
                 onClick={() => setActiveTab('profile')}
               >
-                👤 Profile
+                <UserIcon size={20} /> Profile
               </button>
             </nav>
           </aside>
@@ -200,7 +223,7 @@ export default function UserDashboard() {
                             <div>
                               <h3>{booking.hotelId?.name || 'Hotel'}</h3>
                               <p className="booking-location">
-                                📍 {booking.hotelId?.location || 'Location not available'}
+                                <MapPin size={16} /> {booking.hotelId?.location || 'Location not available'}
                               </p>
                             </div>
 
@@ -249,8 +272,8 @@ export default function UserDashboard() {
                               disabled={cancelingId === booking._id}
                             >
                               {cancelingId === booking._id
-                                ? 'Cancelling...'
-                                : 'Cancel Booking'}
+                                ? '...'
+                                : <><Trash2 size={16} /> Cancel Booking</>}
                             </button>
                           )}
                         </div>
@@ -283,7 +306,7 @@ export default function UserDashboard() {
                         <span className="label">Document</span>
                         <span className="value">
                           <a 
-                            href={`http://localhost:5000/${ownerRequest.document.replace(/\\/g, '/')}`} 
+                            href={`${API_BASE_URL}/${ownerRequest.document.replace(/\\/g, '/')}`} 
                             target="_blank" 
                             rel="noopener noreferrer"
                             style={{ color: '#3182ce', textDecoration: 'underline' }}
@@ -299,17 +322,17 @@ export default function UserDashboard() {
                     </div>
                     {ownerRequest.status === 'pending' && (
                       <p className="pending-message">
-                        ⏳ Your request is under review. Admin will approve or reject it soon.
+                        <Clock size={16} /> Your request is under review. Admin will approve or reject it soon.
                       </p>
                     )}
                     {ownerRequest.status === 'approved' && (
                       <p className="approved-message" style={{ color: '#48bb78', marginTop: '12px' }}>
-                        ✅ Congratulations! Your request has been approved. You can now manage hotels and rooms.
+                        <CheckCircle size={16} /> Congratulations! Your request has been approved. You can now manage hotels and rooms.
                       </p>
                     )}
                     {ownerRequest.status === 'rejected' && (
                       <p className="rejected-message" style={{ color: '#f56565', marginTop: '12px' }}>
-                        ❌ Your request was rejected. Please contact support for more information.
+                        <X size={16} /> Your request was rejected. Please contact support for more information.
                       </p>
                     )}
                   </div>
@@ -318,55 +341,56 @@ export default function UserDashboard() {
                     <div className="request-form-container">
                       {!showOwnerRequestForm ? (
                         <button
-                          className="submit-btn"
+                          className="submit-btn-premium"
                           onClick={() => setShowOwnerRequestForm(true)}
-                          style={{ padding: '12px 24px', fontSize: '16px' }}
                         >
-                          📝 Submit Owner Request
+                          <FileText size={20} /> Submit Owner Application
                         </button>
                       ) : (
                         <div className="form-content">
                           <h3>Submit Your Application</h3>
-                          <div className="form-group">
-                            <label>Business Name *</label>
+                          <div className="premium-input-group">
+                            <label>Business Name</label>
                             <input
                               type="text"
+                              className="premium-input"
                               value={ownerRequestData.businessName}
                               onChange={(e) => setOwnerRequestData({ ...ownerRequestData, businessName: e.target.value })}
-                              placeholder="Enter your business name"
-                              style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e0' }}
+                              placeholder="Enter your business/hotel name"
+                              required
                             />
                           </div>
 
-                          <div className="form-group">
-                            <label>Document/License *</label>
+                          <div className="premium-input-group">
+                            <label>Identity/Business Document (PDF or Image)</label>
                             <input
                               type="file"
+                              className="premium-input"
                               onChange={(e) => setOwnerRequestData({ ...ownerRequestData, document: e.target.files[0] })}
-                              accept="image/*,.pdf"
-                              style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid #cbd5e0' }}
+                              required
+                              accept=".pdf,image/*"
                             />
-                            <small style={{ display: 'block', marginTop: '5px', color: '#718096' }}>
-                              Upload your business license or proof of ownership (Image or PDF)
+                            <small style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', display: 'block' }}>
+                              Upload your business license or proof of ownership
                             </small>
                           </div>
 
-                          <div className="form-actions" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                          <div className="form-actions" style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
                             <button
-                              className="submit-btn"
+                              className="submit-btn-premium"
                               onClick={handleSubmitOwnerRequest}
                               disabled={submittingRequest}
                               style={{ flex: 1 }}
                             >
-                              {submittingRequest ? 'Submitting...' : '✓ Submit Request'}
+                              {submittingRequest ? 'Submitting...' : <><CheckCircle size={20} /> Submit Application</>}
                             </button>
                             <button
                               className="cancel-btn"
                               onClick={() => setShowOwnerRequestForm(false)}
                               disabled={submittingRequest}
-                              style={{ flex: 1 }}
+                              style={{ flex: 1, width: 'auto' }}
                             >
-                              Cancel
+                              <X size={20} /> Cancel
                             </button>
                           </div>
                         </div>

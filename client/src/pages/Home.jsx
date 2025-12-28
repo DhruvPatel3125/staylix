@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { useAuth } from '../context/authContext';
+import { MapPin, Search, Star, Filter } from 'lucide-react';
 import api from '../services/api';
 import HotelCard from '../components/HotelCard';
 import './Home.css';
@@ -89,13 +90,15 @@ export default function Home() {
 
       <div className="search-filters-section">
         <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search hotels by name or description..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
+          <div className="search-wrapper">
+            <input
+              type="text"
+              placeholder="Search hotels by name, city or description..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
         </div>
 
         <div className="filters-container">

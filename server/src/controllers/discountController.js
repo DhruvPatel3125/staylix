@@ -234,9 +234,8 @@ exports.toggleDiscountStatus = async (req, res) => {
 
     res.json({
       success: true,
-      message: `Discount ${
-        discount.isActive ? "activated" : "deactivated"
-      } successfully`,
+      message: `Discount ${discount.isActive ? "activated" : "deactivated"
+        } successfully`,
       discount,
     });
   } catch (error) {
@@ -463,7 +462,10 @@ exports.validateDiscount = async (req, res) => {
       discount.applicableHotels &&
       discount.applicableHotels.length > 0
     ) {
-      if (!discount.applicableHotels.includes(hotelId)) {
+      const isApplicable = discount.applicableHotels.some(
+        (id) => id.toString() === hotelId.toString()
+      );
+      if (!isApplicable) {
         return res.status(400).json({
           success: false,
           message: "Discount code not applicable to this hotel",

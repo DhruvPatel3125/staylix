@@ -1,275 +1,337 @@
-/* ---------- GLOBAL ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --secondary-gradient: linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.04);
+}
+
 .hotel-details-container {
-  max-width: 1200px;
-  margin: auto;
-  padding: 20px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 8rem 2rem 4rem;
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  background: #f8fafc;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.04) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.04) 0px, transparent 50%);
 }
 
 .loading-container,
 .error-container {
   text-align: center;
-  padding: 60px;
-  font-size: 18px;
-  color: #555;
+  padding: 10rem 2rem;
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  font-weight: 600;
 }
 
-/* ---------- HEADER ---------- */
+/* ---------- CINEMATIC HEADER ---------- */
 .hotel-header {
   display: flex;
-  gap: 24px;
-  margin-bottom: 40px;
-  flex-wrap: wrap;
+  gap: 4rem;
+  margin-bottom: 5rem;
+  align-items: center;
+  animation: fadeInDown 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hotel-main-image {
-  width: 420px;
-  height: 280px;
+  width: 550px;
+  height: 400px;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: 40px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
+  transition: transform 0.5s ease;
 }
 
-.hotel-info {
+.hotel-main-image:hover {
+  transform: scale(1.02);
+}
+
+.hotel-info-premium {
   flex: 1;
 }
 
-.hotel-info h1 {
-  margin-bottom: 8px;
-  font-size: 28px;
+.hotel-title-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
 }
 
-.location {
-  color: #666;
-  margin-bottom: 12px;
+.hotel-name-display {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: var(--text-primary);
+  letter-spacing: -2px;
+  line-height: 1.1;
 }
 
-.description {
-  margin-bottom: 16px;
-  line-height: 1.5;
-  color: #444;
+.hotel-rating-badge-top {
+  background: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #f59e0b;
+  font-weight: 800;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  font-size: 1.1rem;
 }
 
-.amenities {
+.location-premium {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  color: #6366f1;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+.description-premium {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--text-secondary);
+  margin-bottom: 2.5rem;
+  max-width: 700px;
+}
+
+.amenities-premium {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: 1rem;
 }
 
-.amenity-badge {
-  background: #edf2f7;
-  padding: 6px 10px;
-  border-radius: 20px;
-  font-size: 13px;
-}
-
-.rating {
-  font-weight: 600;
-  color: #f59e0b;
-}
-
-/* ---------- CONTENT ---------- */
-.hotel-content {
+.amenity-badge-premium {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 0.8rem 1.4rem;
+  border-radius: 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
   display: flex;
-  flex-direction: column;
-  gap: 40px;
+  align-items: center;
+  gap: 0.6rem;
+  transition: all 0.3s ease;
 }
 
-/* ---------- ROOMS ---------- */
+.amenity-badge-premium:hover {
+  transform: translateY(-4px);
+  background: white;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* ---------- CONTENT LAYOUT ---------- */
+.hotel-content {
+  display: grid;
+  gap: 6rem;
+}
+
 .rooms-section h2,
 .reviews-section h2 {
-  margin-bottom: 16px;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 2.5rem;
+  letter-spacing: -1px;
 }
 
 .rooms-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 3rem;
 }
 
-.no-rooms,
-.no-reviews {
-  color: #666;
-}
-
-/* ---------- REVIEWS ---------- */
+/* ---------- REVIEWS PREMIUM ---------- */
 .reviews-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 2rem;
 }
 
-.review-item {
-  padding: 16px;
-  background: #f9fafb;
-  border-radius: 10px;
+.review-item-premium {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 32px;
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(0, 0, 0, 0.01);
+  transition: all 0.3s ease;
+}
+
+.review-item-premium:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+.reviewer-meta {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.reviewer-avatar {
+  width: 50px;
+  height: 50px;
+  background: var(--primary-gradient);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.reviewer-name {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--text-primary);
 }
 
 .review-header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 6px;
-  font-weight: 600;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.review-rating-pill {
+  background: #fffbeb;
+  color: #f59e0b;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 800;
+  font-size: 0.9rem;
 }
 
 .review-comment {
-  color: #444;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  font-size: 1.05rem;
 }
 
-/* ---------- MODAL ---------- */
+/* ---------- MODAL GLASSMORPHISM ---------- */
 .modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 1000;
 }
 
 .modal-content {
-  background: #fff;
-  width: 100%;
-  max-width: 480px;
-  border-radius: 14px;
-  padding: 24px;
-  position: relative;
-  max-height: 90vh;
-  overflow-y: auto;
+  background: var(--glass-bg);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid var(--glass-border);
+  padding: 3rem;
+  border-radius: 40px;
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.2);
+  max-width: 550px;
 }
 
-.close-btn {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  border: none;
-  background: none;
-  font-size: 24px;
-  cursor: pointer;
+.modal-content h3 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  letter-spacing: -1px;
 }
 
 .booking-price {
-  font-weight: bold;
-  margin-bottom: 16px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #4f46e5;
+  margin-bottom: 2.5rem;
 }
 
-/* ---------- FORM ---------- */
-.form-group {
-  margin-bottom: 16px;
-  display: flex;
-  flex-direction: column;
+.form-group input, .date-picker-input {
+  background: white;
+  border: 2px solid #e2e8f0;
+  padding: 1rem 1.25rem;
+  border-radius: 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
-.form-group label {
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-
-.form-group input {
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 14px;
-}
-
-.form-group input:focus {
+.form-group input:focus, .date-picker-input:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 5px rgba(79, 70, 229, 0.1);
   outline: none;
-  border-color: #667eea;
 }
 
-/* ---------- DISCOUNT ---------- */
 .discount-apply-btn {
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: none;
-  background: #667eea;
-  color: #fff;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.discount-apply-btn:disabled {
-  background: #aaa;
-  cursor: not-allowed;
-}
-
-.discount-error {
-  color: #e53e3e;
-  font-size: 13px;
-  margin-top: 4px;
-}
-
-.discount-success {
-  color: #38a169;
-  font-size: 13px;
-  margin-top: 4px;
-}
-
-/* ---------- PRICE BREAKDOWN ---------- */
-.price-breakdown {
-  background: #f7fafc;
-  border-radius: 10px;
-  padding: 16px;
-  margin-top: 12px;
-  margin-bottom: 16px;
-}
-
-.price-breakdown-item {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.price-breakdown-item.discount {
-  color: #e53e3e;
-}
-
-.price-breakdown-item.total {
-  font-weight: bold;
-  font-size: 16px;
-}
-
-/* ---------- SUBMIT ---------- */
-.booking-submit-btn {
-  width: 100%;
-  padding: 12px;
-  background: #48bb78;
+  background: var(--text-primary);
   color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  cursor: pointer;
+  padding: 0 1.5rem;
+  border-radius: 16px;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.discount-apply-btn:hover:not(:disabled) {
+  background: #334155;
+  transform: translateY(-2px);
+}
+
+.price-breakdown {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 24px;
+  padding: 2rem;
+  border: 1px solid white;
+}
+
+.price-breakdown-item span {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.price-breakdown-item.total span {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.booking-submit-btn {
+  background: var(--primary-gradient);
+  font-weight: 800;
+  padding: 1.2rem;
+  border-radius: 20px;
+  box-shadow: 0 15px 30px rgba(79, 70, 229, 0.3);
+  margin-top: 1rem;
+  transition: all 0.3s ease;
 }
 
 .booking-submit-btn:hover {
-  background: #38a169;
+  transform: translateY(-4px);
+  filter: brightness(1.1);
+  box-shadow: 0 20px 40px rgba(79, 70, 229, 0.4);
 }
 
-.date-picker-input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  font-size: 14px;
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.date-picker-input:focus {
-  outline: none;
-  border-color: #667eea;
-}
-
-.react-datepicker-wrapper {
-  width: 100%;
-}
-
-/* ---------- RESPONSIVE ---------- */
-@media (max-width: 768px) {
-  .hotel-header {
-    flex-direction: column;
-  }
-
-  .hotel-main-image {
-    width: 100%;
-    height: 240px;
-  }
+@media (max-width: 900px) {
+  .hotel-header { flex-direction: column; text-align: center; gap: 2rem; }
+  .hotel-main-image { width: 100%; height: 300px; border-radius: 30px; }
+  .hotel-name-display { font-size: 2.5rem; }
+  .hotel-title-section { flex-direction: column; align-items: center; gap: 1rem; }
+  .description-premium { margin-left: auto; margin-right: auto; }
+  .amenities-premium { justify-content: center; }
+  .reviews-list { grid-template-columns: 1fr; }
 }

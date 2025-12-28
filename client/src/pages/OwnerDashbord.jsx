@@ -1,5 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/authContext';
+import { 
+  Plus, 
+  MapPin, 
+  Trash2, 
+  Edit3, 
+  LayoutDashboard, 
+  Hotel as HotelIcon, 
+  Bed, 
+  Calendar, 
+  TrendingUp,
+  X,
+  Camera,
+  CheckCircle,
+  Briefcase
+} from 'lucide-react';
+import { showToast, showAlert } from '../utils/swal';
 import api from '../services/api';
 import { getImageUrl } from '../utils/imageUrl';
 import './OwnerDashbord.css';
@@ -108,7 +124,7 @@ export default function OwnerDashboard() {
 
   const handleSaveHotel = async () => {
     if (!formData.name || !formData.city || !formData.state || !formData.country) {
-      setError('Please fill in all required fields (Name, City, State, Country)');
+      showToast.error('Please fill in all required fields (Name, City, State, Country)');
       return;
     }
 
@@ -145,11 +161,13 @@ export default function OwnerDashboard() {
         response = await api.hotels.update(editingHotel._id, submitData);
         if (response.success) {
           setHotels(hotels.map(h => h._id === editingHotel._id ? response.hotel : h));
+          showToast.success('Hotel updated successfully');
         }
       } else {
         response = await api.hotels.create(submitData);
         if (response.success) {
           setHotels([...hotels, response.hotel]);
+          showToast.success('Hotel created successfully');
         }
       }
 
@@ -219,7 +237,7 @@ export default function OwnerDashboard() {
 
   const handleSaveRoom = async () => {
     if (!roomFormData.hotelId || !roomFormData.title || !roomFormData.pricePerNight || !roomFormData.totalRooms || roomFormData.availableRooms === '') {
-      setError('Please fill in all required fields');
+      showToast.error('Please fill in all required fields');
       return;
     }
 
@@ -249,11 +267,13 @@ export default function OwnerDashboard() {
         response = await api.rooms.update(editingRoom._id, submitData);
         if (response.success) {
           setRooms(rooms.map(r => r._id === editingRoom._id ? response.room : r));
+          showToast.success('Room updated successfully');
         }
       } else {
         response = await api.rooms.create(submitData);
         if (response.success) {
           setRooms([...rooms, response.room]);
+          showToast.success('Room created successfully');
         }
       }
 
@@ -261,32 +281,39 @@ export default function OwnerDashboard() {
         setShowRoomForm(false);
         setError(null);
       } else {
-        setError(response.message || 'Failed to save room');
+        showAlert.error('Error', response.message || 'Failed to save room');
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save room');
+      showAlert.error('Error', err.response?.data?.message || 'Failed to save room');
     } finally {
       setProcessingId(null);
     }
   };
 
   const handleDeleteRoom = async (roomId) => {
-    if (!window.confirm('Are you sure you want to delete this room?')) return;
+    const confirmed = await showAlert.confirm(
+      'Delete Room?',
+      'Are you sure you want to delete this room?'
+    );
+
+    if (!confirmed) return;
 
     try {
       setProcessingId(roomId);
       const response = await api.rooms.delete(roomId);
       if (response.success) {
         setRooms(rooms.filter(r => r._id !== roomId));
+        showToast.success('Room deleted successfully');
       } else {
-        setError(response.message || 'Failed to delete room');
+        showAlert.error('Error', response.message || 'Failed to delete room');
       }
     } catch (_err) {
-      setError('Failed to delete room');
+      showAlert.error('Error', 'Failed to delete room');
     } finally {
       setProcessingId(null);
     }
   };
+
 
   const handleToggleRoomAvailability = async (roomId) => {
     try {
@@ -366,33 +393,32 @@ export default function OwnerDashboard() {
                 className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}
                 onClick={() => setActiveTab('overview')}
               >
-                📊 Overview
+                <TrendingUp size={20} /> Overview
               </button>
               <button
                 className={`nav-item ${activeTab === 'hotels' ? 'active' : ''}`}
                 onClick={() => setActiveTab('hotels')}
               >
-                🏨 My Hotels
+                <HotelIcon size={20} /> My Hotels
               </button>
               <button
                 className={`nav-item ${activeTab === 'rooms' ? 'active' : ''}`}
                 onClick={() => setActiveTab('rooms')}
               >
-                🛏️ My Rooms
+                <Bed size={20} /> My Rooms
               </button>
               <button
                 className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
                 onClick={() => setActiveTab('bookings')}
               >
-                📅 Bookings
+                <Calendar size={20} /> Bookings
               </button>
               <button
                 className={`nav-item ${activeTab === 'revenue' ? 'active' : ''}`}
                 onClick={() => setActiveTab('revenue')}
               >
-                💰 Revenue Report
+                <Briefcase size={20} /> Revenue Report
               </button>
-
             </nav>
           </aside>
 
@@ -404,8 +430,8 @@ export default function OwnerDashboard() {
                 <h2>Overview</h2>
                 <div className="stats-grid">
                   <div className="stat-card">
-                    <div className="stat-icon" style={{ backgroundColor: '#667eea' }}>
-                      🏨
+                    <div className="stat-icon" style={{ background: 'rgba(102, 126, 234, 0.1)', color: '#667eea' }}>
+                      <HotelIcon size={28} />
                     </div>
                     <div className="stat-content">
                       <h3>Total Hotels</h3>
@@ -414,8 +440,8 @@ export default function OwnerDashboard() {
                   </div>
 
                   <div className="stat-card">
-                    <div className="stat-icon" style={{ backgroundColor: '#48bb78' }}>
-                      🛏️
+                    <div className="stat-icon" style={{ background: 'rgba(72, 187, 120, 0.1)', color: '#48bb78' }}>
+                      <Bed size={28} />
                     </div>
                     <div className="stat-content">
                       <h3>Total Rooms</h3>
@@ -424,8 +450,8 @@ export default function OwnerDashboard() {
                   </div>
 
                   <div className="stat-card">
-                    <div className="stat-icon" style={{ backgroundColor: '#f6ad55' }}>
-                      📅
+                    <div className="stat-icon" style={{ background: 'rgba(246, 173, 85, 0.1)', color: '#f6ad55' }}>
+                      <Calendar size={28} />
                     </div>
                     <div className="stat-content">
                       <h3>Total Bookings</h3>
@@ -434,8 +460,8 @@ export default function OwnerDashboard() {
                   </div>
 
                   <div className="stat-card">
-                    <div className="stat-icon" style={{ backgroundColor: '#e53e3e' }}>
-                      ❌
+                    <div className="stat-icon" style={{ background: 'rgba(229, 62, 62, 0.1)', color: '#e53e3e' }}>
+                      <X size={28} />
                     </div>
                     <div className="stat-content">
                       <h3>Cancelled Bookings</h3>
@@ -444,8 +470,8 @@ export default function OwnerDashboard() {
                   </div>
 
                   <div className="stat-card">
-                    <div className="stat-icon" style={{ backgroundColor: '#38b6ff' }}>
-                      💰
+                    <div className="stat-icon" style={{ background: 'rgba(56, 182, 255, 0.1)', color: '#38b6ff' }}>
+                      <Briefcase size={28} />
                     </div>
                     <div className="stat-content">
                       <h3>Total Revenue</h3>
@@ -459,9 +485,9 @@ export default function OwnerDashboard() {
             {activeTab === 'hotels' && (
               <div className="hotels-section">
                 <div className="section-header">
-                  <h2>My Hotels</h2>
+                  <h2><HotelIcon /> My Hotels</h2>
                   <button className="add-btn" onClick={handleAddHotel}>
-                    ➕ Add New Hotel
+                    <Plus size={20} /> Add New Hotel
                   </button>
                 </div>
 
@@ -605,7 +631,7 @@ export default function OwnerDashboard() {
                         <div className="hotel-info">
                           <h3>{hotel.name}</h3>
                           <p className="location">
-                            📍 {hotel.address?.city}, {hotel.address?.state}, {hotel.address?.country}
+                            <MapPin size={16} /> {hotel.address?.city}, {hotel.address?.state}
                           </p>
                           {hotel.description && (
                             <p className="description">{hotel.description}</p>
@@ -628,21 +654,21 @@ export default function OwnerDashboard() {
                             <span>🛏️ {rooms.filter(r => r.hotelId?._id === hotel._id).length} rooms</span>
                           </div>
                         </div>
-                        <div className="hotel-actions">
-                          <button
-                            className="edit-btn"
-                            onClick={() => handleEditHotel(hotel)}
-                          >
-                            ✏️ Edit
-                          </button>
-                          <button
-                            className="delete-btn"
-                            onClick={() => handleDeleteHotel(hotel._id)}
-                            disabled={processingId === hotel._id}
-                          >
-                            {processingId === hotel._id ? '...' : '🗑️ Delete'}
-                          </button>
-                        </div>
+                          <div className="hotel-actions">
+                            <button
+                              className="edit-btn"
+                              onClick={() => handleEditHotel(hotel)}
+                            >
+                              <Edit3 size={16} /> Edit
+                            </button>
+                            <button
+                              className="delete-btn"
+                              onClick={() => handleDeleteHotel(hotel._id)}
+                              disabled={processingId === hotel._id}
+                            >
+                              {processingId === hotel._id ? '...' : <><Trash2 size={16} /> Delete</>}
+                            </button>
+                          </div>
                       </div>
                     ))}
                   </div>
@@ -653,9 +679,9 @@ export default function OwnerDashboard() {
             {activeTab === 'rooms' && (
               <div className="rooms-section">
                 <div className="section-header">
-                  <h2>My Rooms</h2>
+                  <h2><Bed size={24} /> My Rooms</h2>
                   <button className="add-btn" onClick={handleAddRoom}>
-                    ➕ Add New Room
+                    <Plus size={20} /> Add New Room
                   </button>
                 </div>
 
@@ -824,20 +850,20 @@ export default function OwnerDashboard() {
                             onClick={() => handleToggleRoomAvailability(room._id)}
                             disabled={processingId === room._id}
                           >
-                            {processingId === room._id ? '...' : room.isAvailable ? 'Deactivate' : 'Activate'}
+                            {processingId === room._id ? '...' : (room.isAvailable ? 'Deactivate' : 'Activate')}
                           </button>
                           <button
                             className="action-btn edit-btn"
                             onClick={() => handleEditRoom(room)}
                           >
-                            ✏️ Edit
+                            <Edit3 size={16} /> Edit
                           </button>
                           <button
                             className="action-btn delete-btn"
                             onClick={() => handleDeleteRoom(room._id)}
                             disabled={processingId === room._id}
                           >
-                            {processingId === room._id ? '...' : '🗑️'}
+                            <Trash2 size={16} />
                           </button>
                         </div>
                       </div>

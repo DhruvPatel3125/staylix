@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { showToast, showAlert } from '../utils/swal';
 import './ContactUs.css';
 
 export default function ContactUs() {
@@ -20,105 +21,136 @@ export default function ContactUs() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
     console.log('Form submitted:', formData);
+    showToast.success('We have received your message!');
     setSubmitted(true);
     setFormData({ name: '', email: '', subject: '', message: '' });
   };
 
+
   return (
     <div className="contact-us-container">
-      <div className="contact-header">
-        <h1>Contact Us</h1>
-        <p>We'd love to hear from you. Get in touch with us!</p>
+      <div className="contact-hero">
+        <div className="hero-overlay">
+          <h1>Let's Connect</h1>
+          <p>Have questions or feedback? We're here to help you every step of the way.</p>
+        </div>
       </div>
 
-      <div className="contact-content">
-        <div className="contact-info">
-          <div className="info-card">
-            <h3>📍 Visit Us</h3>
-            <p>123 Staylix Tower, Tech Park</p>
-            <p>Bangalore, Karnataka 560001</p>
-            <p>India</p>
-          </div>
+      <div className="contact-grid">
+        {/* Contact info side */}
+        <div className="contact-info-panel">
+          <div className="info-wrap">
+            <h2>Contact Information</h2>
+            <p className="info-sub">Our team is available 24/7 to assist you. Reach out through any of these channels.</p>
+            
+            <div className="contact-methods">
+              <div className="method-item">
+                <div className="method-icon">📍</div>
+                <div className="method-text">
+                  <h3>Headquarters</h3>
+                  <p>123 Staylix Tower, Tech Park, Bangalore, India 560001</p>
+                </div>
+              </div>
 
-          <div className="info-card">
-            <h3>📞 Call Us</h3>
-            <p>Support: +91 1800-123-4567</p>
-            <p>Office: +91 80-1234-5678</p>
-          </div>
+              <div className="method-item">
+                <div className="method-icon">📞</div>
+                <div className="method-text">
+                  <h3>Phone Support</h3>
+                  <p>Support: +91 1800-123-4567</p>
+                  <p>Office: +91 80-1234-5678</p>
+                </div>
+              </div>
 
-          <div className="info-card">
-            <h3>✉️ Email Us</h3>
-            <p>support@staylix.com</p>
-            <p>business@staylix.com</p>
+              <div className="method-item">
+                <div className="method-icon">✉️</div>
+                <div className="method-text">
+                  <h3>Email Address</h3>
+                  <p>support@staylix.com</p>
+                  <p>partnership@staylix.com</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="social-links">
+              <span className="social-icon">𝕏</span>
+              <span className="social-icon">🔗</span>
+              <span className="social-icon">📸</span>
+              <span className="social-icon">📘</span>
+            </div>
           </div>
         </div>
 
-        <div className="contact-form-section">
-          <h2>Send us a Message</h2>
+        {/* Form panel side */}
+        <div className="contact-form-panel">
           {submitted ? (
-            <div className="success-message">
-              <h3>Thank you for contacting us!</h3>
-              <p>We have received your message and will get back to you shortly.</p>
-              <button onClick={() => setSubmitted(false)} className="reset-btn">Send another message</button>
+            <div className="success-overlay">
+              <div className="success-card">
+                <div className="success-icon">✓</div>
+                <h3>Message Sent Successfully!</h3>
+                <p>One of our representatives will get back to you within 24 hours.</p>
+                <button onClick={() => setSubmitted(false)} className="return-btn">Send Another Message</button>
+              </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="contact-form">
-              <div className="form-group">
-                <label htmlFor="name">Name</label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  placeholder="Your Name"
-                />
-              </div>
+            <div className="form-card">
+              <h2>Send us a Message</h2>
+              <form onSubmit={handleSubmit} className="premium-form">
+                <div className="form-row">
+                  <div className="form-group">
+                    <label>Full Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                      placeholder=""
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Email Address</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      required
+                      placeholder=""
+                    />
+                  </div>
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="email">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  placeholder="your.email@example.com"
-                />
-              </div>
+                <div className="form-group">
+                  <label>Subject</label>
+                  <input
+                    type="text"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    required
+                    placeholder=""
+                  />
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="subject">Subject</label>
-                <input
-                  type="text"
-                  id="subject"
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  required
-                  placeholder="What is this regarding?"
-                />
-              </div>
+                <div className="form-group">
+                  <label>Your Message</label>
+                  <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
+                    placeholder=""
+                    rows="6"
+                  ></textarea>
+                </div>
 
-              <div className="form-group">
-                <label htmlFor="message">Message</label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
-                  placeholder="Your message here..."
-                  rows="5"
-                ></textarea>
-              </div>
-
-              <button type="submit" className="submit-btn">Send Message</button>
-            </form>
+                <button type="submit" className="glow-submit-btn">
+                  Send Message
+                  <span className="btn-arrow">→</span>
+                </button>
+              </form>
+            </div>
           )}
         </div>
       </div>

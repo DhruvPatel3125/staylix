@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import { useAuth } from '../context/authContext';
+import { Mail, Lock } from 'lucide-react';
 import './Auth.css';
 
 export default function Login() {
@@ -19,56 +21,82 @@ export default function Login() {
     try {
       const response = await login(email, password);
       if (response.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Welcome back!',
+          text: 'Welcome back to Staylix!',
+          timer: 2000,
+          showConfirmButton: false
+        });
         navigate('/');
       } else {
-        setError(response.message || 'Login failed');
+        const msg = response.message || 'Login failed';
+        setError(msg);
+        Swal.fire({
+          icon: 'error',
+          title: 'Login Failed',
+          text: msg
+        });
       }
     } catch (err) {
-      setError(err.message || 'An error occurred');
+      const msg = err.message || 'An error occurred';
+      setError(msg);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: msg
+      });
     } finally {
       setLoading(false);
     }
   };
 
+
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1>Login to Staylix</h1>
+        <h1>Welcome Back</h1>
         
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="error-message">⚠️ {error}</div>}
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="your@email.com"
-            />
+            <label htmlFor="email">Email Address</label>
+            <div className="input-wrapper">
+              <Mail className="input-icon" size={20} />
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder=""
+              />
+            </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-            />
+            <div className="input-wrapper">
+              <Lock className="input-icon" size={20} />
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder=""
+              />
+            </div>
           </div>
 
           <button type="submit" disabled={loading} className="submit-btn">
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? 'Authenticating...' : 'Sign In'}
           </button>
         </form>
 
         <p className="auth-link">
-          Don't have an account? <Link to="/register">Register here</Link>
+          New to Staylix? <Link to="/register">Create an account</Link>
         </p>
       </div>
     </div>

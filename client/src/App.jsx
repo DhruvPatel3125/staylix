@@ -14,13 +14,12 @@ import AboutUs from './pages/AboutUs';
 import ContactUs from './pages/ContactUs';
 
 
-import './App.css';
-
 function App() {
   return (
     <Router>
       <AuthProvider>
         <Navbar />
+
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home />} />

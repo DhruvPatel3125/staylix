@@ -2,6 +2,21 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { 
+  MapPin, 
+  Star, 
+  ShieldCheck, 
+  Clock, 
+  Users, 
+  ChevronRight, 
+  X, 
+  CheckCircle, 
+  Info,
+  Calendar,
+  CreditCard,
+  Tag
+} from 'lucide-react';
+import { showToast } from '../utils/swal';
 import { useAuth } from '../context/authContext';
 import api from '../services/api';
 import RoomCard from '../components/RoomCard';
@@ -56,7 +71,7 @@ export default function HotelDetails() {
     }
 
     if (user && hotel.ownerId && user._id === hotel.ownerId) {
-      alert("You cannot book a room in your own hotel");
+      showToast.error("You cannot book a room in your own hotel");
       return;
     }
 
@@ -67,6 +82,7 @@ export default function HotelDetails() {
   const handleValidateDiscount = async () => {
     if (!bookingData.discountCode) {
       setDiscountError('Please enter a discount code');
+      showToast.error('Please enter a discount code');
       return;
     }
 
@@ -98,9 +114,11 @@ export default function HotelDetails() {
       if (response.success) {
         setDiscountInfo(response.discount);
         setDiscountError('');
+        showToast.success(`Discount applied: ${response.discount.code}`);
       } else {
         setDiscountInfo(null);
         setDiscountError(response.message || 'Invalid discount code');
+        showToast.error(response.message || 'Invalid discount code');
       }
     } catch (err) {
       setDiscountInfo(null);
@@ -113,7 +131,7 @@ export default function HotelDetails() {
   const handleSubmitBooking = async (e) => {
     e.preventDefault();
     if (!selectedRoom || !bookingData.checkIn || !bookingData.checkOut) {
-      alert('Please fill all booking details');
+      showToast.error('Please fill all booking details');
       return;
     }
 
@@ -129,12 +147,12 @@ export default function HotelDetails() {
       const orderRes = await api.bookings.createPaymentOrder(finalAmount);
       
       if (!orderRes.success) {
-        alert('Failed to initiate payment');
+        showToast.error('Failed to initiate payment');
         return;
       }
 
       const options = {
-        key: "rzp_test_Dz9hd6AMtKfCZE", // Replace with your actual key
+        key: import.meta.env.VITE_RAZORPAY_KEY || "rzp_test_Dz9hd6AMtKfCZE", // Use env var
         amount: orderRes.order.amount,
         currency: "INR",
         name: "Staylix",
@@ -159,17 +177,17 @@ export default function HotelDetails() {
             });
 
             if (bookingRes.success) {
-              alert('Booking successful!');
+              showToast.success('Congratulations! Your booking is successful.');
               setShowBookingForm(false);
               setSelectedRoom(null);
               setBookingData({ checkIn: null, checkOut: null, guests: 1, discountCode: '' });
               setDiscountInfo(null);
               setDiscountError('');
             } else {
-              alert(bookingRes.message || 'Booking failed');
+              showToast.error(bookingRes.message || 'Booking failed');
             }
           } catch (err) {
-            alert(err.response?.data?.message || 'Error creating booking');
+            showToast.error(err.response?.data?.message || 'Error creating booking');
           }
         },
         prefill: {
@@ -184,14 +202,15 @@ export default function HotelDetails() {
 
       const rzp1 = new window.Razorpay(options);
       rzp1.on('payment.failed', function (response){
-        alert(response.error.description);
+        showToast.error(response.error.description || 'Payment failed');
       });
       rzp1.open();
 
     } catch (err) {
-      alert('Error initiating booking process');
+      showToast.error('Error initiating booking process');
     }
   };
+
 
   if (loading) {
     return <div className="loading-container">Loading hotel details...</div>;
@@ -207,16 +226,26 @@ export default function HotelDetails() {
         {hotel.photos?.[0] && (
           <img src={getImageUrl(hotel.photos[0])} alt={hotel.name} className="hotel-main-image" />
         )}
-        <div className="hotel-info">
-          <h1>{hotel.name}</h1>
-          <p className="location">📍 {hotel.address?.city}, {hotel.address?.state}, {hotel.address?.country}</p>
-          <p className="description">{hotel.description}</p>
-          <div className="amenities">
+        <div className="hotel-info-premium">
+          <div className="hotel-title-section">
+            <h1 className="hotel-name-display">{hotel.name}</h1>
+            <div className="hotel-rating-badge-top">
+              <Star size={16} fill="currentColor" />
+              <span>{hotel.rating || 'N/A'}</span>
+            </div>
+          </div>
+          <p className="location-premium">
+            <MapPin size={18} /> 
+            <span>{hotel.address?.city}, {hotel.address?.state}, {hotel.address?.country}</span>
+          </p>
+          <p className="description-premium">{hotel.description}</p>
+          <div className="amenities-premium">
             {hotel.amenities?.map((amenity, i) => (
-              <span key={i} className="amenity-badge">{amenity}</span>
+              <span key={i} className="amenity-badge-premium">
+                <ShieldCheck size={14} /> {amenity}
+              </span>
             ))}
           </div>
-          <div className="rating">⭐ Rating: {hotel.rating || 'Not rated'}</div>
         </div>
       </div>
 
@@ -245,10 +274,18 @@ export default function HotelDetails() {
           ) : (
             <div className="reviews-list">
               {reviews.map((review) => (
-                <div key={review._id} className="review-item">
+                <div key={review._id} className="review-item-premium">
                   <div className="review-header">
-                    <span className="reviewer-name">{review.userId?.name}</span>
-                    <span className="review-rating">⭐ {review.rating}/5</span>
+                    <div className="reviewer-meta">
+                      <div className="reviewer-avatar">
+                        {review.userId?.name?.charAt(0) || 'U'}
+                      </div>
+                      <span className="reviewer-name">{review.userId?.name}</span>
+                    </div>
+                    <div className="review-rating-pill">
+                      <Star size={14} fill="currentColor" />
+                      <span>{review.rating}/5</span>
+                    </div>
                   </div>
                   <p className="review-comment">{review.comment}</p>
                 </div>

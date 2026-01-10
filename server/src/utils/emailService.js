@@ -1,20 +1,19 @@
 const nodemailer = require('nodemailer');
 
 const sendEmail = async (options) => {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        console.error("Missing SMTP Credentials in Environment Variables!");
+        throw new Error("SMTP_USER or SMTP_PASS is missing");
+    }
+
     // 1) Create a transporter
+    // Using 'service: gmail' automatically handles host, port (587 or 465), and security settings.
     const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: process.env.SMTP_PORT || 465,
-        secure: true, // use SSL
+        service: 'gmail',
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
-        connectionTimeout: 10000, // 10 seconds
-        greetingTimeout: 10000,
-        tls: {
-            rejectUnauthorized: false
-        }
     });
 
     // 2) Define the email options

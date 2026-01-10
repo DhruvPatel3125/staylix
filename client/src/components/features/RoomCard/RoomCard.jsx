@@ -1,5 +1,5 @@
 import './RoomCard.css';
-import { getImageUrl } from '../utils/imageUrl';
+import { getImageUrl } from '../../../utils/imageUrl';
 
 export default function RoomCard({ room, onBooking }) {
   const isAvailable = room.availableRooms > 0;

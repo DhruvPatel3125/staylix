@@ -16,11 +16,12 @@ import {
   CreditCard,
   Tag
 } from 'lucide-react';
-import { showToast } from '../utils/swal';
-import { useAuth } from '../context/authContext';
-import api from '../services/api';
-import RoomCard from '../components/RoomCard';
-import { getImageUrl } from '../utils/imageUrl';
+import { showToast } from '../../utils/swal';
+import { useAuth } from '../../context/authContext';
+import api from '../../services/api';
+import RoomCard from '../../components/features/RoomCard/RoomCard';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { getImageUrl } from '../../utils/imageUrl';
 import './HotelDetails.css';
 
 export default function HotelDetails() {

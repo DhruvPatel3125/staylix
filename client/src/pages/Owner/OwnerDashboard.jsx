@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../../context/authContext';
 import { 
   Plus, 
   MapPin, 
@@ -15,10 +15,10 @@ import {
   CheckCircle,
   Briefcase
 } from 'lucide-react';
-import { showToast, showAlert } from '../utils/swal';
-import api from '../services/api';
-import { getImageUrl } from '../utils/imageUrl';
-import './OwnerDashbord.css';
+import { showToast, showAlert } from '../../utils/swal';
+import api from '../../services/api';
+import { getImageUrl } from '../../utils/imageUrl';
+import './OwnerDashboard.css';
 
 export default function OwnerDashboard() {
   const { user } = useAuth();

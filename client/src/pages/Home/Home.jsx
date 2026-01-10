@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../../context/authContext';
 import { MapPin, Search, Star, Filter } from 'lucide-react';
-import api from '../services/api';
-import HotelCard from '../components/HotelCard';
+import api from '../../services/api';
+import HotelCard from '../../components/features/HotelCard/HotelCard';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
 import './Home.css';
 
 export default function Home() {
@@ -131,6 +132,7 @@ export default function Home() {
               minDate={new Date()}
               placeholderText="Select date"
               className="filter-input"
+              portalId="root"
             />
           </div>
 
@@ -146,6 +148,7 @@ export default function Home() {
               minDate={checkInDate || new Date()}
               placeholderText="Select date"
               className="filter-input"
+              portalId="root"
             />
           </div>
 
@@ -180,7 +183,7 @@ export default function Home() {
       </div>
 
       {loading ? (
-        <div className="loading">Loading hotels...</div>
+        <LoadingSpinner />
       ) : filteredHotels.length === 0 ? (
         <div className="empty-state">
           <p>No hotels found matching your criteria</p>

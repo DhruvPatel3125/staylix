@@ -1,17 +1,17 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/authContext';
-import Navbar from './components/Navbar';
-import ProtectedRoute from './components/ProtectedRoute';
+import Navbar from './components/layout/Navbar/Navbar';
+import ProtectedRoute from './components/layout/ProtectedRoute';
 
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import HotelDetails from './pages/HotelDetails';
-import UserDashboard from './pages/UserDashbord';
-import AdminDashbord from './pages/AdminDashbord';
-import OwnerDashboard from './pages/OwnerDashbord';
-import AboutUs from './pages/AboutUs';
-import ContactUs from './pages/ContactUs';
+import Home from './pages/Home/Home';
+import Login from './pages/Auth/Login';
+import Register from './pages/Auth/Register';
+import HotelDetails from './pages/Hotel/HotelDetails';
+import UserDashboard from './pages/User/UserDashboard';
+import AdminDashboard from './pages/Admin/AdminDashboard';
+import OwnerDashboard from './pages/Owner/OwnerDashboard';
+import AboutUs from './pages/Static/AboutUs';
+import ContactUs from './pages/Static/ContactUs';
 
 
 function App() {
@@ -51,7 +51,7 @@ function App() {
               path="/admin-dashboard" 
               element={
                 <ProtectedRoute requiredRole="admin">
-                  <AdminDashbord/>
+                  <AdminDashboard/>
                 </ProtectedRoute>
               } 
             />

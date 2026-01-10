@@ -1,0 +1,278 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.04);
+}
+
+.home-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 6rem 2rem 4rem;
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  background: #f8fafc;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(124, 58, 237, 0.05) 0px, transparent 50%);
+}
+
+/* Premium Header Styling */
+.home-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  animation: fadeInDown 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.home-header h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -1px;
+  margin-bottom: 1rem;
+  line-height: 1.1;
+}
+
+.home-header p {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Glassmorphism Search Section */
+.search-filters-section {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  padding: 2.5rem;
+  border-radius: 32px;
+  margin-bottom: 4rem;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.08);
+  animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 100;
+}
+
+/* Search Bar */
+.search-box {
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 1.2rem 1.8rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: white;
+  font-weight: 500;
+  color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+.search-input::placeholder {
+  color: #94a3b8;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Filters Grid */
+.filters-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  align-items: end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  position: relative;
+  z-index: 50;
+}
+
+.filter-group label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-left: 0.5rem;
+}
+
+/* Unified Filter Inputs */
+.filter-select,
+.filter-input {
+  height: 56px; /* Standardize height */
+  width: 100%;
+  padding: 0 1.25rem;
+  display: flex;
+  align-items: center;
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: white;
+  transition: all 0.3s ease;
+  color: var(--text-primary);
+  cursor: pointer;
+  appearance: none; /* Remove default arrow for custom styling if needed */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.2rem;
+}
+
+.filter-input {
+  background-image: none; /* Remove arrow for inputs */
+  padding: 1rem 1.25rem;
+}
+
+/* React DatePicker Override */
+.react-datepicker-wrapper { width: 100%; }
+.react-datepicker__input-container { width: 100%; }
+
+.filter-select:focus,
+.filter-input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+/* Hotels Grid */
+.hotels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 2.5rem;
+  padding: 1rem 0;
+}
+
+/* Loading & Empty States */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6rem;
+}
+
+.spinner {
+  animation: rotate 1s linear infinite;
+  color: #4f46e5;
+  width: 3rem;
+  height: 3rem;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 6rem 1rem;
+  background: white;
+  border-radius: 24px;
+  border: 2px dashed #e2e8f0;
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* DatePicker Dropdown Premium Styling */
+.react-datepicker {
+  font-family: 'Outfit', sans-serif !important;
+  border-radius: 20px !important;
+  border: none !important;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.15) !important;
+  padding: 1rem !important;
+  background: white !important;
+}
+
+.react-datepicker__header {
+  background: white !important;
+  border-bottom: 2px solid #f1f5f9 !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background: var(--primary-gradient) !important;
+  border-radius: 50% !important;
+  font-weight: 700 !important;
+}
+
+.react-datepicker__day:hover {
+  background: #f1f5f9 !important;
+  border-radius: 50% !important;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .home-container {
+    padding: 6rem 2rem 3rem;
+  }
+  
+  .hotels-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .home-container {
+    padding: 5rem 1rem 2rem;
+  }
+  
+  .home-header h1 {
+    font-size: 2.2rem;
+  }
+  
+  .search-filters-section {
+    padding: 1.5rem;
+    border-radius: 24px;
+  }
+  
+  .filters-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .filter-select, .filter-input {
+    font-size: 0.95rem;
+  }
+  
+  .hotels-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}

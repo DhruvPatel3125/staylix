@@ -1,6 +1,6 @@
 import React from 'react';
 import './AboutUs.css';
-import aboutHero from '../assets/about-hero.png';
+import aboutHero from '../../assets/about-hero.png';
 
 export default function AboutUs() {
   return (

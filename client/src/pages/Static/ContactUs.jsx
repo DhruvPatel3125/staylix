@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { showToast, showAlert } from '../utils/swal';
+import { showToast, showAlert } from '../../utils/swal';
 import './ContactUs.css';
 
 export default function ContactUs() {

@@ -1,0 +1,110 @@
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: inherit;
+  gap: 0.5rem;
+}
+
+.ui-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Variants */
+.btn-primary {
+  background: var(--primary, #667eea);
+  color: white;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--primary-dark, #5a67d8);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--secondary, #edf2f7);
+  color: var(--text-primary, #2d3748);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border-color, #e2e8f0);
+  color: var(--text-primary, #4a5568);
+}
+.btn-outline:hover:not(:disabled) {
+  border-color: var(--primary, #667eea);
+  color: var(--primary, #667eea);
+}
+
+.btn-danger {
+  background: #feb2b2;
+  color: #c53030;
+  background: rgba(254, 178, 178, 0.2);
+}
+.btn-danger:hover:not(:disabled) {
+  background: rgba(254, 178, 178, 0.4);
+}
+/* Solid danger */
+.btn-danger-solid {
+  background: #e53e3e;
+  color: white;
+}
+.btn-danger-solid:hover:not(:disabled) {
+  background: #c53030;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary, #718096);
+}
+.btn-ghost:hover:not(:disabled) {
+  background: rgba(0,0,0,0.05);
+  color: var(--text-primary, #2d3748);
+}
+
+/* Sizes */
+.btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  height: 32px;
+}
+.btn-md {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  height: 40px;
+}
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.125rem;
+  height: 48px;
+}
+
+.btn-icon-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Loader */
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

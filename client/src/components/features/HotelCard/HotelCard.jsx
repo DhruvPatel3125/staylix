@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Star, ArrowRight, ShieldCheck } from 'lucide-react';
 import './HotelCard.css';
-import { getImageUrl } from '../utils/imageUrl';
+import { getImageUrl } from '../../../utils/imageUrl';
 
 export default function HotelCard({ hotel }) {
   return (

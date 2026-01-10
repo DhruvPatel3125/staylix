@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../../context/authContext';
 import { 
   Users, 
   Hotel, 
@@ -21,9 +21,12 @@ import {
   MapPin,
   Plus
 } from 'lucide-react';
-import { showToast, showAlert } from '../utils/swal';
-import api, { API_BASE_URL } from '../services/api';
-import './AdminDashbord.css';
+import { showToast, showAlert } from '../../utils/swal';
+import api, { API_BASE_URL } from '../../services/api';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import Sidebar from '../../components/layout/Sidebar/Sidebar';
+import StatCard from '../../components/ui/StatCard';
+import './AdminDashboard.css';
 
 export default function AdminDashboard() {
   const { user } = useAuth();
@@ -398,8 +401,18 @@ export default function AdminDashboard() {
 
   const pendingRequests = ownerRequests.filter(r => r.status === 'pending');
 
+  const sidebarItems = [
+    { id: 'overview', label: 'Overview', icon: PieChart },
+    { id: 'users', label: 'Users', icon: Users },
+    { id: 'owner-requests', label: 'Owner Requests', icon: UserPlus },
+    { id: 'hotels', label: 'Hotels', icon: Hotel },
+    { id: 'rooms', label: 'Rooms', icon: Bed },
+    { id: 'reports', label: 'Reports', icon: LayoutDashboard },
+    { id: 'discounts', label: 'Discounts', icon: Tag }
+  ];
+
   if (loading) {
-    return <div className="admin-dashboard"><div className="loading">Loading dashboard...</div></div>;
+    return <LoadingSpinner fullPage />;
   }
 
   return (
@@ -411,63 +424,11 @@ export default function AdminDashboard() {
         </div>
 
         <div className="dashboard-content">
-          <aside className="dashboard-sidebar">
-            <div className="profile-card">
-              <div className="profile-avatar admin-avatar">
-                {user?.name?.charAt(0)?.toUpperCase() || 'A'}
-              </div>
-              <div className="profile-info">
-                <h3>{user?.name}</h3>
-                <p>{user?.email}</p>
-                <span className="role-badge admin-badge">Admin</span>
-              </div>
-            </div>
-
-            <nav className="dashboard-nav">
-              <button
-                className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`}
-                onClick={() => setActiveTab('overview')}
-              >
-                <PieChart size={20} /> Overview
-              </button>
-              <button
-                className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
-                onClick={() => setActiveTab('users')}
-              >
-                <Users size={20} /> Users
-              </button>
-              <button
-                className={`nav-item ${activeTab === 'owner-requests' ? 'active' : ''}`}
-                onClick={() => setActiveTab('owner-requests')}
-              >
-                <UserPlus size={20} /> Owner Requests
-              </button>
-              <button
-                className={`nav-item ${activeTab === 'hotels' ? 'active' : ''}`}
-                onClick={() => setActiveTab('hotels')}
-              >
-                <Hotel size={20} /> Hotels
-              </button>
-              <button
-                className={`nav-item ${activeTab === 'rooms' ? 'active' : ''}`}
-                onClick={() => setActiveTab('rooms')}
-              >
-                <Bed size={20} /> Rooms
-              </button>
-              <button
-                className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`}
-                onClick={() => setActiveTab('reports')}
-              >
-                <LayoutDashboard size={20} /> Reports
-              </button>
-              <button
-                className={`nav-item ${activeTab === 'discounts' ? 'active' : ''}`}
-                onClick={() => setActiveTab('discounts')}
-              >
-                <Tag size={20} /> Discounts
-              </button>
-            </nav>
-          </aside>
+          <Sidebar 
+            items={sidebarItems} 
+            activeTab={activeTab} 
+            onTabChange={setActiveTab} 
+          />
 
           <main className="dashboard-main">
             {error && <div className="error-banner">{error}</div>}
@@ -476,75 +437,55 @@ export default function AdminDashboard() {
               <div className="overview-section">
                 <h2>Overview</h2>
                 <div className="stats-grid">
-                  <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}>
-                      <Users size={28} />
-                    </div>
-                    <div className="stat-content">
-                      <h3>Total Users</h3>
-                      <p className="stat-value">{stats?.totalUsers || 0}</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
-                      <Hotel size={28} />
-                    </div>
-                    <div className="stat-content">
-                      <h3>Total Hotels</h3>
-                      <p className="stat-value">{stats?.totalHotels || 0}</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}>
-                      <Bed size={28} />
-                    </div>
-                    <div className="stat-content">
-                      <h3>Total Rooms</h3>
-                      <p className="stat-value">{stats?.totalRooms || 0}</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1' }}>
-                      <Calendar size={28} />
-                    </div>
-                    <div className="stat-content">
-                      <h3>Total Bookings</h3>
-                      <p className="stat-value">{stats?.totalBookings || 0}</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}>
-                      <X size={28} />
-                    </div>
-                    <div className="stat-content">
-                      <h3>Cancelled Bookings</h3>
-                      <p className="stat-value">{stats?.cancelledBookings || 0}</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
-                      <Star size={28} />
-                    </div>
-                    <div className="stat-content">
-                      <h3>Total Reviews</h3>
-                      <p className="stat-value">{stats?.totalReviews || 0}</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon" style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e' }}>
-                      <Clock size={28} />
-                    </div>
-                    <div className="stat-content">
-                      <h3>Pending Requests</h3>
-                      <p className="stat-value">{stats?.pendingOwnerRequests || 0}</p>
-                    </div>
-                  </div>
+                  <StatCard 
+                    title="Total Users" 
+                    value={stats?.totalUsers || 0} 
+                    icon={Users} 
+                    iconColor="#6366f1" 
+                    iconBg="rgba(99, 102, 241, 0.1)" 
+                  />
+                  <StatCard 
+                    title="Total Hotels" 
+                    value={stats?.totalHotels || 0} 
+                    icon={Hotel} 
+                    iconColor="#10b981" 
+                    iconBg="rgba(16, 185, 129, 0.1)" 
+                  />
+                  <StatCard 
+                    title="Total Rooms" 
+                    value={stats?.totalRooms || 0} 
+                    icon={Bed} 
+                    iconColor="#f59e0b" 
+                    iconBg="rgba(245, 158, 11, 0.1)" 
+                  />
+                  <StatCard 
+                    title="Total Bookings" 
+                    value={stats?.totalBookings || 0} 
+                    icon={Calendar} 
+                    iconColor="#6366f1" 
+                    iconBg="rgba(99, 102, 241, 0.1)" 
+                  />
+                  <StatCard 
+                    title="Cancelled Bookings" 
+                    value={stats?.cancelledBookings || 0} 
+                    icon={X} 
+                    iconColor="#ef4444" 
+                    iconBg="rgba(239, 68, 68, 0.1)" 
+                  />
+                  <StatCard 
+                    title="Total Reviews" 
+                    value={stats?.totalReviews || 0} 
+                    icon={Star} 
+                    iconColor="#3b82f6" 
+                    iconBg="rgba(59, 130, 246, 0.1)" 
+                  />
+                  <StatCard 
+                    title="Pending Requests" 
+                    value={stats?.pendingOwnerRequests || 0} 
+                    icon={Clock} 
+                    iconColor="#f43f5e" 
+                    iconBg="rgba(244, 63, 94, 0.1)" 
+                  />
                 </div>
 
                 <div className="summary-section">

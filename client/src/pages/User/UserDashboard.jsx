@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../context/authContext';
+import { useAuth } from '../../context/authContext';
 import { 
   Calendar, 
   Hotel, 
@@ -14,9 +14,9 @@ import {
   Plus,
   X
 } from 'lucide-react';
-import { showToast, showAlert } from '../utils/swal';
-import api, { API_BASE_URL } from '../services/api';
-import './UserDashbord.css';
+import { showToast, showAlert } from '../../utils/swal';
+import api, { API_BASE_URL } from '../../services/api';
+import './UserDashboard.css';
 
 const formatDate = (dateValue) => {
   if (!dateValue) return 'N/A';

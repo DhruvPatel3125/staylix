@@ -6,23 +6,29 @@ const sendEmail = async (options) => {
         throw new Error("SMTP_USER or SMTP_PASS is missing");
     }
 
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const port = Number(process.env.SMTP_PORT) || 465;
+
     // 1) Create a transporter
-    // Using 'service: gmail' automatically handles host, port (587 or 465), and security settings.
     const transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host,
+        port,
+        secure: port === 465, // true for 465, false for other ports
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
         },
+        logger: true, // Log to console
+        debug: true,  // Include SMTP traffic in logs
     });
 
     // 2) Define the email options
     const mailOptions = {
-        from: `${process.env.FROM_NAME || 'Staylix Support'} <${process.env.FROM_EMAIL || process.env.SMTP_USER}>`,
+        from: `"${process.env.FROM_NAME || 'Staylix Support'}" <${process.env.SMTP_USER}>`,
         to: options.email,
         subject: options.subject,
         text: options.message,
-        html: options.html, // Optional: for sending HTML emails
+        html: options.html,
     };
 
     // 3) Actually send the email

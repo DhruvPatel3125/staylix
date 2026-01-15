@@ -9,8 +9,8 @@ const sendEmail = async (options) => {
     const host = process.env.SMTP_HOST || 'smtp.gmail.com';
     const port = Number(process.env.SMTP_PORT) || 465;
 
-    // 1) Create a transporter
-    const transporter = nodemailer.createTransport({
+    // Build transporter options so we can optionally allow self-signed certs
+    const transportOptions = {
         host,
         port,
         secure: port === 465, // true for 465, false for other ports
@@ -20,7 +20,16 @@ const sendEmail = async (options) => {
         },
         logger: true, // Log to console
         debug: true,  // Include SMTP traffic in logs
-    });
+    };
+
+    // If EMAIL_ALLOW_SELF_SIGNED=true in env, allow self-signed certs (useful for testing or corporate proxies)
+    if (process.env.EMAIL_ALLOW_SELF_SIGNED === 'true') {
+        transportOptions.tls = { rejectUnauthorized: false };
+        console.warn('Email service: allowing self-signed TLS certificates (EMAIL_ALLOW_SELF_SIGNED=true)');
+    }
+
+    // 1) Create a transporter
+    const transporter = nodemailer.createTransport(transportOptions);
 
     // 2) Define the email options
     const mailOptions = {

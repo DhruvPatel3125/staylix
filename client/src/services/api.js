@@ -40,6 +40,16 @@ const api = {
     getMe: async () => {
       const response = await instance.get('/auth/me');
       return response.data;
+    },
+
+    forgotPassword: async (email) => {
+      const response = await instance.post('/auth/forgotpassword', { email });
+      return response.data;
+    },
+
+    resetPassword: async (token, password) => {
+      const response = await instance.put(`/auth/resetpassword/${token}`, { password });
+      return response.data;
     }
   },
 

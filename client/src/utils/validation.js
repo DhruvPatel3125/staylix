@@ -56,9 +56,20 @@ export const hotelSchema = Joi.object({
 });
 
 export const bookingSchema = Joi.object({
-    checkIn: Joi.date().required().greater('now').message('Check-in date must be in the future'),
-    checkOut: Joi.date().required().greater(Joi.ref('checkIn')).message('Check-out date must be after check-in'),
-    guests: Joi.number().min(1).required(),
+    checkIn: Joi.date().required().messages({
+        'any.required': 'Check-in date is required',
+        'date.base': 'Check-in must be a valid date',
+    }),
+    checkOut: Joi.date().required().greater(Joi.ref('checkIn')).messages({
+        'any.required': 'Check-out date is required',
+        'date.greater': 'Check-out date must be after check-in',
+        'date.base': 'Check-out must be a valid date',
+    }),
+    guests: Joi.number().min(1).required().messages({
+        'number.base': 'Guests must be a number',
+        'number.min': 'At least one guest is required',
+        'any.required': 'Guests is required',
+    }),
     discountCode: Joi.string().allow('').optional(),
 });
 

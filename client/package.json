@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.11.2",
     "axios": "^1.13.2",
     "joi": "^18.0.2",
     "lucide-react": "^0.562.0",
@@ -17,7 +18,9 @@
     "react-datepicker": "^9.1.0",
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",
+    "react-redux": "^9.2.0",
     "react-router-dom": "^7.10.1",
+    "react-toastify": "^11.0.5",
     "sweetalert2": "^11.26.17"
   },
   "devDependencies": {

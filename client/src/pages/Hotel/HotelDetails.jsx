@@ -22,6 +22,7 @@ import api from '../../services/api';
 import RoomCard from '../../components/features/RoomCard/RoomCard';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { getImageUrl } from '../../utils/imageUrl';
+import { validate, bookingSchema } from '../../utils/validation';
 import './HotelDetails.css';
 
 export default function HotelDetails() {
@@ -142,6 +143,20 @@ export default function HotelDetails() {
     const totalAmount = nights * selectedRoom.pricePerNight;
     
     const finalAmount = discountInfo ? discountInfo.finalAmount : totalAmount;
+
+    // Validate Booking Data
+    const validationErrors = validate(bookingSchema, {
+      checkIn: bookingData.checkIn,
+      checkOut: bookingData.checkOut,
+      guests: bookingData.guests,
+      discountCode: bookingData.discountCode
+    });
+
+    if (validationErrors) {
+      const firstError = Object.values(validationErrors)[0];
+      showToast.error(firstError);
+      return;
+    }
 
     try {
       // 1. Create Razorpay Order

@@ -100,6 +100,12 @@ export default function Login() {
             placeholder="••••••••"
           />
 
+          <div style={{ textAlign: 'right', marginBottom: '1rem' }}>
+            <Link to="/forgot-password" style={{ color: 'var(--secondary)', fontSize: '0.875rem', textDecoration: 'none' }}>
+              Forgot Password?
+            </Link>
+          </div>
+
           <Button 
             type="submit" 
             loading={loading} 

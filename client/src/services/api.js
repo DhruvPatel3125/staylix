@@ -301,6 +301,16 @@ const api = {
       const response = await instance.get('/discounts/active');
       return response.data;
     }
+  },
+  wishlist:{
+    toggle:async(hotelId) =>{
+      const response = await instance.post(`/wishlist/${hotelId}`);
+      return response.data
+    },
+    getMyWishlist:async () => {
+      const response = await instance.get("/wishlist");
+      return response.data
+    }
   }
 };
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { useAuth } from '../../context/authContext';
+import useAuth from '../../hooks/useAuth';
 import { Mail, Lock } from 'lucide-react';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
@@ -41,29 +41,20 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await login(formData.email, formData.password);
-      if (response.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Welcome back!',
-          text: 'Welcome back to Staylix!',
-          timer: 2000,
-          showConfirmButton: false
-        });
-        navigate('/');
-      } else {
-        const msg = response.message || 'Login failed';
-        Swal.fire({
-          icon: 'error',
-          title: 'Login Failed',
-          text: msg
-        });
-      }
+      await login(formData.email, formData.password);
+      Swal.fire({
+        icon: 'success',
+        title: 'Welcome back!',
+        text: 'Welcome back to Staylix!',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      navigate('/');
     } catch (err) {
-      const msg = err.message || 'An error occurred';
+      const msg = err || err?.message || 'An error occurred';
       Swal.fire({
         icon: 'error',
-        title: 'Error',
+        title: 'Login Failed',
         text: msg
       });
     } finally {

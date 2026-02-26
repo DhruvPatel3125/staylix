@@ -1,9 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
-import DatePicker from 'react-datepicker';
-import "react-datepicker/dist/react-datepicker.css";
-import { useAuth } from '../../context/authContext';
-import { MapPin, Search, Star, Filter } from 'lucide-react';
+import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import HotelCard from '../../components/features/HotelCard/HotelCard';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -12,13 +9,10 @@ import './Home.css';
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [hotels, setHotels] = useState([]);
-  const [filteredHotels, setFilteredHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
-  const [checkInDate, setCheckInDate] = useState(null);
-  const [checkOutDate, setCheckOutDate] = useState(null);
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState('name');
 
@@ -31,7 +25,7 @@ export default function Home() {
         } else {
           setError(response.message || 'Failed to fetch hotels');
         }
-      } catch (err) {
+      } catch {
         setError('Error fetching hotels');
       } finally {
         setLoading(false);
@@ -41,19 +35,21 @@ export default function Home() {
     fetchHotels();
   }, []);
 
-  useEffect(() => {
-    let result = hotels;
+  const filteredHotels = useMemo(() => {
+    let result = [...hotels];
 
     if (searchTerm) {
+      const term = searchTerm.toLowerCase();
       result = result.filter(hotel =>
-        hotel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        hotel.description.toLowerCase().includes(searchTerm.toLowerCase())
+        hotel.name?.toLowerCase().includes(term) ||
+        hotel.description?.toLowerCase().includes(term) ||
+        hotel.address?.city?.toLowerCase().includes(term)
       );
     }
 
     if (selectedCity) {
       result = result.filter(hotel =>
-        hotel.address?.city.toLowerCase() === selectedCity.toLowerCase()
+        hotel.address?.city?.toLowerCase() === selectedCity.toLowerCase()
       );
     }
 
@@ -67,7 +63,7 @@ export default function Home() {
       result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     }
 
-    setFilteredHotels(result);
+    return result;
   }, [hotels, searchTerm, selectedCity, minRating, sortBy]);
 
   const uniqueCities = [...new Set(hotels.map(h => h.address?.city).filter(Boolean))].sort();
@@ -118,38 +114,6 @@ export default function Home() {
                 </option>
               ))}
             </select>
-          </div>
-
-          <div className="filter-group">
-            <label htmlFor="check-in">Check-in:</label>
-            <DatePicker
-              id="check-in"
-              selected={checkInDate}
-              onChange={(date) => setCheckInDate(date)}
-              selectsStart
-              startDate={checkInDate}
-              endDate={checkOutDate}
-              minDate={new Date()}
-              placeholderText="Select date"
-              className="filter-input"
-              portalId="root"
-            />
-          </div>
-
-          <div className="filter-group">
-            <label htmlFor="check-out">Check-out:</label>
-            <DatePicker
-              id="check-out"
-              selected={checkOutDate}
-              onChange={(date) => setCheckOutDate(date)}
-              selectsEnd
-              startDate={checkInDate}
-              endDate={checkOutDate}
-              minDate={checkInDate || new Date()}
-              placeholderText="Select date"
-              className="filter-input"
-              portalId="root"
-            />
           </div>
 
           <div className="filter-group">

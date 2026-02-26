@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAuth } from '../../../context/authContext';
+import useAuth from '../../../hooks/useAuth';
 import './Sidebar.css';
 
 export default function Sidebar({ items, activeTab, onTabChange }) {

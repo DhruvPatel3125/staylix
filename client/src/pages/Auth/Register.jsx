@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { useAuth } from '../../context/authContext';
+import useAuth from '../../hooks/useAuth';
 import { User, Mail, Lock } from 'lucide-react';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
@@ -42,29 +42,21 @@ export default function Register() {
     setLoading(true);
 
     try {
-      const response = await register(formData.name, formData.email, formData.password, formData.role);
-      if (response.success) {
-        Swal.fire({
-          icon: 'success',
-          title: 'Success!',
-          text: 'Account created successfully!',
-          timer: 2000,
-          showConfirmButton: false
-        });
-        navigate('/');
-      } else {
-        const msg = response.message || 'Registration failed';
-        Swal.fire({
-          icon: 'error',
-          title: 'Oops...',
-          text: msg
-        });
-      }
+      await register(formData.name, formData.email, formData.password, formData.role);
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Account created successfully!',
+        timer: 2000,
+        showConfirmButton: false
+      });
+      navigate('/');
     } catch (err) {
-      const msg = err.message || 'An error occurred';
+      console.error('Registration error:', err);
+      const msg = typeof err === 'string' ? err : (err?.message || 'Registration failed');
       Swal.fire({
         icon: 'error',
-        title: 'Error',
+        title: 'Oops...',
         text: msg
       });
     } finally {

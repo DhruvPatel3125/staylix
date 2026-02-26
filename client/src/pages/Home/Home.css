@@ -10,7 +10,7 @@
 }
 
 .home-container {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 6rem 1.25rem 2rem;
   font-family: 'Outfit', sans-serif;
@@ -119,8 +119,7 @@
 }
 
 /* Unified Filter Inputs */
-.filter-select,
-.filter-input {
+.filter-select {
   height: 56px; /* Standardize height */
   width: 100%;
   padding: 0 0.9rem;
@@ -141,23 +140,7 @@
   background-size: 1.2rem;
 }
 
-.filter-input {
-  background-image: none; /* Remove arrow for inputs */
-  padding: 0.8rem 0.9rem;
-}
-
-/* Ensure datepicker popup appears above glass card and other elements */
-.react-datepicker-popper,
-.react-datepicker {
-  z-index: 9999 !important;
-}
-
-/* React DatePicker Override */
-.react-datepicker-wrapper { width: 100%; }
-.react-datepicker__input-container { width: 100%; }
-
-.filter-select:focus,
-.filter-input:focus {
+.filter-select:focus {
   outline: none;
   border-color: #4f46e5;
   box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
@@ -216,33 +199,6 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* DatePicker Dropdown Premium Styling */
-.react-datepicker {
-  font-family: 'Outfit', sans-serif !important;
-  border-radius: 20px !important;
-  border: none !important;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.15) !important;
-  padding: 1rem !important;
-  background: white !important;
-}
-
-.react-datepicker__header {
-  background: white !important;
-  border-bottom: 2px solid #f1f5f9 !important;
-}
-
-.react-datepicker__day--selected,
-.react-datepicker__day--keyboard-selected {
-  background: var(--primary-gradient) !important;
-  border-radius: 50% !important;
-  font-weight: 700 !important;
-}
-
-.react-datepicker__day:hover {
-  background: #f1f5f9 !important;
-  border-radius: 50% !important;
-}
-
 /* Responsive Design */
 @media (max-width: 1024px) {
   .home-container {
@@ -273,7 +229,7 @@
     gap: 1rem;
   }
   
-  .filter-select, .filter-input {
+  .filter-select {
     font-size: 0.95rem;
   }
   

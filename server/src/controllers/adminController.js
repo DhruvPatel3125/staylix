@@ -4,9 +4,9 @@ const Hotel = require('../models/hotel')
 const Room = require('../models/room')
 const OwnerRequest = require('../models/ownerRequest')
 
-exports.getAllUsers = async(req, res) => {
+exports.getAllUsers = async (req, res) => {
     try {
-        const users = await User.find().select("-passwordHash");// Exclude passwordHash field from the response
+        const users = await User.find({ role: { $ne: 'admin' } }).select("-passwordHash");// Exclude passwordHash field and admin users
         res.json({
             success: true,
             users
@@ -20,7 +20,7 @@ exports.getAllUsers = async(req, res) => {
     }
 };
 
-exports.blockUser = async(req, res) => {
+exports.blockUser = async (req, res) => {
     try {
         if (!req.params.id) {
             return res.status(400).json({
@@ -53,7 +53,7 @@ exports.blockUser = async(req, res) => {
     }
 };
 
-exports.deleteUser = async(req, res) => {
+exports.deleteUser = async (req, res) => {
     try {
         if (!req.params.id) {
             return res.status(400).json({
@@ -84,15 +84,15 @@ exports.deleteUser = async(req, res) => {
     }
 };
 
-exports.getDashboardStats = async(req, res) => {
+exports.getDashboardStats = async (req, res) => {
     try {
-        const totalUsers = await User.countDocuments();
+        const totalUsers = await User.countDocuments({ role: { $ne: 'admin' } });
         const cancelledBookings = await Booking.countDocuments({ bookingStatus: 'cancelled' });
         const totalBookings = await Booking.countDocuments({ bookingStatus: { $ne: 'cancelled' } });
         const totalHotels = await Hotel.countDocuments();
         const totalRooms = await Room.countDocuments();
-        const activeUsers = await User.countDocuments({ isBlocked: false });
-        const blockedUsers = await User.countDocuments({ isBlocked: true });
+        const activeUsers = await User.countDocuments({ isBlocked: false, role: { $ne: 'admin' } });
+        const blockedUsers = await User.countDocuments({ isBlocked: true, role: { $ne: 'admin' } });
         const verifiedOwners = await User.countDocuments({ role: 'owner' });
         const pendingOwnerRequests = await OwnerRequest.countDocuments({ status: 'pending' });
         const totalReviews = await require('../models/review').countDocuments().catch(() => 0);
@@ -111,7 +111,7 @@ exports.getDashboardStats = async(req, res) => {
                 activeUsers,
                 blockedUsers,
                 verifiedOwners,
-                unverifiedOwners: totalUsers - verifiedOwners - 1,
+                unverifiedOwners: totalUsers - verifiedOwners,
                 pendingOwnerRequests,
                 totalReviews: totalReviews || 0,
                 revenue: revenue[0]?.total || 0
@@ -126,7 +126,7 @@ exports.getDashboardStats = async(req, res) => {
     }
 };
 
-exports.getAllHotels = async(req, res) => {
+exports.getAllHotels = async (req, res) => {
     try {
         const hotels = await Hotel.find().populate('ownerId', 'name email');
         res.json({
@@ -142,7 +142,7 @@ exports.getAllHotels = async(req, res) => {
     }
 };
 
-exports.deleteHotel = async(req, res) => {
+exports.deleteHotel = async (req, res) => {
     try {
         if (!req.params.id) {
             return res.status(400).json({
@@ -173,7 +173,7 @@ exports.deleteHotel = async(req, res) => {
     }
 };
 
-exports.getAllRooms = async(req, res) => {
+exports.getAllRooms = async (req, res) => {
     try {
         const rooms = await Room.find().populate({
             path: 'hotelId',
@@ -192,7 +192,7 @@ exports.getAllRooms = async(req, res) => {
     }
 };
 
-exports.deleteRoom = async(req, res) => {
+exports.deleteRoom = async (req, res) => {
     try {
         if (!req.params.id) {
             return res.status(400).json({
@@ -223,7 +223,7 @@ exports.deleteRoom = async(req, res) => {
     }
 };
 
-exports.getOwnerRequests = async(req, res) => {
+exports.getOwnerRequests = async (req, res) => {
     try {
         const requests = await OwnerRequest.find().populate('userId', 'name email businessName');
         res.json({
@@ -239,7 +239,7 @@ exports.getOwnerRequests = async(req, res) => {
     }
 };
 
-exports.approveOwnerRequest = async(req, res) => {
+exports.approveOwnerRequest = async (req, res) => {
     try {
         if (!req.params.id) {
             return res.status(400).json({
@@ -280,7 +280,7 @@ exports.approveOwnerRequest = async(req, res) => {
     }
 };
 
-exports.rejectOwnerRequest = async(req, res) => {
+exports.rejectOwnerRequest = async (req, res) => {
     try {
         if (!req.params.id) {
             return res.status(400).json({

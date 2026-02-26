@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/authContext';
+import useAuth from '../../hooks/useAuth';
 import { 
   Plus, 
   MapPin, 
@@ -726,7 +726,7 @@ export default function OwnerDashboard() {
                         </select>
                       </div>
                       <div className="form-group">
-                        <label>Price Per Night ($) *</label>
+                        <label>Price Per Night (₹) *</label>
                         <input
                           type="number"
                           value={roomFormData.pricePerNight}
@@ -833,7 +833,7 @@ export default function OwnerDashboard() {
                           <div className="room-info">
                             <p><strong>Hotel:</strong> {room.hotelId?.name}</p>
                             <p><strong>Type:</strong> {room.roomType}</p>
-                            <p><strong>Price:</strong> ${room.pricePerNight}/night</p>
+                            <p><strong>Price:</strong> ₹{room.pricePerNight}/night</p>
                             <p><strong>Availability:</strong> {room.availableRooms}/{room.totalRooms}</p>
                             {room.amenities && room.amenities.length > 0 && (
                               <div className="room-amenities">
@@ -988,7 +988,7 @@ export default function OwnerDashboard() {
                             <tr key={room._id}>
                               <td><strong>{room.title}</strong></td>
                               <td>{room.roomType}</td>
-                              <td>${room.pricePerNight}</td>
+                              <td>₹{room.pricePerNight}</td>
                               <td>{roomBookings.length}</td>
                               <td className="revenue">₹{roomRevenue.toFixed(2)}</td>
                               <td className="revenue">₹{avgPerBooking.toFixed(2)}</td>

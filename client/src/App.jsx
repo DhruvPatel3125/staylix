@@ -1,8 +1,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/authContext';
 import Navbar from './components/layout/Navbar/Navbar';
 import ProtectedRoute from './components/layout/ProtectedRoute';
-
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { loadUser } from './store/slices/authSlice';
+import { fetchWishlist, clearWishlist } from './store/slices/wishlistSlice';
 import Home from './pages/Home/Home';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
@@ -17,9 +19,25 @@ import ContactUs from './pages/Static/ContactUs';
 
 
 function App() {
+  const dispatch = useDispatch();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
+  useEffect(() => {
+    if (localStorage.getItem('token')) {
+      dispatch(loadUser());
+    }
+  }, [dispatch]);
+  
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchWishlist());
+    } else {
+      dispatch(clearWishlist());
+    }
+  }, [dispatch, isAuthenticated]);
+
   return (
     <Router>
-      <AuthProvider>
         <Navbar />
 
         <main className="main-content">
@@ -63,7 +81,6 @@ function App() {
             <Route path="*" element={<div style={{padding: '2rem', textAlign: 'center'}}>Page not found</div>} />
           </Routes>
         </main>
-      </AuthProvider>
     </Router>
   );
 }

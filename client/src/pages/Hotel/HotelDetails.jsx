@@ -17,12 +17,13 @@ import {
   Tag
 } from 'lucide-react';
 import { showToast } from '../../utils/swal';
-import { useAuth } from '../../context/authContext';
+import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import RoomCard from '../../components/features/RoomCard/RoomCard';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import { getImageUrl } from '../../utils/imageUrl';
 import { validate, bookingSchema } from '../../utils/validation';
+import AddReview from '../../components/AddReview';
 import './HotelDetails.css';
 
 export default function HotelDetails() {
@@ -285,6 +286,14 @@ export default function HotelDetails() {
 
         <section className="reviews-section">
           <h2>Guest Reviews</h2>
+          
+          {isAuthenticated && (
+            <AddReview 
+              hotelId={id} 
+              onReviewAdded={(newReview) => setReviews((prev) => [newReview, ...prev])} 
+            />
+          )}
+
           {reviews.length === 0 ? (
             <p className="no-reviews">No reviews yet</p>
           ) : (
@@ -316,7 +325,7 @@ export default function HotelDetails() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="close-btn" onClick={() => setShowBookingForm(false)}>×</button>
             <h3>Book {selectedRoom.title}</h3>
-            <p className="booking-price">${selectedRoom.pricePerNight}/night</p>
+            <p className="booking-price">₹{selectedRoom.pricePerNight}/night</p>
             
             <form onSubmit={handleSubmitBooking}>
               <div className="form-group">
@@ -400,7 +409,7 @@ export default function HotelDetails() {
                 <div className="price-breakdown">
                   <div className="price-breakdown-item">
                     <span>Price per night:</span>
-                    <span>${selectedRoom.pricePerNight}</span>
+                    <span>₹{selectedRoom.pricePerNight}</span>
                   </div>
                   <div className="price-breakdown-item">
                     <span>Number of nights:</span>
@@ -410,18 +419,18 @@ export default function HotelDetails() {
                     <>
                       <div className="price-breakdown-item">
                         <span>Original amount:</span>
-                        <span>${(discountInfo.finalAmount + discountInfo.discountAmount).toFixed(2)}</span>
+                        <span>₹{(discountInfo.finalAmount + discountInfo.discountAmount).toFixed(2)}</span>
                       </div>
                       <div className="price-breakdown-item discount">
                         <span>Discount ({discountInfo.code}):</span>
-                        <span>-${discountInfo.discountAmount.toFixed(2)}</span>
+                        <span>-₹{discountInfo.discountAmount.toFixed(2)}</span>
                       </div>
                     </>
                   )}
                   <div className="price-breakdown-item total">
                     <span>Total:</span>
                     <span>
-                      ${discountInfo 
+                      ₹{discountInfo 
                         ? discountInfo.finalAmount.toFixed(2)
                         : (Math.ceil((bookingData.checkOut - bookingData.checkIn) / (1000 * 60 * 60 * 24)) * selectedRoom.pricePerNight).toFixed(2)
                       }

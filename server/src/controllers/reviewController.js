@@ -1,5 +1,41 @@
 const Review = require("../models/review");
+const mongoose = require('mongoose');
+const Hotel = require('../models/hotel');
 
+exports.createReview = async(req,res) => {
+
+try{
+    const userId = req.user._id;
+    const {hotelId,rating,comment} = req.body;
+
+    if(!hotelId || !rating){
+        return res.status(400).json({success:false, message:"hotelId and rating are required"})
+    }
+
+    const review = await Review.create({
+        hotel:hotelId,
+        user:userId,
+        rating:Number(rating),
+        comment:comment || ''
+    });
+
+    const agg = await Review.aggregate([
+        {$match: {hotel:mongoose.Types.ObjectId(hotelId)}},
+        {$group:{_id:'$hotel',avgRating:{$avg:'$rating'},count:{$sum:1}}}
+    ]);
+
+    const avgRating = agg[0]?.avgRating ?? 0;
+    const reviewsCount = agg[0]?.count ?? 0;
+
+    await Hotel.findByIdAndUpdate(hotelId,{rating:avgRating,reviewsCount});
+
+    return res.json({success:true,review});
+} catch(err){
+    console.error('Create review error',err);
+    return res.status(500).json({success:false,message: err.message || 'Searver error'})
+    
+}
+}
 exports.addReview = async(req, res) => {
     try {
         const { hotelId, rating, comment } = req.body;

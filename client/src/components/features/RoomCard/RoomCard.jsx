@@ -28,7 +28,7 @@ export default function RoomCard({ room, onBooking }) {
 
         <div className="room-footer">
           <div className="room-price">
-            <span className="price">${room.pricePerNight}</span>
+            <span className="price">₹{room.pricePerNight}</span>
             <span className="per-night">/night</span>
           </div>
           <button 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/authContext';
+import useAuth from '../../hooks/useAuth';
 import { 
   Users, 
   Hotel, 
@@ -505,7 +505,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="summary-item">
                       <span className="label">Total Revenue</span>
-                      <span className="value">${stats?.revenue?.toLocaleString() || 0}</span>
+                      <span className="value">₹{stats?.revenue?.toLocaleString() || 0}</span>
                     </div>
                   </div>
                 </div>
@@ -773,7 +773,7 @@ export default function AdminDashboard() {
                           <tr key={room._id}>
                             <td>{room.title}</td>
                             <td><span className="type-badge">{room.roomType}</span></td>
-                            <td>${room.pricePerNight}</td>
+                            <td>₹{room.pricePerNight}</td>
                             <td>{room.availableRooms}/{room.totalRooms}</td>
                             <td>{room.hotelId?.name}</td>
                             <td>{room.hotelId?.ownerId?.name}</td>
@@ -858,11 +858,11 @@ export default function AdminDashboard() {
                       </div>
                       <div className="analytics-item">
                         <span>Total Revenue:</span>
-                        <strong>${stats?.revenue?.toLocaleString() || 0}</strong>
+                        <strong>₹{stats?.revenue?.toLocaleString() || 0}</strong>
                       </div>
                       <div className="analytics-item">
                         <span>Avg Revenue/Booking:</span>
-                        <strong>${stats?.totalBookings > 0 ? (stats?.revenue / stats?.totalBookings).toFixed(2) : 0}</strong>
+                        <strong>₹{stats?.totalBookings > 0 ? (stats?.revenue / stats?.totalBookings).toFixed(2) : 0}</strong>
                       </div>
                     </div>
                   </div>
@@ -959,7 +959,7 @@ export default function AdminDashboard() {
                             onChange={(e) => setNewDiscount({ ...newDiscount, discountType: e.target.value })}
                           >
                             <option value="percentage">Percentage (%)</option>
-                            <option value="fixed">Fixed Amount ($)</option>
+                            <option value="fixed">Fixed Amount (₹)</option>
                           </select>
                         </div>
                         <div className="form-group">
@@ -989,7 +989,7 @@ export default function AdminDashboard() {
 
                       <div className="form-row">
                         <div className="form-group">
-                          <label>Min Booking Amount ($)</label>
+                          <label>Min Booking Amount (₹)</label>
                           <input
                             type="number"
                             placeholder="100"
@@ -1072,13 +1072,13 @@ export default function AdminDashboard() {
                             <td className="discount-desc-cell">{discount.description}</td>
                             <td>
                               <span className={`type-pill ${discount.discountType}`}>
-                                {discount.discountType === 'percentage' ? '%' : '$'}
+                                {discount.discountType === 'percentage' ? '%' : '₹'}
                               </span>
                             </td>
-                            <td className="value-cell">
-                              <strong>{discount.discountType === 'percentage' ? `${discount.discountValue}%` : `$${discount.discountValue}`}</strong>
+                              <td className="value-cell">
+                              <strong>{discount.discountType === 'percentage' ? `${discount.discountValue}%` : `₹${discount.discountValue}`}</strong>
                             </td>
-                            <td><span className="min-amount-badge">${discount.minBookingAmount || 0}+</span></td>
+                            <td><span className="min-amount-badge">₹{discount.minBookingAmount || 0}+</span></td>
                             <td>
                               <div className="usage-progress">
                                 <div className="usage-stats">{discount.usageCount}{discount.usageLimit ? `/${discount.usageLimit}` : '/∞'}</div>

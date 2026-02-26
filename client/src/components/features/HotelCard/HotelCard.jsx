@@ -1,9 +1,30 @@
-import { Link } from 'react-router-dom';
-import { MapPin, Star, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { MapPin, Star, ArrowRight, ShieldCheck, Heart } from 'lucide-react';
 import './HotelCard.css';
 import { getImageUrl } from '../../../utils/imageUrl';
-
+import { useDispatch,useSelector } from 'react-redux';
+import { toggleWishlist, toggleWishlistLocal } from '../../../store/slices/wishlistSlice';
+import useAuth from '../../../hooks/useAuth';
 export default function HotelCard({ hotel }) {
+
+  // const [isWishlisted,setIsWishlisted] = useState(false)
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const wishlist = useSelector(state =>state.wishlist.items)
+
+  const isWishlisted = wishlist.includes(hotel._id);
+
+  const handleWishlist = (e) =>{
+    e.preventDefault()
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+    const payload = { hotelId: hotel._id, hotel };
+    dispatch(toggleWishlistLocal(payload))
+    dispatch(toggleWishlist(payload))
+  }
   return (
     <Link to={`/hotel/${hotel._id}`} className="hotel-card-link">
       <div className="hotel-card premium-hotel-card-main">
@@ -19,6 +40,11 @@ export default function HotelCard({ hotel }) {
             <Star size={14} fill="currentColor" />
             <span>{hotel.rating || 'N/A'}</span>
           </div>
+        
+        <button className={`wishlist-btn ${isWishlisted ? "active" : ""}`}
+          onClick={handleWishlist}>
+          <Heart size={16}  fill={isWishlisted ? 'currentColor' : 'none'} /> 
+        </button>
         </div>
         <div className="hotel-card-content">
           <h3 className="card-title">{hotel.name}</h3>

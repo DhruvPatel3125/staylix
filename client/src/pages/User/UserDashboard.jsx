@@ -179,7 +179,7 @@ export default function UserDashboard() {
               <div className="profile-info">
                 <h3>{user?.name || 'User'}</h3>
                 <p>{user?.email || 'N/A'}</p>
-                <span className="role-badge">{user?.role || 'USER'}</span>
+                <span className={`role-badge ${user?.role}-badge`}>{user?.role?.toUpperCase() || 'USER'}</span>
               </div>
             </div>
 
@@ -190,12 +190,14 @@ export default function UserDashboard() {
               >
                 <Calendar size={20} /> My Bookings
               </button>
-              <button
-                className={`nav-item ${activeTab === 'owner-request' ? 'active' : ''}`}
-                onClick={() => setActiveTab('owner-request')}
-              >
-                <Briefcase size={20} /> Become Owner
-              </button>
+              {user?.role === 'user' && (
+                <button
+                  className={`nav-item ${activeTab === 'owner-request' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('owner-request')}
+                >
+                  <Briefcase size={20} /> Become Owner
+                </button>
+              )}
               <button
                 className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
                 onClick={() => setActiveTab('profile')}

@@ -3,9 +3,9 @@ const Hotel = require("../models/hotel");
 
 exports.addRoom = async (req, res) => {
     try {
-        const { hotelId, title, roomType, pricePerNight, totalRooms, availableRooms, amenities } = req.body;
+        const { hotelId, title, roomType, pricePerNight, totalRooms, availableRooms, guestCapacity, amenities } = req.body;
 
-        if (!hotelId || !title || !roomType || !pricePerNight || !totalRooms || availableRooms === undefined) {
+        if (!hotelId || !title || !roomType || !pricePerNight || !totalRooms || availableRooms === undefined || !guestCapacity) {
             return res.status(400).json({
                 success: false,
                 message: "All fields are required"
@@ -22,8 +22,8 @@ exports.addRoom = async (req, res) => {
         let amenitiesList = [];
         if (amenities) {
             try {
-                amenitiesList = typeof amenities === 'string' 
-                    ? JSON.parse(amenities) 
+                amenitiesList = typeof amenities === 'string'
+                    ? JSON.parse(amenities)
                     : amenities;
             } catch (e) {
                 amenitiesList = [];
@@ -37,6 +37,7 @@ exports.addRoom = async (req, res) => {
             pricePerNight,
             totalRooms,
             availableRooms,
+            guestCapacity,
             amenities: amenitiesList
         };
 
@@ -67,7 +68,7 @@ exports.getRoomsByHotel = async (req, res) => {
             });
         }
 
-        const rooms = await Room.find({ hotelId: req.params.hotelId });
+        const rooms = await Room.find({ hotelId: req.params.hotelId, isAvailable: true });
         res.json({
             success: true,
             rooms
@@ -81,7 +82,7 @@ exports.getRoomsByHotel = async (req, res) => {
     }
 };
 
-exports.updateRoom = async(req, res) => {
+exports.updateRoom = async (req, res) => {
     try {
         if (!req.params.id) {
             return res.status(400).json({
@@ -127,7 +128,7 @@ exports.updateRoom = async(req, res) => {
     }
 };
 
-exports.deleteRoom = async(req, res) => {
+exports.deleteRoom = async (req, res) => {
     try {
         if (!req.params.id) {
             return res.status(400).json({
@@ -162,7 +163,7 @@ exports.getOwnerRooms = async (req, res) => {
     try {
         const hotels = await Hotel.find({ ownerId: req.user._id });
         const hotelIds = hotels.map(h => h._id);
-        
+
         const rooms = await Room.find({ hotelId: { $in: hotelIds } }).populate('hotelId', 'name');
         res.json({
             success: true,

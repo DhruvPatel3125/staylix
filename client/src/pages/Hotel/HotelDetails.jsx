@@ -46,6 +46,11 @@ export default function HotelDetails() {
   const [discountInfo, setDiscountInfo] = useState(null);
   const [discountError, setDiscountError] = useState('');
   const [validatingDiscount, setValidatingDiscount] = useState(false);
+  const [availability, setAvailability] = useState({ 
+    checking: false, 
+    isAvailable: true, 
+    message: '' 
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -66,6 +71,34 @@ export default function HotelDetails() {
 
     fetchData();
   }, [id]);
+
+  // Real-time Availability Check
+  useEffect(() => {
+    if (showBookingForm && selectedRoom && bookingData.checkIn && bookingData.checkOut) {
+      const checkAvailability = async () => {
+        try {
+          setAvailability(prev => ({ ...prev, checking: true, message: '' }));
+          const response = await api.bookings.checkAvailability({
+            roomId: selectedRoom._id,
+            checkIn: bookingData.checkIn,
+            checkOut: bookingData.checkOut,
+            guests: parseInt(bookingData.guests)
+          });
+          
+          setAvailability({
+            checking: false,
+            isAvailable: response.available,
+            message: response.available ? '' : response.message || 'Room not available for these dates'
+          });
+        } catch (err) {
+          setAvailability(prev => ({ ...prev, checking: false }));
+        }
+      };
+
+      const timer = setTimeout(checkAvailability, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [showBookingForm, selectedRoom, bookingData.checkIn, bookingData.checkOut, bookingData.guests]);
 
   const handleBooking = (room) => {
     if (!isAuthenticated) {
@@ -133,19 +166,23 @@ export default function HotelDetails() {
 
   const handleSubmitBooking = async (e) => {
     e.preventDefault();
+    
+    // 1. Initial Checks
     if (!selectedRoom || !bookingData.checkIn || !bookingData.checkOut) {
-      showToast.error('Please fill all booking details');
+      showToast.error('Please select both check-in and check-out dates.');
       return;
     }
 
     const checkIn = new Date(bookingData.checkIn);
     const checkOut = new Date(bookingData.checkOut);
-    const nights = (checkOut - checkIn) / (1000 * 60 * 60 * 24);
-    const totalAmount = nights * selectedRoom.pricePerNight;
+    const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
     
-    const finalAmount = discountInfo ? discountInfo.finalAmount : totalAmount;
+    if (nights <= 0) {
+      showToast.error('Check-out date must be after check-in date.');
+      return;
+    }
 
-    // Validate Booking Data
+    // 2. Joi Schema Validation
     const validationErrors = validate(bookingSchema, {
       checkIn: bookingData.checkIn,
       checkOut: bookingData.checkOut,
@@ -160,11 +197,34 @@ export default function HotelDetails() {
     }
 
     try {
-      // 1. Create Razorpay Order
+      // 3. Final Availability Check (Server-side)
+      setAvailability(prev => ({ ...prev, checking: true, message: '' }));
+      const availRes = await api.bookings.checkAvailability({
+        roomId: selectedRoom._id,
+        checkIn: bookingData.checkIn,
+        checkOut: bookingData.checkOut,
+        guests: parseInt(bookingData.guests)
+      });
+
+      if (!availRes.available) {
+        setAvailability({
+          checking: false,
+          isAvailable: false,
+          message: availRes.message || 'Room is no longer available for these dates'
+        });
+        showToast.error(availRes.message || 'Room is no longer available for these dates');
+        return;
+      }
+      setAvailability(prev => ({ ...prev, checking: false, isAvailable: true }));
+
+      // 4. Create Razorpay Order
+      const totalAmount = nights * selectedRoom.pricePerNight;
+      const finalAmount = discountInfo ? discountInfo.finalAmount : totalAmount;
+      
       const orderRes = await api.bookings.createPaymentOrder(finalAmount);
       
       if (!orderRes.success) {
-        showToast.error('Failed to initiate payment');
+        showToast.error('Failed to initiate payment. Please try again.');
         return;
       }
 
@@ -224,7 +284,9 @@ export default function HotelDetails() {
       rzp1.open();
 
     } catch (err) {
-      showToast.error('Error initiating booking process');
+      console.error('Booking Process Error:', err);
+      const errorMessage = err.response?.data?.message || err.message || 'Error initiating booking process';
+      showToast.error(errorMessage);
     }
   };
 
@@ -332,7 +394,15 @@ export default function HotelDetails() {
                 <label htmlFor="checkIn">Check-in Date</label>
                 <DatePicker
                   selected={bookingData.checkIn}
-                  onChange={(date) => setBookingData({ ...bookingData, checkIn: date })}
+                  onChange={(date) => {
+                    const nextData = { ...bookingData, checkIn: date };
+                    // If check-in is moved after check-out, reset check-out
+                    if (date && bookingData.checkOut && date >= bookingData.checkOut) {
+                      nextData.checkOut = new Date(date.getTime() + 86400000);
+                    }
+                    setBookingData(nextData);
+                    setDiscountInfo(null);
+                  }}
                   selectsStart
                   startDate={bookingData.checkIn}
                   endDate={bookingData.checkOut}
@@ -347,11 +417,14 @@ export default function HotelDetails() {
                 <label htmlFor="checkOut">Check-out Date</label>
                 <DatePicker
                   selected={bookingData.checkOut}
-                  onChange={(date) => setBookingData({ ...bookingData, checkOut: date })}
+                  onChange={(date) => {
+                    setBookingData({ ...bookingData, checkOut: date });
+                    setDiscountInfo(null);
+                  }}
                   selectsEnd
                   startDate={bookingData.checkIn}
                   endDate={bookingData.checkOut}
-                  minDate={bookingData.checkIn ? new Date(bookingData.checkIn.getTime() + 86400000) : new Date()}
+                  minDate={bookingData.checkIn ? new Date(bookingData.checkIn.getTime() + 86400000) : new Date(new Date().getTime() + 86400000)}
                   placeholderText="Select check-out date"
                   className="date-picker-input"
                   required
@@ -405,7 +478,22 @@ export default function HotelDetails() {
                 )}
               </div>
 
-              {bookingData.checkIn && bookingData.checkOut && (
+              {availability.message && (
+                <div className="availability-warning" style={{ 
+                  backgroundColor: '#fff5f5', 
+                  color: '#c53030', 
+                  padding: '12px', 
+                  borderRadius: '8px', 
+                  marginBottom: '20px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  border: '1px solid #feb2b2'
+                }}>
+                  ⚠️ {availability.message}
+                </div>
+              )}
+
+              {bookingData.checkIn && bookingData.checkOut && (bookingData.checkOut > bookingData.checkIn) && (
                 <div className="price-breakdown">
                   <div className="price-breakdown-item">
                     <span>Price per night:</span>
@@ -439,8 +527,13 @@ export default function HotelDetails() {
                 </div>
               )}
 
-              <button type="submit" className="booking-submit-btn">
-                Confirm Booking
+              <button 
+                type="submit" 
+                className="booking-submit-btn"
+                disabled={!availability.isAvailable || availability.checking || (bookingData.checkOut <= bookingData.checkIn)}
+                style={{ opacity: (!availability.isAvailable || availability.checking) ? 0.6 : 1 }}
+              >
+                {availability.checking ? 'Checking Availability...' : (!availability.isAvailable ? 'Sold Out' : 'Confirm Booking')}
               </button>
             </form>
           </div>

@@ -141,6 +141,11 @@ const api = {
     createPaymentOrder: async (amount) => {
       const response = await instance.post('/bookings/create-payment-order', { amount });
       return response.data;
+    },
+
+    checkAvailability: async (data) => {
+      const response = await instance.post('/bookings/check-availability', data);
+      return response.data;
     }
   },
 
@@ -302,12 +307,12 @@ const api = {
       return response.data;
     }
   },
-  wishlist:{
-    toggle:async(hotelId) =>{
+  wishlist: {
+    toggle: async (hotelId) => {
       const response = await instance.post(`/wishlist/${hotelId}`);
       return response.data
     },
-    getMyWishlist:async () => {
+    getMyWishlist: async () => {
       const response = await instance.get("/wishlist");
       return response.data
     }

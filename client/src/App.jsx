@@ -56,7 +56,7 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="user">
                   <UserDashboard/>
-                                 </ProtectedRoute>
+                </ProtectedRoute>
               } 
             />
             

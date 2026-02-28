@@ -64,8 +64,13 @@ export default function Navbar() {
                   <MessageSquare size={18} /> Contact
                 </Link>
                 
-                {isAuthenticated && !isAdminOrOwner && (
+                {user?.role === 'user' && (
                   <Link to="/user-dashboard" className={`nav-link ${location.pathname === '/user-dashboard' ? 'active' : ''}`}>
+                    <LayoutDashboard size={18} /> My Bookings
+                  </Link>
+                )}
+                {user?.role === 'owner' && (
+                  <Link to="/owner-dashboard?tab=my-bookings" className={`nav-link ${location.search.includes('tab=my-bookings') ? 'active' : ''}`}>
                     <LayoutDashboard size={18} /> My Bookings
                   </Link>
                 )}

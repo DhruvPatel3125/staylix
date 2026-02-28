@@ -33,6 +33,12 @@ const roomSchema = new mongoose.Schema({
     required: true
   },
 
+  guestCapacity: {
+    type: Number,
+    required: true,
+    default: 1
+  },
+
   amenities: [String],
 
   image: {

@@ -75,6 +75,16 @@ const bookingSchema = new mongoose.Schema({
     paymentId: String,
     orderId: String,
     method: String
+  },
+
+  refundStatus: {
+    type: String,
+    enum: ["none", "pending", "processed", "failed"],
+    default: "none"
+  },
+
+  refundId: {
+    type: String
   }
 
 }, { timestamps: true });

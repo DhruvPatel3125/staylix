@@ -100,6 +100,15 @@ exports.createBooking = async (req, res) => {
             });
         }
 
+        // Check Guest Capacity
+        const maxGuests = room.guestCapacity || 1;
+        if (guests > maxGuests) {
+            return res.status(400).json({
+                success: false,
+                message: `This room can only accommodate up to ${maxGuests} guests`
+            });
+        }
+
         const hotel = await Hotel.findById(hotelId);
 
         const activeBookings = await Booking.find({
@@ -109,10 +118,13 @@ exports.createBooking = async (req, res) => {
             checkIn: { $lt: checkOutDate }
         });
 
-        if (activeBookings.length >= room.totalRooms) {
+        const currentOccupiedRooms = activeBookings.length;
+        const availableCount = room.availableRooms || 0;
+
+        if (currentOccupiedRooms >= availableCount) {
             return res.status(400).json({
                 success: false,
-                message: "Room not available for selected dates"
+                message: `No rooms available for the selected dates. (Sold out: ${currentOccupiedRooms}/${availableCount} rooms)`
             });
         }
 
@@ -368,7 +380,10 @@ exports.cancelBooking = async (req, res) => {
             });
         }
 
-        if (booking.userId.toString() !== req.user._id.toString()) {
+        const isUser = booking.userId.toString() === req.user._id.toString();
+        const isOwner = booking.ownerId.toString() === req.user._id.toString();
+
+        if (!isUser && !isOwner) {
             return res.status(403).json({
                 success: false,
                 message: "Not authorized to cancel this booking"
@@ -382,12 +397,118 @@ exports.cancelBooking = async (req, res) => {
             });
         }
 
+        // Handle Refund if paid
+        if (booking.paymentStatus === "paid" && booking.paymentInfo && booking.paymentInfo.paymentId) {
+            try {
+                const initiator = isOwner ? "Owner" : "User";
+                const refund = await razorpay.payments.refund(booking.paymentInfo.paymentId, {
+                    amount: Math.round(booking.totalAmount * 100),
+                    notes: {
+                        reason: `${initiator} cancelled booking`,
+                        bookingId: booking._id.toString(),
+                        initiatedBy: initiator
+                    }
+                });
+
+                booking.refundStatus = "processed";
+                booking.refundId = refund.id;
+            } catch (refundError) {
+                console.error("Razorpay refund error:", refundError);
+                booking.refundStatus = "failed";
+            }
+        }
+
         booking.bookingStatus = "cancelled";
         await booking.save();
 
+        // Send Cancellation Email
+        const user = await Booking.findById(booking._id).populate("userId hotelId roomId");
+        const userEmail = user.userId ? user.userId.email : null;
+
+        if (userEmail) {
+            const emailSubject = `Booking Cancelled: Your reservation at ${user.hotelId ? user.hotelId.name : 'Staylix'}`;
+            const isRefundable = booking.paymentStatus === "paid";
+
+            const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+  .email-container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+  .header { background: #ef4444; padding: 30px 20px; text-align: center; color: white; }
+  .header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+  .content { padding: 30px 25px; color: #333333; }
+  .greeting { font-size: 18px; margin-bottom: 20px; color: #1f2937; }
+  .refund-box { background-color: #fef2f2; border: 1px solid #fee2e2; padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center; }
+  .refund-box h2 { color: #dc2626; margin: 0 0 10px 0; font-size: 18px; }
+  .refund-box p { margin: 0; font-size: 15px; color: #991b1b; }
+  .details-grid { border-top: 1px solid #e5e7eb; padding-top: 25px; margin-top: 25px; }
+  .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; }
+  .detail-label { color: #6b7280; }
+  .detail-value { font-weight: 600; color: #1f2937; }
+  .footer { background-color: #f9fafb; padding: 20px; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb; }
+</style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>Booking Cancelled</h1>
+    </div>
+    
+    <div class="content">
+      <div class="greeting">Hello ${user.userId.name || 'Traveler'},</div>
+      <p>This is to confirm that your booking at <strong>${user.hotelId ? user.hotelId.name : 'your selected hotel'}</strong> has been successfully cancelled.</p>
+      
+      ${isRefundable ? `
+      <div class="refund-box">
+        <h2>Refund Information</h2>
+        <p>Your payment of <strong>₹${booking.totalAmount}</strong> has been initiated for refund. You will receive the money back in your original payment method <strong>within 7 days</strong>.</p>
+      </div>
+      ` : ''}
+
+      <div class="details-grid">
+        <div class="detail-row">
+          <span class="detail-label">Booking ID:</span>
+          <span class="detail-value">${booking._id}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Hotel:</span>
+          <span class="detail-value">${user.hotelId ? user.hotelId.name : 'N/A'}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Check-in:</span>
+          <span class="detail-value">${new Date(booking.checkIn).toLocaleDateString()}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>If you didn't request this cancellation, please contact us immediately.</p>
+      <p>Need help? Contact us at support@staylix.com</p>
+      <p>&copy; ${new Date().getFullYear()} Staylix. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+            try {
+                await sendEmail({
+                    email: userEmail,
+                    subject: emailSubject,
+                    html: emailHtml
+                });
+                console.log("Cancellation email sent successfully");
+            } catch (emailError) {
+                console.error("Failed to send cancellation email:", emailError);
+            }
+        }
+
         res.json({
             success: true,
-            message: "Booking cancelled successfully",
+            message: booking.paymentStatus === "paid"
+                ? "Booking cancelled and refund initiated successfully"
+                : "Booking cancelled successfully",
             booking
         });
     } catch (error) {
@@ -395,6 +516,77 @@ exports.cancelBooking = async (req, res) => {
         res.status(500).json({
             success: false,
             message: error.message || "Failed to cancel booking"
+        });
+    }
+};
+
+exports.checkAvailability = async (req, res) => {
+    try {
+        const { roomId, checkIn, checkOut, guests } = req.body;
+
+        if (!roomId || !checkIn || !checkOut || !guests) {
+            return res.status(400).json({
+                success: false,
+                message: "Room ID, check-in, check-out, and guests are required"
+            });
+        }
+
+        const room = await Room.findById(roomId);
+        if (!room) {
+            return res.status(404).json({
+                success: false,
+                message: "Room not found"
+            });
+        }
+
+        // Check Guest Capacity
+        const maxGuests = room.guestCapacity || 1;
+        if (guests > maxGuests) {
+            return res.status(400).json({
+                success: false,
+                available: false,
+                message: `This room can only accommodate up to ${maxGuests} guests`
+            });
+        }
+
+        const checkInDate = new Date(checkIn);
+        const checkOutDate = new Date(checkOut);
+
+        if (checkInDate >= checkOutDate) {
+            return res.status(400).json({
+                success: false,
+                message: "Check-out date must be after check-in date"
+            });
+        }
+
+        const activeBookings = await Booking.find({
+            roomId,
+            bookingStatus: { $in: ["pending", "confirmed"] },
+            checkOut: { $gt: checkInDate },
+            checkIn: { $lt: checkOutDate }
+        });
+
+        const currentOccupiedRooms = activeBookings.length;
+        const availableCount = room.availableRooms || 0;
+
+        if (currentOccupiedRooms >= availableCount) {
+            return res.json({
+                success: true,
+                available: false,
+                message: `Sold out for these dates (${currentOccupiedRooms}/${availableCount} rooms occupied)`
+            });
+        }
+
+        res.json({
+            success: true,
+            available: true,
+            message: "Room is available"
+        });
+    } catch (error) {
+        console.error("Check availability error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to check availability"
         });
     }
 };

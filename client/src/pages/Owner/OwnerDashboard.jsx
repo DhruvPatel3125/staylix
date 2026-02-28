@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import { 
   Plus, 
@@ -25,6 +26,9 @@ export default function OwnerDashboard() {
   const [hotels, setHotels] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [bookings, setBookings] = useState([]);
+  const [personalBookings, setPersonalBookings] = useState([]);
+  const [cancelingId, setCancelingId] = useState(null);
+  const location = useLocation();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -54,6 +58,7 @@ export default function OwnerDashboard() {
     pricePerNight: '',
     totalRooms: '',
     availableRooms: '',
+    guestCapacity: '',
     amenities: '',
     image: null
   });
@@ -62,16 +67,91 @@ export default function OwnerDashboard() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+    
+    // Check for tab in URL
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab === 'my-bookings') {
+      setActiveTab('my-bookings');
+    }
+  }, [location.search]);
+  const handleCancelReceivedBooking = async (bookingId) => {
+    const confirmed = await showAlert.confirm(
+      'Cancel & Refund?',
+      'Are you sure you want to cancel this booking? A full refund will be initiated to the guest.'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setCancelingId(bookingId);
+      const response = await api.bookings.cancel(bookingId);
+      if (response.success) {
+        setBookings(prev => prev.map(b => 
+          b._id === bookingId ? { ...b, bookingStatus: 'cancelled', refundStatus: 'processed' } : b
+        ));
+        showToast.success('Booking cancelled and refund initiated');
+      } else {
+        showAlert.error('Error', response.message || 'Failed to cancel booking');
+      }
+    } catch {
+      showAlert.error('Error', 'Failed to cancel booking');
+    } finally {
+      setCancelingId(null);
+    }
+  };
+
+  const handleCancelPersonalBooking = async (bookingId) => {
+    const confirmed = await showAlert.confirm(
+      'Are you sure?',
+      'Do you really want to cancel this booking? This action cannot be undone.'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setCancelingId(bookingId);
+      const response = await api.bookings.cancel(bookingId);
+      if (response.success) {
+        setPersonalBookings(prev => prev.map(b => 
+          b._id === bookingId ? { ...b, bookingStatus: 'cancelled' } : b
+        ));
+        showToast.success('Booking cancelled successfully');
+      } else {
+        showAlert.error('Error', response.message || 'Failed to cancel booking');
+      }
+    } catch {
+      showAlert.error('Error', 'Failed to cancel booking');
+    } finally {
+      setCancelingId(null);
+    }
+  };
+
+  const getBookingDisplayStatus = (booking) => {
+    if (booking.bookingStatus === 'cancelled') return 'Cancelled';
+    const checkOut = new Date(booking.checkOut);
+    if (isNaN(checkOut.getTime())) return 'Active';
+    return checkOut < new Date() ? 'Completed' : 'Active';
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Active': return '#667eea';
+      case 'Completed': return '#48bb78';
+      case 'Cancelled': return '#f56565';
+      default: return '#666';
+    }
+  };
 
   const fetchData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const [hotelsRes, roomsRes, bookingsRes] = await Promise.all([
+      const [hotelsRes, roomsRes, bookingsRes, personalRes] = await Promise.all([
         api.hotels.getOwnerHotels(),
         api.rooms.getOwnerRooms(),
-        api.bookings.getOwnerBookings()
+        api.bookings.getOwnerBookings(),
+        api.bookings.getMyBookings()
       ]);
 
       if (hotelsRes.success) {
@@ -82,6 +162,9 @@ export default function OwnerDashboard() {
       }
       if (bookingsRes.success) {
         setBookings(bookingsRes.bookings || []);
+      }
+      if (personalRes.success) {
+        setPersonalBookings(personalRes.bookings || []);
       }
     } catch (_err) {
       setError('Failed to load dashboard data');
@@ -212,6 +295,7 @@ export default function OwnerDashboard() {
       pricePerNight: '',
       totalRooms: '',
       availableRooms: '',
+      guestCapacity: '',
       amenities: '',
       image: null
     });
@@ -228,6 +312,7 @@ export default function OwnerDashboard() {
       pricePerNight: room.pricePerNight,
       totalRooms: room.totalRooms,
       availableRooms: room.availableRooms,
+      guestCapacity: room.guestCapacity || '',
       amenities: room.amenities?.join(', ') || '',
       image: null
     });
@@ -236,7 +321,7 @@ export default function OwnerDashboard() {
   };
 
   const handleSaveRoom = async () => {
-    if (!roomFormData.hotelId || !roomFormData.title || !roomFormData.pricePerNight || !roomFormData.totalRooms || roomFormData.availableRooms === '') {
+    if (!roomFormData.hotelId || !roomFormData.title || !roomFormData.pricePerNight || !roomFormData.totalRooms || roomFormData.availableRooms === '' || !roomFormData.guestCapacity) {
       showToast.error('Please fill in all required fields');
       return;
     }
@@ -256,6 +341,7 @@ export default function OwnerDashboard() {
       submitData.append('pricePerNight', roomFormData.pricePerNight);
       submitData.append('totalRooms', roomFormData.totalRooms);
       submitData.append('availableRooms', roomFormData.availableRooms);
+      submitData.append('guestCapacity', roomFormData.guestCapacity);
       submitData.append('amenities', JSON.stringify(amenitiesArray));
 
       if (roomFormData.image && roomFormData.image instanceof File) {
@@ -411,7 +497,13 @@ export default function OwnerDashboard() {
                 className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
                 onClick={() => setActiveTab('bookings')}
               >
-                <Calendar size={20} /> Bookings
+                <Calendar size={20} /> Received Bookings
+              </button>
+              <button
+                className={`nav-item ${activeTab === 'my-bookings' ? 'active' : ''}`}
+                onClick={() => setActiveTab('my-bookings')}
+              >
+                <Calendar size={20} /> My Personal Bookings
               </button>
               <button
                 className={`nav-item ${activeTab === 'revenue' ? 'active' : ''}`}
@@ -755,6 +847,15 @@ export default function OwnerDashboard() {
                           placeholder="5"
                         />
                       </div>
+                      <div className="form-group">
+                        <label>Guest Capacity *</label>
+                        <input
+                          type="number"
+                          value={roomFormData.guestCapacity}
+                          onChange={(e) => setRoomFormData({ ...roomFormData, guestCapacity: e.target.value })}
+                          placeholder="2"
+                        />
+                      </div>
                     </div>
 
                     <div className="form-group">
@@ -877,7 +978,7 @@ export default function OwnerDashboard() {
 
             {activeTab === 'bookings' && (
               <div className="bookings-section">
-                <h2>Bookings for My Rooms</h2>
+                <h2>Bookings for My Rooms (Received)</h2>
 
                 {bookings.length === 0 ? (
                   <div className="empty-state">
@@ -886,54 +987,176 @@ export default function OwnerDashboard() {
                   </div>
                 ) : (
                   <div className="bookings-list">
-                    {bookings.map(booking => (
-                      <div key={booking._id} className="booking-card">
-                        <div className="booking-header">
-                          <div>
-                            <h3>{booking.hotelId?.name || 'Hotel'}</h3>
-                            <p className="booking-room">
-                              🛏️ {booking.roomId?.title || 'Room'}
-                            </p>
+                    {bookings.map(booking => {
+                      const status = getBookingDisplayStatus(booking);
+                      return (
+                        <div key={booking._id} className="booking-card">
+                          <div className="booking-header">
+                            <div>
+                              <h3>{booking.hotelId?.name || 'Hotel'}</h3>
+                              <p className="booking-room">
+                                🛏️ {booking.roomId?.title || 'Room'}
+                              </p>
+                            </div>
+                            <div className="booking-status">
+                              <span 
+                                className="status-badge"
+                                style={{ backgroundColor: getStatusColor(status), color: 'white' }}
+                              >
+                                {status}
+                              </span>
+                            </div>
                           </div>
-                          <div className="booking-status">
-                            <span className="status-badge">
-                              {new Date(booking.checkOut) < new Date() ? 'Completed' : 'Active'}
-                            </span>
-                          </div>
-                        </div>
 
-                        <div className="booking-details">
-                          <div className="detail-item">
-                            <span className="label">Guest</span>
-                            <span className="value">{booking.userId?.name || 'Guest'}</span>
+                          <div className="booking-details">
+                            <div className="detail-item">
+                              <span className="label">Guest</span>
+                              <span className="value">{booking.userId?.name || 'Guest'}</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="label">Email</span>
+                              <span className="value">{booking.userId?.email || 'N/A'}</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="label">Check-in</span>
+                              <span className="value">
+                                {new Date(booking.checkIn).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="label">Check-out</span>
+                              <span className="value">
+                                {new Date(booking.checkOut).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="label">Guests</span>
+                              <span className="value">{booking.guests}</span>
+                            </div>
+                            <div className="detail-item">
+                              <span className="label">Total Amount</span>
+                              <span className="value price">₹{booking.totalAmount?.toFixed(2) || '0.00'}</span>
+                            </div>
+                            {booking.refundStatus && booking.refundStatus !== 'none' && (
+                              <div className="detail-item">
+                                <span className="label">Refund Status</span>
+                                <span className="value" style={{ 
+                                  color: booking.refundStatus === 'processed' ? '#48bb78' : '#e53e3e',
+                                  fontWeight: '700',
+                                  textTransform: 'capitalize'
+                                }}>
+                                  {booking.refundStatus}
+                                </span>
+                              </div>
+                            )}
                           </div>
-                          <div className="detail-item">
-                            <span className="label">Email</span>
-                            <span className="value">{booking.userId?.email || 'N/A'}</span>
-                          </div>
-                          <div className="detail-item">
-                            <span className="label">Check-in</span>
-                            <span className="value">
-                              {new Date(booking.checkIn).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <div className="detail-item">
-                            <span className="label">Check-out</span>
-                            <span className="value">
-                              {new Date(booking.checkOut).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <div className="detail-item">
-                            <span className="label">Guests</span>
-                            <span className="value">{booking.guests}</span>
-                          </div>
-                          <div className="detail-item">
-                            <span className="label">Total Amount</span>
-                            <span className="value price">₹{booking.totalAmount?.toFixed(2) || '0.00'}</span>
-                          </div>
+
+                          {status === 'Active' && (
+                            <button
+                              className="cancel-btn"
+                              onClick={() => handleCancelReceivedBooking(booking._id)}
+                              disabled={cancelingId === booking._id}
+                              style={{ 
+                                marginTop: '1.5rem',
+                                width: '100%',
+                                padding: '0.85rem',
+                                background: 'white',
+                                color: '#f56565',
+                                border: '2px solid #fff5f5',
+                                borderRadius: '12px',
+                                fontWeight: '700',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '0.75rem',
+                                transition: 'all 0.3s ease'
+                              }}
+                            >
+                              {cancelingId === booking._id ? '...' : <><Trash2 size={16} /> Cancel & Refund</>}
+                            </button>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'my-bookings' && (
+              <div className="bookings-section">
+                <h2>My Personal Bookings</h2>
+
+                {personalBookings.length === 0 ? (
+                  <div className="empty-state">
+                    <p>No personal bookings yet</p>
+                    <p className="empty-text">Book your next stay and it will appear here</p>
+                  </div>
+                ) : (
+                  <div className="bookings-list">
+                    {personalBookings.map((booking) => {
+                      const status = getBookingDisplayStatus(booking);
+
+                      return (
+                        <div key={booking._id} className="booking-card personal-booking-card">
+                          <div className="booking-header">
+                            <div>
+                              <h3>{booking.hotelId?.name || 'Hotel'}</h3>
+                              <p className="booking-location">
+                                <MapPin size={16} /> {booking.hotelId?.location || booking.hotelId?.address?.city || 'Location N/A'}
+                              </p>
+                            </div>
+
+                            <span
+                              className="status-badge"
+                              style={{ backgroundColor: getStatusColor(status) }}
+                            >
+                              {status}
+                            </span>
+                          </div>
+
+                          <div className="booking-details">
+                            <div className="detail-item">
+                              <span className="label">Check-in</span>
+                              <span className="value">
+                                {new Date(booking.checkIn).toLocaleDateString()}
+                              </span>
+                            </div>
+
+                            <div className="detail-item">
+                              <span className="label">Check-out</span>
+                              <span className="value">
+                                {new Date(booking.checkOut).toLocaleDateString()}
+                              </span>
+                            </div>
+
+                            <div className="detail-item">
+                              <span className="label">Room</span>
+                              <span className="value">
+                                {booking.roomId?.title || booking.roomId?.roomType || 'Room'}
+                              </span>
+                            </div>
+
+                            <div className="detail-item">
+                              <span className="label">Total Price</span>
+                              <span className="value price">
+                                ₹{Number(booking.totalAmount || 0).toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+
+                          {status === 'Active' && booking.bookingStatus !== 'cancelled' && (
+                            <button
+                              className="cancel-btn"
+                              onClick={() => handleCancelPersonalBooking(booking._id)}
+                              disabled={cancelingId === booking._id}
+                            >
+                              {cancelingId === booking._id ? '...' : <><Trash2 size={16} /> Cancel Booking</>}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

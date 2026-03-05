@@ -395,7 +395,7 @@
   gap: 1.5rem;
 }
 
-.search-input {
+.admin-dashboard .search-input {
   background: white;
   border: 2px solid #f1f5f9;
   border-radius: 18px;
@@ -406,7 +406,7 @@
   transition: all 0.3s ease;
 }
 
-.search-input:focus {
+.admin-dashboard .search-input:focus {
   outline: none;
   border-color: #6366f1;
   box-shadow: 0 8px 25px rgba(99, 102, 241, 0.1);

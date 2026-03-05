@@ -729,8 +729,8 @@
 }
 
 .booking-card .cancel-btn:hover:not(:disabled) {
-  background: #fff5f5;
-  border-color: #feb2b2;
+  background: #f56565 ;
+  border-color: #fff5f5 ;
   transform: translateY(-2px);
 }
 
@@ -824,7 +824,7 @@
   margin-bottom: 2.5rem;
 }
 
-.search-input {
+.owner-dashboard .search-input {
   width: 100%;
   max-width: 500px;
   background: white;
@@ -837,7 +837,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
 }
 
-.search-input:focus {
+.owner-dashboard .search-input:focus {
   outline: none;
   border-color: #4a90e2;
   background: white;
@@ -845,7 +845,7 @@
   transform: translateY(-2px);
 }
 
-.search-input::placeholder {
+.owner-dashboard .search-input::placeholder {
   color: #a0aec0;
 }
 

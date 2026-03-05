@@ -42,8 +42,22 @@ const hotelSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+
+  location: {
+    type: {
+      type: String,
+      enum: ['Point'],
+      default: 'Point'
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      default: [0.0, 0.0]
+    }
   }
 
 }, { timestamps: true });
+
+hotelSchema.index({ location: '2dsphere' });
 
 module.exports = mongoose.model("Hotel", hotelSchema);

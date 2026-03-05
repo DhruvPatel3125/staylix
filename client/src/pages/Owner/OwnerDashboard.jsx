@@ -49,7 +49,8 @@ export default function OwnerDashboard() {
     pincode: '',
     description: '',
     amenities: '',
-    photos: []
+    photos: [],
+    coordinates: [0.0, 0.0]
   });
   const [roomFormData, setRoomFormData] = useState({
     hotelId: '',
@@ -75,6 +76,52 @@ export default function OwnerDashboard() {
       setActiveTab('my-bookings');
     }
   }, [location.search]);
+  
+  // Automatic Geocoding Effect
+  useEffect(() => {
+    if (!showHotelForm) return;
+    
+    const { city, state, country } = formData;
+    if (!city && !state && !country) return;
+
+    const fetchCoords = async () => {
+      try {
+        const params = new URLSearchParams({
+          format: 'json',
+          limit: '1',
+          city: city || '',
+          state: state || '',
+          country: country || '',
+        });
+
+        const url = `https://nominatim.openstreetmap.org/search?${params.toString()}`;
+        const response = await fetch(url, {
+          headers: {
+            'User-Agent': 'Staylix-Travel-App/1.0 (contact@staylix.com)'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.length > 0) {
+            const lon = parseFloat(data[0].lon);
+            const lat = parseFloat(data[0].lat);
+            if (!isNaN(lon) && !isNaN(lat)) {
+              setFormData(prev => ({
+                ...prev,
+                coordinates: [lon, lat]
+              }));
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Frontend geocoding error:', err);
+      }
+    };
+
+    const timer = setTimeout(fetchCoords, 1000);
+    return () => clearTimeout(timer);
+  }, [formData.city, formData.state, formData.country, showHotelForm]);
   const handleCancelReceivedBooking = async (bookingId) => {
     const confirmed = await showAlert.confirm(
       'Cancel & Refund?',
@@ -183,7 +230,8 @@ export default function OwnerDashboard() {
       pincode: '',
       description: '',
       amenities: '',
-      photos: []
+      photos: [],
+      coordinates: [0.0, 0.0]
     });
     setPhotoFileNames([]);
     setShowHotelForm(true);
@@ -199,7 +247,8 @@ export default function OwnerDashboard() {
       pincode: hotel.address?.pincode || '',
       description: hotel.description,
       amenities: hotel.amenities?.join(', ') || '',
-      photos: []
+      photos: [],
+      coordinates: hotel.location?.coordinates || [0.0, 0.0]
     });
     setPhotoFileNames([]);
     setShowHotelForm(true);
@@ -228,6 +277,7 @@ export default function OwnerDashboard() {
       submitData.append('pincode', formData.pincode);
       submitData.append('description', formData.description);
       submitData.append('amenities', JSON.stringify(amenitiesArray));
+      submitData.append('coordinates', JSON.stringify(formData.coordinates));
 
       if (formData.photos && formData.photos.length > 0) {
         for (let i = 0; i < formData.photos.length; i++) {
@@ -636,6 +686,24 @@ export default function OwnerDashboard() {
                           placeholder="Enter pincode"
                         />
                       </div>
+                    </div>
+
+                    <div className="form-group">
+                        <label>Coordinates (Automatic)</label>
+                        <div className="coordinates-display" style={{ 
+                          padding: '0.8rem', 
+                          background: '#f8fafc', 
+                          borderRadius: '8px', 
+                          fontSize: '0.9rem',
+                          color: '#64748b',
+                          border: '1px solid #e2e8f0',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
+                        }}>
+                          <span>{formData.coordinates[0]?.toFixed(4)}, {formData.coordinates[1]?.toFixed(4)}</span>
+                          <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Auto-fetched</span>
+                        </div>
                     </div>
 
                     <div className="form-group">
@@ -1103,7 +1171,7 @@ export default function OwnerDashboard() {
                             <div>
                               <h3>{booking.hotelId?.name || 'Hotel'}</h3>
                               <p className="booking-location">
-                                <MapPin size={16} /> {booking.hotelId?.location || booking.hotelId?.address?.city || 'Location N/A'}
+                                <MapPin size={16} /> {booking.hotelId?.address?.city || 'Location N/A'}
                               </p>
                             </div>
 

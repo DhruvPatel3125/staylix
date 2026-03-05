@@ -64,6 +64,13 @@ const api = {
       return response.data;
     },
 
+    getNearby: async (lat, lng, radius = 50) => {
+      const response = await instance.get(`/hotels/nearby`, {
+        params: { lat, lng, radius }
+      });
+      return response.data;
+    },
+
     create: async (hotelData) => {
       const response = await instance.post('/hotels', hotelData);
       return response.data;

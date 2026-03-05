@@ -4,6 +4,8 @@ import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import HotelCard from '../../components/features/HotelCard/HotelCard';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { MapPin, Search, SlidersHorizontal, Navigation, Loader2, X } from 'lucide-react';
+import { showToast } from '../../utils/swal';
 import './Home.css';
 
 export default function Home() {
@@ -15,25 +17,67 @@ export default function Home() {
   const [selectedCity, setSelectedCity] = useState('');
   const [minRating, setMinRating] = useState(0);
   const [sortBy, setSortBy] = useState('name');
+  const [isLocating, setIsLocating] = useState(false);
+  const [isNearbyMode, setIsNearbyMode] = useState(false);
 
   useEffect(() => {
-    const fetchHotels = async () => {
-      try {
-        const response = await api.hotels.getAll();
-        if (response.success) {
-          setHotels(response.hotels || []);
-        } else {
-          setError(response.message || 'Failed to fetch hotels');
-        }
-      } catch {
-        setError('Error fetching hotels');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchHotels();
   }, []);
+
+  const fetchHotels = async () => {
+    try {
+      setLoading(true);
+      const response = await api.hotels.getAll();
+      if (response.success) {
+        setHotels(response.hotels || []);
+        setIsNearbyMode(false);
+      } else {
+        setError(response.message || 'Failed to fetch hotels');
+      }
+    } catch {
+      setError('Error fetching hotels');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFindNearMe = () => {
+    if (!navigator.geolocation) {
+      showToast.error("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          setLoading(true);
+          const response = await api.hotels.getNearby(latitude, longitude);
+          
+          if (response.success) {
+            setHotels(response.hotels || []);
+            setIsNearbyMode(true);
+            showToast.success(`Found ${response.hotels.length} hotels near you!`);
+          } else {
+            showToast.error(response.message || "Failed to find nearby hotels");
+          }
+        } catch (err) {
+          showToast.error("Failed to fetch nearby hotels from server");
+        } finally {
+          setIsLocating(false);
+          setLoading(false);
+        }
+      },
+      (error) => {
+        setIsLocating(false);
+        let msg = "Failed to get your location";
+        if (error.code === 1) msg = "Location permission denied";
+        showToast.error(msg);
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
+  };
 
   const filteredHotels = useMemo(() => {
     let result = [...hotels];
@@ -88,6 +132,7 @@ export default function Home() {
       <div className="search-filters-section">
         <div className="search-box">
           <div className="search-wrapper">
+            <Search className="search-icon" size={20} />
             <input
               type="text"
               placeholder="Search hotels by name, city or description..."
@@ -95,6 +140,21 @@ export default function Home() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
             />
+            <button 
+              className={`nearby-btn ${isNearbyMode ? 'active' : ''}`}
+              onClick={isNearbyMode ? fetchHotels : handleFindNearMe}
+              disabled={isLocating}
+              title={isNearbyMode ? "Show all hotels" : "Find hotels near me"}
+            >
+              {isLocating ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : isNearbyMode ? (
+                <X size={20} />
+              ) : (
+                <Navigation size={20} />
+              )}
+              <span>{isLocating ? 'Locating...' : isNearbyMode ? 'Show All' : 'Near Me'}</span>
+            </button>
           </div>
         </div>
 

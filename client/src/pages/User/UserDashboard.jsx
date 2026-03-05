@@ -238,7 +238,7 @@ export default function UserDashboard() {
                             <div>
                               <h3>{booking.hotelId?.name || 'Hotel'}</h3>
                               <p className="booking-location">
-                                <MapPin size={16} /> {booking.hotelId?.location || 'Location not available'}
+                                <MapPin size={16} /> {booking.hotelId?.address?.city || 'Location not available'}
                               </p>
                             </div>
 

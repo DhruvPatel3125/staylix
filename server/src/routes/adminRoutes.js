@@ -12,7 +12,8 @@ const {
     deleteRoom,
     getOwnerRequests,
     approveOwnerRequest,
-    rejectOwnerRequest
+    rejectOwnerRequest,
+    getAllBookings
 } = require('../controllers/adminController');
 const { protect, admin } = require('../middlewares/authMiddleWare');
 
@@ -26,6 +27,8 @@ router.delete("/hotels/:id", protect, admin, deleteHotel);
 
 router.get("/rooms", protect, admin, getAllRooms);
 router.delete("/rooms/:id", protect, admin, deleteRoom);
+
+router.get("/bookings", protect, admin, getAllBookings);
 
 router.get("/owner-requests", protect, admin, getOwnerRequests);
 router.put("/owner-requests/approve/:id", protect, admin, approveOwnerRequest);

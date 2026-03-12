@@ -244,6 +244,11 @@ const api = {
     rejectOwnerRequest: async (id) => {
       const response = await instance.put(`/admin/owner-requests/reject/${id}`);
       return response.data;
+    },
+
+    getAllBookings: async () => {
+      const response = await instance.get('/admin/bookings');
+      return response.data;
     }
   },
 

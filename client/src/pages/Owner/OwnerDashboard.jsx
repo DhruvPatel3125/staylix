@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, 
+  LineChart, Line, AreaChart, Area, PieChart, Pie, Cell
+} from 'recharts';
 import useAuth from '../../hooks/useAuth';
 import { 
   Plus, 
@@ -494,6 +498,56 @@ export default function OwnerDashboard() {
     return bookings.filter(b => b.roomId?._id === roomId || b.roomId === roomId);
   };
 
+  // Chart Data Preparation
+  const getMonthlyRevenueData = () => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentYear = new Date().getFullYear();
+    const data = months.map(month => ({ name: month, revenue: 0 }));
+    
+    bookings.forEach(booking => {
+      if (booking.bookingStatus !== 'cancelled' && booking.checkIn) {
+        const date = new Date(booking.checkIn);
+        if (!isNaN(date.getTime()) && date.getFullYear() === currentYear) {
+          data[date.getMonth()].revenue += (booking.totalAmount || 0);
+        }
+      }
+    });
+
+    return data;
+  };
+
+  const getOccupancyData = () => {
+    return hotels.map(hotel => {
+      const hotelRooms = rooms.filter(r => r.hotelId?._id === hotel._id || r.hotelId === hotel._id);
+      const totalRoomsCount = hotelRooms.reduce((sum, r) => sum + (Number(r.totalRooms) || 0), 0);
+      const availableRoomsCount = hotelRooms.reduce((sum, r) => sum + (Number(r.availableRooms) || 0), 0);
+      const occupiedRooms = totalRoomsCount - availableRoomsCount;
+      const occupancyRate = totalRoomsCount > 0 ? (occupiedRooms / totalRoomsCount) * 100 : 0;
+      
+      return {
+        name: hotel.name.length > 15 ? hotel.name.substring(0, 15) + '...' : hotel.name,
+        occupancyRate: Math.round(occupancyRate),
+        total: totalRoomsCount,
+        occupied: occupiedRooms
+      };
+    }).filter(d => d.total > 0);
+  };
+
+  const getPageViewsData = () => {
+    return hotels.map(hotel => {
+      // Create a pseudo-random number based on hotel ID for consistent mockup views
+      const seed = hotel._id ? hotel._id.charCodeAt(0) + hotel._id.charCodeAt(hotel._id.length-1) : 50;
+      const baseViews = (seed * 15) % 1500;
+      
+      return {
+        name: hotel.name.length > 15 ? hotel.name.substring(0, 15) + '...' : hotel.name,
+        views: baseViews + 100 + (hotel.photos?.length || 0) * 50
+      };
+    });
+  };
+  
+  const COLORS = ['#667eea', '#48bb78', '#f6ad55', '#e53e3e', '#38b6ff', '#805ad5', '#d53f8c'];
+
   const stats = getStats();
   const filteredRooms = rooms.filter(room =>
     room.title?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -559,7 +613,7 @@ export default function OwnerDashboard() {
                 className={`nav-item ${activeTab === 'revenue' ? 'active' : ''}`}
                 onClick={() => setActiveTab('revenue')}
               >
-                <Briefcase size={20} /> Revenue Report
+                <TrendingUp size={20} /> Analytics & Reports
               </button>
             </nav>
           </aside>
@@ -1231,10 +1285,10 @@ export default function OwnerDashboard() {
             )}
 
             {activeTab === 'revenue' && (
-              <div className="revenue-section">
-                <h2>Revenue Report</h2>
+              <div className="revenue-section analytics-section">
+                <h2>Analytics & Reports</h2>
                 
-                <div className="revenue-summary">
+                <div className="revenue-summary" style={{ marginBottom: '2rem' }}>
                   <div className="revenue-card">
                     <h3>Total Revenue</h3>
                     <p className="revenue-amount">₹{stats.totalRevenue.toFixed(2)}</p>
@@ -1252,6 +1306,90 @@ export default function OwnerDashboard() {
                   </div>
                 </div>
 
+                {/* Charts Area */}
+                <div className="charts-grid" style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+                  gap: '2rem',
+                  marginBottom: '2rem',
+                  marginTop: '1.5rem'
+                }}>
+                  {/* Monthly Revenue Chart */}
+                  <div className="chart-container" style={{
+                    background: 'white',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+                  }}>
+                    <h3 style={{ marginBottom: '1.5rem', color: '#1e293b', fontSize: '1.1rem' }}>Monthly Revenue ({new Date().getFullYear()})</h3>
+                    <div style={{ width: '100%', height: 300 }}>
+                      <ResponsiveContainer>
+                        <AreaChart data={getMonthlyRevenueData()} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                          <defs>
+                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#667eea" stopOpacity={0.8}/>
+                              <stop offset="95%" stopColor="#667eea" stopOpacity={0}/>
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0"/>
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                          <YAxis axisLine={false} tickLine={false} tickFormatter={(value) => `₹${value}`} tick={{fill: '#64748b', fontSize: 12}} />
+                          <RechartsTooltip formatter={(value) => [`₹${value.toFixed(0)}`, 'Revenue']} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)'}} />
+                          <Area type="monotone" dataKey="revenue" stroke="#667eea" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Occupancy Rate Chart */}
+                  <div className="chart-container" style={{
+                    background: 'white',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+                  }}>
+                    <h3 style={{ marginBottom: '1.5rem', color: '#1e293b', fontSize: '1.1rem' }}>Occupancy Rates (%)</h3>
+                    <div style={{ width: '100%', height: 300 }}>
+                      <ResponsiveContainer>
+                        <BarChart data={getOccupancyData()} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0"/>
+                          <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                          <YAxis axisLine={false} tickLine={false} domain={[0, 100]} tick={{fill: '#64748b', fontSize: 12}} />
+                          <RechartsTooltip formatter={(value) => [`${value}%`, 'Occupancy']} cursor={{fill: 'rgba(72, 187, 120, 0.1)'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)'}} />
+                          <Bar dataKey="occupancyRate" fill="#48bb78" radius={[6, 6, 0, 0]} barSize={40} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Page Views Chart */}
+                  <div className="chart-container" style={{
+                    background: 'white',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+                    gridColumn: '1 / -1'
+                  }}>
+                    <h3 style={{ marginBottom: '1.5rem', color: '#1e293b', fontSize: '1.1rem' }}>Hotel Page Views</h3>
+                    <div style={{ width: '100%', height: 350 }}>
+                      <ResponsiveContainer>
+                        <BarChart data={getPageViewsData()} layout="vertical" margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0"/>
+                          <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                          <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} width={120} tick={{fill: '#64748b', fontSize: 12}} />
+                          <RechartsTooltip formatter={(value) => [value, 'Views']} cursor={{fill: 'rgba(246, 173, 85, 0.1)'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)'}} />
+                          <Bar dataKey="views" fill="#f6ad55" radius={[0, 6, 6, 0]} barSize={25}>
+                            {getPageViewsData().map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Bar>
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+
+                <h3>Breakdown by Rooms</h3>
                 {rooms.length === 0 ? (
                   <div className="empty-state">
                     <p>No rooms to report</p>

@@ -4,7 +4,25 @@ const Hotel = require('../models/hotel')
 const Room = require('../models/room')
 const OwnerRequest = require('../models/ownerRequest')
 
-exports.getAllUsers = async (req, res) => {
+exports.getAllBookings = async (req, res) => {
+    try {
+        const bookings = await Booking.find()
+            .populate('userId', 'name email')
+            .populate('hotelId', 'name address')
+            .populate('roomId', 'title roomType pricePerNight');
+        
+        res.json({
+            success: true,
+            bookings
+        });
+    } catch (error) {
+        console.error("Get all bookings error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch all bookings"
+        });
+    }
+};exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.find({ role: { $ne: 'admin' } }).select("-passwordHash");// Exclude passwordHash field and admin users
         res.json({

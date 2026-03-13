@@ -9,8 +9,8 @@ const useAuth = () => {
         return dispatch(loginUser({ email, password })).unwrap();
     };
 
-    const register = async (name, email, password, role) => {
-        return dispatch(registerUser({ name, email, password, role })).unwrap();
+    const register = async (userData) => {
+        return dispatch(registerUser(userData)).unwrap();
     };
 
     const logout = () => {

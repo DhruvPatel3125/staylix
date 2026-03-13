@@ -1,0 +1,56 @@
+.profile-header-premium {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.profile-avatar-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.profile-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-title-info h2 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #1a202c;
+}
+
+.profile-role-text {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #4a90e2;
+  letter-spacing: 1px;
+}
+
+/* Reusing existing badge colors for avatars if no image */
+.user-avatar { background: linear-gradient(135deg, #4a90e2 0%, #63b3ed 100%); }
+.owner-avatar { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); }
+.admin-avatar { background: linear-gradient(135deg, #ed64a6 0%, #d53f8c 100%); }
+
+@media (max-width: 640px) {
+  .profile-header-premium {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+}

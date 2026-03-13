@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
-import { User, Mail, Lock } from 'lucide-react';
+import { User, Mail, Lock, Camera, X as CloseIcon } from 'lucide-react';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import { registerSchema, validate } from '../../utils/validation';
@@ -17,6 +17,8 @@ export default function Register() {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [image, setImage] = useState(null);
+  const [preview, setPreview] = useState('');
   const navigate = useNavigate();
   const { register } = useAuth();
 
@@ -27,6 +29,31 @@ export default function Register() {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
     }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire({
+          icon: 'error',
+          title: 'File too large',
+          text: 'Please upload an image smaller than 5MB'
+        });
+        return;
+      }
+      setImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImage(null);
+    setPreview('');
   };
 
   const handleSubmit = async (e) => {
@@ -41,8 +68,17 @@ export default function Register() {
     setErrors({});
     setLoading(true);
 
+    const data = new FormData();
+    data.append('name', formData.name);
+    data.append('email', formData.email);
+    data.append('password', formData.password);
+    data.append('role', formData.role);
+    if (image) {
+      data.append('profileImage', image);
+    }
+
     try {
-      await register(formData.name, formData.email, formData.password, formData.role);
+      await register(data);
       Swal.fire({
         icon: 'success',
         title: 'Success!',
@@ -74,6 +110,33 @@ export default function Register() {
         <h1>Create Account</h1>
         
         <form onSubmit={handleSubmit}>
+          <div className="profile-upload-section">
+            <label className="profile-upload-label">
+              <div className="upload-avatar-container">
+                {preview ? (
+                  <div className="preview-container">
+                    <img src={preview} alt="Profile Preview" className="register-avatar-preview" />
+                    <button type="button" className="remove-image-btn" onClick={removeImage}>
+                      <CloseIcon size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="upload-placeholder">
+                    <Camera size={32} />
+                    <span>Photo</span>
+                  </div>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ display: 'none' }}
+              />
+              <span className="upload-hint">Add profile picture (optional)</span>
+            </label>
+          </div>
+
           <Input
             label="Full Name"
             name="name"

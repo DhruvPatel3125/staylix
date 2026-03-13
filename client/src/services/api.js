@@ -46,8 +46,8 @@ instance.interceptors.response.use(
 
 const api = {
   auth: {
-    register: async (name, email, password, role = 'user') => {
-      const response = await instance.post('/auth/register', { name, email, password, role });
+    register: async (formData) => {
+      const response = await instance.post('/auth/register', formData);
       return response.data;
     },
 

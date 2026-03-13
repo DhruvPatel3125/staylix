@@ -9,6 +9,8 @@ const storage = multer.diskStorage({
       dir = 'uploads/rooms';
     } else if (req.baseUrl && req.baseUrl.includes('/owner-request')) {
       dir = 'uploads/documents';
+    } else if (req.baseUrl && req.baseUrl.includes('/auth')) {
+      dir = 'uploads/profiles';
     }
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
@@ -22,6 +24,8 @@ const storage = multer.diskStorage({
       prefix = 'room-';
     } else if (req.baseUrl && req.baseUrl.includes('/owner-request')) {
       prefix = 'doc-';
+    } else if (req.baseUrl && req.baseUrl.includes('/auth')) {
+      prefix = 'profile-';
     }
     cb(null, prefix + uniqueSuffix + path.extname(file.originalname));
   }

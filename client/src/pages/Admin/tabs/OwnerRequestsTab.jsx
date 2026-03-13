@@ -1,6 +1,7 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { UserPlus, Clock, CheckCircle, X, ArrowRight } from 'lucide-react';
+import { getImageUrl } from '../../../utils/imageUrl';
 
 export default function OwnerRequestsTab() {
   const { 
@@ -57,7 +58,7 @@ export default function OwnerRequestsTab() {
                      <span>Requested: {new Date(request.createdAt).toLocaleDateString()}</span>
                   </div>
                   {request.document && (
-                    <a href={request.document} target="_blank" rel="noreferrer" className="doc-link">
+                    <a href={getImageUrl(request.document)} target="_blank" rel="noreferrer" className="doc-link">
                       <ArrowRight size={14} /> View Document
                     </a>
                   )}

@@ -1,7 +1,9 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import useAuth from '../../../hooks/useAuth';
+import { getImageUrl } from '../../../utils/imageUrl';
 import './Sidebar.css';
+
 
 export default function Sidebar({ items, basePath = '' }) {
   const { user } = useAuth();
@@ -10,7 +12,11 @@ export default function Sidebar({ items, basePath = '' }) {
     <aside className="dashboard-sidebar">
       <div className="profile-card">
         <div className={`profile-avatar ${user?.role}-avatar`}>
-          {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+          {user?.profileImage ? (
+            <img src={getImageUrl(user.profileImage)} alt={user.name} className="sidebar-avatar-img" />
+          ) : (
+            user?.name?.charAt(0)?.toUpperCase() || 'U'
+          )}
         </div>
         <div className="profile-info">
           <h3>{user?.name}</h3>

@@ -37,7 +37,8 @@ exports.register = async (req, res) => {
       name,
       email,
       passwordHash,
-      role: role || "user"
+      role: role || "user",
+      profileImage: req.file ? req.file.path : ''
     });
 
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -45,7 +46,7 @@ exports.register = async (req, res) => {
     res.status(201).json({
       success: true,
       token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, profileImage: user.profileImage }
     });
   } catch (err) {
     console.error("Registration error:", err);
@@ -95,7 +96,7 @@ exports.login = async (req, res) => {
     res.json({
       success: true,
       token,
-      user: { id: user._id, name: user.name, email: user.email, role: user.role }
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, profileImage: user.profileImage }
     });
   } catch (err) {
     console.error("Login error:", err);

@@ -31,7 +31,15 @@
   transform: rotate(-3deg);
   transition: transform 0.3s ease;
   background: #6366f1; /* Fallback */
+  overflow: hidden; /* Ensure image doesn't overflow */
 }
+
+.sidebar-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 
 /* Role specific avatars */
 .admin-avatar {

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../../hooks/useAuth';
+import { getImageUrl } from '../../../utils/imageUrl';
 import { 
   Hotel, 
   Menu, 
@@ -97,7 +98,11 @@ export default function Navbar() {
             {isAuthenticated ? (
               <div className="user-profile">
                 <div className="user-info">
-                  <UserIcon size={20} className="user-avatar-icon" />
+                  {user?.profileImage ? (
+                    <img src={getImageUrl(user.profileImage)} alt={user.name} className="navbar-avatar-img" />
+                  ) : (
+                    <UserIcon size={20} className="user-avatar-icon" />
+                  )}
                   <span className="user-name">{user?.name}</span>
                 </div>
                 <button onClick={logout} className="logout-btn-nav">

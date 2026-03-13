@@ -4,9 +4,9 @@ import api from '../../services/api';
 // Async Thunks
 export const registerUser = createAsyncThunk(
     'auth/register',
-    async ({ name, email, password, role }, { rejectWithValue }) => {
+    async (userData, { rejectWithValue }) => {
         try {
-            const response = await api.auth.register(name, email, password, role);
+            const response = await api.auth.register(userData);
             if (response.success) {
                 localStorage.setItem('token', response.token);
                 return { user: response.user, token: response.token };

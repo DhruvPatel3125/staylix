@@ -4,7 +4,8 @@ import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import HotelCard from '../../components/features/HotelCard/HotelCard';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import { MapPin, Search, SlidersHorizontal, Navigation, Loader2, X } from 'lucide-react';
+import MapView from '../../components/features/MapView/MapView';
+import { MapPin, Search, SlidersHorizontal, Navigation, Loader2, X, LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { showToast } from '../../utils/swal';
 import './Home.css';
 
@@ -19,6 +20,7 @@ export default function Home() {
   const [sortBy, setSortBy] = useState('name');
   const [isLocating, setIsLocating] = useState(false);
   const [isNearbyMode, setIsNearbyMode] = useState(false);
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
 
   useEffect(() => {
     fetchHotels();
@@ -206,12 +208,32 @@ export default function Home() {
         </div>
       </div>
 
+      <div className="view-toggle-container">
+        <div className="view-toggle-buttons">
+          <button 
+            className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
+            onClick={() => setViewMode('list')}
+          >
+            <LayoutGrid size={18} /> <span>List View</span>
+          </button>
+          <button 
+            className={`view-btn ${viewMode === 'map' ? 'active' : ''}`}
+            onClick={() => setViewMode('map')}
+          >
+            <MapIcon size={18} /> <span>Map View</span>
+          </button>
+        </div>
+        <p className="results-count">Showing {filteredHotels.length} hotels</p>
+      </div>
+
       {loading ? (
         <LoadingSpinner />
       ) : filteredHotels.length === 0 ? (
         <div className="empty-state">
           <p>No hotels found matching your criteria</p>
         </div>
+      ) : viewMode === 'map' ? (
+        <MapView hotels={filteredHotels} />
       ) : (
         <div className="hotels-grid">
           {filteredHotels.map((hotel) => (

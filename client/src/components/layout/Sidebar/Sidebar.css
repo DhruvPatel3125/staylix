@@ -90,28 +90,42 @@
 .nav-item {
   background: transparent;
   border: none;
-  padding: 1rem 1.5rem;
+  padding: 1.25rem 2rem;
   text-align: left;
-  border-radius: 18px;
+  border-radius: 20px;
   color: #64748b;
   font-weight: 600;
-  font-size: 1rem;
-  transition: all 0.3s ease;
+  font-size: 1.1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
-  gap: 1.2rem;
+  gap: 1.8rem;
   cursor: pointer;
   width: 100%;
+  text-decoration: none !important;
+  outline: none;
+  border: none;
+}
+
+.dashboard-nav a, 
+.dashboard-nav a:hover, 
+.dashboard-nav a:active, 
+.dashboard-nav a:visited,
+.dashboard-nav a:focus {
+  text-decoration: none !important;
+  color: inherit;
 }
 
 .nav-item:hover {
-  background: rgba(99, 102, 241, 0.05);
+  background: #f1f5f9;
   color: #6366f1;
-  transform: translateX(8px);
+  transform: translateX(10px);
+  text-decoration: none !important;
 }
 
 .nav-item.active {
   background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
   color: white;
-  box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2);
+  text-decoration: none !important;
 }

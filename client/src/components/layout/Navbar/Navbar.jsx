@@ -40,7 +40,7 @@ export default function Navbar() {
       <div className="navbar-container">
         <Link to="/" className="navbar-logo">
           <div className="logo-icon">
-            <Hotel size={24} />
+            <img src="/logo.png" alt="Staylix Logo" />
           </div>
           <span className="logo-text">Stay<span>lix</span></span>
         </Link>

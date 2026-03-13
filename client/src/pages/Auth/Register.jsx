@@ -53,12 +53,16 @@ export default function Register() {
       navigate('/');
     } catch (err) {
       console.error('Registration error:', err);
-      const msg = typeof err === 'string' ? err : (err?.message || 'Registration failed');
-      Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: msg
-      });
+      if (err.errors) {
+        setErrors(err.errors);
+      } else {
+        const msg = err.message || 'Registration failed';
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: msg
+        });
+      }
     } finally {
       setLoading(false);
     }

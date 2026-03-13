@@ -38,7 +38,8 @@ export default function HotelCard({ hotel }) {
           )}
           <div className="card-badge-rating">
             <Star size={14} fill="currentColor" />
-            <span>{hotel.rating || 'N/A'}</span>
+            <span>{hotel.rating || 0}</span>
+            {hotel.reviewsCount > 0 && <span className="card-reviews-count">({hotel.reviewsCount})</span>}
           </div>
         
         <button className={`wishlist-btn ${isWishlisted ? "active" : ""}`}

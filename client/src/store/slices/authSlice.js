@@ -14,19 +14,16 @@ export const registerUser = createAsyncThunk(
                 return rejectWithValue(response.message);
             }
         } catch (err) {
-            return rejectWithValue(err.response?.data?.message || err.message || 'Registration failed');
+            return rejectWithValue(err.errors ? { message: err.message, errors: err.errors } : err.message || 'Registration failed');
         }
     }
-    
 );
 
 export const loginUser = createAsyncThunk(
   'auth/login',
   async ({ email, password }, { rejectWithValue }) => {
     try {
-          const data = await api.auth.login(email, password);
-
-      //  NORMALIZE USER (user / admin / owner)
+      const data = await api.auth.login(email, password);
       const user = data.user || data.admin || data.owner;
 
       if (!data.success || !user) {
@@ -36,11 +33,10 @@ export const loginUser = createAsyncThunk(
       localStorage.setItem('token', data.token);
       return { user, token: data.token };
     } catch (err) {
-      return rejectWithValue(err?.response?.data?.message || 'Login failed');
+      return rejectWithValue(err.errors ? { message: err.message, errors: err.errors } : err.message || 'Login failed');
     }
   }
 );
-
 
 export const loadUser = createAsyncThunk(
     'auth/loadUser',

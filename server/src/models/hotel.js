@@ -38,6 +38,10 @@ const hotelSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  reviewsCount: {
+    type: Number,
+    default: 0
+  },
 
   isActive: {
     type: Boolean,

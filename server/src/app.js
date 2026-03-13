@@ -50,12 +50,54 @@ app.get('/',(req,res)=>{
 })
 
 app.use((err, req, res, next) => {
-    console.error("ERROR:", err.message);
-    const statusCode = err.statusCode || err.status || 500;
+    let error = { ...err };
+    error.message = err.message;
+
+    // Log to console for dev
+    if (process.env.NODE_ENV === 'development') {
+        console.error("ERROR:", err);
+    }
+
+    // Mongoose bad ObjectId
+    if (err.name === 'CastError') {
+        const message = `Resource not found with id of ${err.value}`;
+        error = { message, statusCode: 404 };
+    }
+
+    // Mongoose duplicate key
+    if (err.code === 11000) {
+        const field = Object.keys(err.keyValue)[0];
+        const message = `${field === 'email' ? 'Email' : field} already exists`;
+        error = { message, statusCode: 400 };
+    }
+
+    // Mongoose validation error
+    if (err.name === 'ValidationError') {
+        const errors = {};
+        Object.values(err.errors).forEach((val) => {
+            errors[val.path] = val.message;
+        });
+        error = { 
+            message: 'Validation failed', 
+            errors, 
+            statusCode: 400 
+        };
+    }
+
+    // JWT errors
+    if (err.name === 'JsonWebTokenError') {
+        error = { message: 'Not authorized', statusCode: 401 };
+    }
+    if (err.name === 'TokenExpiredError') {
+        error = { message: 'Token expired', statusCode: 401 };
+    }
+
+    const statusCode = error.statusCode || 500;
     res.status(statusCode).json({
         success: false,
-        message: err.message || "Internal Server Error"
+        message: error.message || "Internal Server Error",
+        errors: error.errors || undefined
     });
-})
+});
 
 module.exports = app;

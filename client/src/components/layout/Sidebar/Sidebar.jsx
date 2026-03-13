@@ -1,8 +1,9 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import useAuth from '../../../hooks/useAuth';
 import './Sidebar.css';
 
-export default function Sidebar({ items, activeTab, onTabChange }) {
+export default function Sidebar({ items, basePath = '' }) {
   const { user } = useAuth();
 
   return (
@@ -21,14 +22,17 @@ export default function Sidebar({ items, activeTab, onTabChange }) {
       <nav className="dashboard-nav">
         {items.map((item) => {
           const Icon = item.icon;
+          const targetPath = `${basePath}/${item.id === 'overview' ? '' : item.id}`.replace(/\/+$/, '');
+          
           return (
-            <button
+            <NavLink
               key={item.id}
-              className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
-              onClick={() => onTabChange(item.id)}
+              to={targetPath || basePath || '/'}
+              end={item.id === 'overview'}
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
             >
               {Icon && <Icon size={20} />} {item.label}
-            </button>
+            </NavLink>
           );
         })}
       </nav>

@@ -51,12 +51,16 @@ export default function Login() {
       });
       navigate('/');
     } catch (err) {
-      const msg = err || err?.message || 'An error occurred';
-      Swal.fire({
-        icon: 'error',
-        title: 'Login Failed',
-        text: msg
-      });
+      if (err.errors) {
+        setErrors(err.errors);
+      } else {
+        const msg = err.message || 'An error occurred';
+        Swal.fire({
+          icon: 'error',
+          title: 'Login Failed',
+          text: msg
+        });
+      }
     } finally {
       setLoading(false);
     }

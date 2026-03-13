@@ -25,6 +25,25 @@ instance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.data) {
+      // Create a better error message for the frontend
+      const serverMessage = error.response.data.message;
+      const serverErrors = error.response.data.errors;
+      
+      const enhancedError = new Error(serverMessage || error.message);
+      enhancedError.status = error.response.status;
+      enhancedError.errors = serverErrors;
+      enhancedError.originalError = error;
+      
+      return Promise.reject(enhancedError);
+    }
+    return Promise.reject(error);
+  }
+);
+
 const api = {
   auth: {
     register: async (name, email, password, role = 'user') => {

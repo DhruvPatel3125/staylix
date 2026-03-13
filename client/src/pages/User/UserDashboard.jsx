@@ -1,26 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import { 
-  Calendar, 
-  Hotel, 
-  User as UserIcon, 
-  MapPin, 
-  Clock, 
-  Briefcase, 
-  Trash2, 
-  CheckCircle,
-  AlertCircle,
-  FileText,
-  Plus,
-  X,
-  HeartIcon
+  Calendar, Hotel, User as UserIcon, MapPin, Clock, 
+  Briefcase, Trash2, CheckCircle, AlertCircle, FileText, 
+  Plus, X, Heart as HeartIcon, Mail, Shield
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { showToast, showAlert } from '../../utils/swal';
 import api, { API_BASE_URL } from '../../services/api';
 import { fetchWishlist, toggleWishlist, toggleWishlistLocal } from '../../store/slices/wishlistSlice';
 import { getImageUrl } from '../../utils/imageUrl';
+import Sidebar from '../../components/layout/Sidebar/Sidebar';
 import './UserDashboard.css';
 
 const formatDate = (dateValue) => {
@@ -161,347 +152,61 @@ export default function UserDashboard() {
     );
   }
 
+  const sidebarItems = [
+    { id: 'bookings', label: 'My Bookings', icon: Calendar },
+    ...(user?.role === 'user' ? [{ id: 'become-owner', label: 'Become Owner', icon: Briefcase }] : []),
+    { id: 'profile', label: 'Profile', icon: UserIcon },
+    { id: 'wishlist', label: 'Wishlist', icon: HeartIcon },
+  ];
+
+  if (loading) {
+    return (
+      <div className="user-dashboard">
+        <div className="loading">Loading dashboard...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="user-dashboard">
       <div className="dashboard-container">
-        <div className="dashboard-header">
-          <h1>My Dashboard</h1>
-          <p>Welcome back, {user?.name || 'User'}!</p>
-        </div>
+        <header className="dashboard-header-premium">
+          <div className="header-content">
+            <h1>Guest Dashboard</h1>
+            <p>Welcome back, {user?.name || 'User'}! Your travel journey at a glance.</p>
+          </div>
+        </header>
 
-        <div className="dashboard-content">
-          {/* ---------- SIDEBAR ---------- */}
-          <aside className="dashboard-sidebar">
-            <div className="profile-card">
-              <div className="profile-avatar">
-                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-              </div>
-              <div className="profile-info">
-                <h3>{user?.name || 'User'}</h3>
-                <p>{user?.email || 'N/A'}</p>
-                <span className={`role-badge ${user?.role}-badge`}>{user?.role?.toUpperCase() || 'USER'}</span>
-              </div>
-            </div>
+        <div className="dashboard-layout-premium">
+          <Sidebar items={sidebarItems} basePath="/user-dashboard" />
 
-            <nav className="dashboard-nav">
-              <button
-                className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
-                onClick={() => setActiveTab('bookings')}
-              >
-                <Calendar size={20} /> My Bookings
-              </button>
-              {user?.role === 'user' && (
-                <button
-                  className={`nav-item ${activeTab === 'owner-request' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('owner-request')}
-                >
-                  <Briefcase size={20} /> Become Owner
-                </button>
-              )}
-              <button
-                className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
-                onClick={() => setActiveTab('profile')}
-              >
-                <UserIcon size={20} /> Profile
-              </button>
-              <button 
-                className={`nav-item ${activeTab === 'wishlist' ? 'wishlist' : ''}`}
-                onClick={() => setActiveTab('wishlist')}>
-                  <HeartIcon size={20} /> Wishlist
-              </button>
-            </nav>
-          </aside>
-
-          {/* ---------- MAIN CONTENT ---------- */}
-          <main className="dashboard-main">
-            {error && <div className="error-banner">{error}</div>}
-
-            {activeTab === 'bookings' && (
-              <div className="bookings-section">
-                <h2>My Bookings</h2>
-
-                {bookings.length === 0 ? (
-                  <div className="empty-state">
-                    <p>No bookings yet</p>
-                    <p className="empty-text">
-                      Start exploring and book your next hotel!
-                    </p>
-                  </div>
-                ) : (
-                  <div className="bookings-list">
-                    {bookings.map((booking) => {
-                      const status = getBookingStatus(booking);
-
-                      return (
-                        <div key={booking._id} className="booking-card">
-                          <div className="booking-header">
-                            <div>
-                              <h3>{booking.hotelId?.name || 'Hotel'}</h3>
-                              <p className="booking-location">
-                                <MapPin size={16} /> {booking.hotelId?.address?.city || 'Location not available'}
-                              </p>
-                            </div>
-
-                            <span
-                              className="status-badge"
-                              style={{ backgroundColor: getStatusColor(status) }}
-                            >
-                              {status}
-                            </span>
-                          </div>
-
-                          <div className="booking-details">
-                            <div className="detail-item">
-                              <span className="label">Check-in</span>
-                              <span className="value">
-                                {formatDate(booking.checkIn)}
-                              </span>
-                            </div>
-
-                            <div className="detail-item">
-                              <span className="label">Check-out</span>
-                              <span className="value">
-                                {formatDate(booking.checkOut)}
-                              </span>
-                            </div>
-
-                            <div className="detail-item">
-                              <span className="label">Room</span>
-                              <span className="value">
-                                {booking.roomId?.type || booking.roomId?.roomType || booking.roomId?.title || 'Room'}
-                              </span>
-                            </div>
-
-                            <div className="detail-item">
-                              <span className="label">Total Price</span>
-                              <span className="value price">
-                                ₹{Number(booking.totalAmount || 0).toFixed(2)}
-                              </span>
-                            </div>
-                          </div>
-
-                          {status === 'Active' && booking.bookingStatus !== 'cancelled' && (
-                            <button
-                              className="cancel-btn"
-                              onClick={() => handleCancelBooking(booking._id)}
-                              disabled={cancelingId === booking._id}
-                            >
-                              {cancelingId === booking._id
-                                ? '...'
-                                : <><Trash2 size={16} /> Cancel Booking</>}
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'owner-request' && (
-              <div className="owner-request-section">
-                <h2>Become an Owner</h2>
-                <p className="section-subtitle">Submit your application to become a hotel owner and manage your properties</p>
-
-                {ownerRequest ? (
-                  <div className="request-status-card">
-                    <div className="status-header">
-                      <h3>Your Owner Request</h3>
-                      <span className={`status-badge ${ownerRequest.status}`}>
-                        {ownerRequest.status.charAt(0).toUpperCase() + ownerRequest.status.slice(1)}
-                      </span>
-                    </div>
-                    <div className="status-details">
-                      <div className="detail-item">
-                        <span className="label">Business Name</span>
-                        <span className="value">{ownerRequest.businessName}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="label">Document</span>
-                        <span className="value">
-                          <a 
-                            href={`${API_BASE_URL}/${ownerRequest.document.replace(/\\/g, '/')}`} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            style={{ color: '#3182ce', textDecoration: 'underline' }}
-                          >
-                            View Document
-                          </a>
-                        </span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="label">Submitted On</span>
-                        <span className="value">{new Date(ownerRequest.createdAt).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    {ownerRequest.status === 'pending' && (
-                      <p className="pending-message">
-                        <Clock size={16} /> Your request is under review. Admin will approve or reject it soon.
-                      </p>
-                    )}
-                    {ownerRequest.status === 'approved' && (
-                      <p className="approved-message" style={{ color: '#48bb78', marginTop: '12px' }}>
-                        <CheckCircle size={16} /> Congratulations! Your request has been approved. You can now manage hotels and rooms.
-                      </p>
-                    )}
-                    {ownerRequest.status === 'rejected' && (
-                      <p className="rejected-message" style={{ color: '#f56565', marginTop: '12px' }}>
-                        <X size={16} /> Your request was rejected. Please contact support for more information.
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <div className="request-form-container">
-                      {!showOwnerRequestForm ? (
-                        <button
-                          className="submit-btn-premium"
-                          onClick={() => setShowOwnerRequestForm(true)}
-                        >
-                          <FileText size={20} /> Submit Owner Application
-                        </button>
-                      ) : (
-                        <div className="form-content">
-                          <h3>Submit Your Application</h3>
-                          <div className="premium-input-group">
-                            <label>Business Name</label>
-                            <input
-                              type="text"
-                              className="premium-input"
-                              value={ownerRequestData.businessName}
-                              onChange={(e) => setOwnerRequestData({ ...ownerRequestData, businessName: e.target.value })}
-                              placeholder="Enter your business/hotel name"
-                              required
-                            />
-                          </div>
-
-                          <div className="premium-input-group">
-                            <label>Identity/Business Document (PDF or Image)</label>
-                            <input
-                              type="file"
-                              className="premium-input"
-                              onChange={(e) => setOwnerRequestData({ ...ownerRequestData, document: e.target.files[0] })}
-                              required
-                              accept=".pdf,image/*"
-                            />
-                            <small style={{ color: 'var(--text-secondary)', marginTop: '0.5rem', display: 'block' }}>
-                              Upload your business license or proof of ownership
-                            </small>
-                          </div>
-
-                          <div className="form-actions" style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-                            <button
-                              className="submit-btn-premium"
-                              onClick={handleSubmitOwnerRequest}
-                              disabled={submittingRequest}
-                              style={{ flex: 1 }}
-                            >
-                              {submittingRequest ? 'Submitting...' : <><CheckCircle size={20} /> Submit Application</>}
-                            </button>
-                            <button
-                              className="cancel-btn"
-                              onClick={() => setShowOwnerRequestForm(false)}
-                              disabled={submittingRequest}
-                              style={{ flex: 1, width: 'auto' }}
-                            >
-                              <X size={20} /> Cancel
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="info-box" style={{ marginTop: '24px', padding: '16px', backgroundColor: '#edf2f7', borderRadius: '8px', borderLeft: '4px solid #667eea' }}>
-                      <h4 style={{ marginTop: 0 }}>What you'll need:</h4>
-                      <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-                        <li>Business name or hotel name</li>
-                        <li>Valid business license or registration number</li>
-                        <li>Proof of ownership or authorization</li>
-                      </ul>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'profile' && (
-              <div className="profile-section">
-                <h2>Profile Information</h2>
-                <div className="profile-form">
-                  <div className="form-group-static">
-                    <label>Full Name</label>
-                    <p>{user?.name || 'N/A'}</p>
-                  </div>
-
-                  <div className="form-group-static">
-                    <label>Email</label>
-                    <p>{user?.email || 'N/A'}</p>
-                  </div>
-
-                  <div className="form-group-static">
-                    <label>Account Type</label>
-                    <p className="role-badge-large">
-                      {user?.role?.toUpperCase() || 'USER'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'wishlist' &&(
-              <div className='wishlist-section'>
-                <h2>Wishlist </h2>
-                {wishlistLoading ? (
-                  <div className="empty-state">
-                    <p>Loading wishlist...</p>
-                  </div>
-                ) : wishlistedHotels.length === 0 ? (
-                  <div className="empty-state">
-                    <p>No items in wishlist</p>
-                    <p className="empty-text">Save hotels you like and they will appear here.</p>
-                  </div>
-                ) : (
-                  <div className="wishlist-grid">
-                    {wishlistedHotels.map((hotel) => (
-                      <div key={hotel._id} className="wishlist-card">
-                        <Link to={`/hotel/${hotel._id}`} className="wishlist-card-image">
-                          {hotel.photos?.[0] ? (
-                            <img src={getImageUrl(hotel.photos[0])} alt={hotel.name} loading="lazy" />
-                          ) : (
-                            <div className="wishlist-placeholder">
-                              <Hotel size={32} />
-                            </div>
-                          )}
-                        </Link>
-                        <div className="wishlist-card-content">
-                          <h3>{hotel.name}</h3>
-                          <p className="wishlist-location">
-                            <MapPin size={14} />
-                            <span>{hotel.address?.city}, {hotel.address?.country || hotel.address?.state}</span>
-                          </p>
-                          <div className="wishlist-actions">
-                            <Link to={`/hotel/${hotel._id}`} className="wishlist-view-btn">
-                              View Details
-                            </Link>
-                            <button
-                              className="wishlist-remove-btn"
-                              onClick={() => {
-                                const payload = { hotelId: hotel._id, hotel };
-                                dispatch(toggleWishlistLocal(payload));
-                                dispatch(toggleWishlist(payload));
-                              }}
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+          <main className="dashboard-main-premium">
+            {error && <div className="error-banner-premium">{error}</div>}
+            
+            <Outlet context={{
+              user,
+              bookings,
+              wishlistedHotels,
+              wishlistLoading,
+              ownerRequest,
+              showOwnerRequestForm,
+              setShowOwnerRequestForm,
+              submittingRequest,
+              ownerRequestData,
+              setOwnerRequestData,
+              cancelingId,
+              dispatch,
+              fetchData,
+              handleSubmitOwnerRequest,
+              handleCancelBooking,
+              toggleWishlist,
+              toggleWishlistLocal,
+              getBookingStatus,
+              getStatusColor,
+              formatDate,
+              getImageUrl,
+              API_BASE_URL
+            }} />
           </main>
         </div>
       </div>

@@ -310,7 +310,10 @@ export default function HotelDetails() {
             <h1 className="hotel-name-display">{hotel.name}</h1>
             <div className="hotel-rating-badge-top">
               <Star size={16} fill="currentColor" />
-              <span>{hotel.rating || 'N/A'}</span>
+              <span>{hotel.rating || 0}</span>
+              {hotel.reviewsCount > 0 && (
+                <span className="reviews-count-header">({hotel.reviewsCount} {hotel.reviewsCount === 1 ? 'review' : 'reviews'})</span>
+              )}
             </div>
           </div>
           <p className="location-premium">

@@ -21,6 +21,18 @@ export default function HotelsTab() {
     getImageUrl
   } = useOutletContext();
 
+  const handleRemovePhoto = (indexToRemove) => {
+    // 1. Remove from the actual File objects array (formData.photos)
+    const newPhotos = [...formData.photos];
+    newPhotos.splice(indexToRemove, 1);
+    setFormData({ ...formData, photos: newPhotos });
+
+    // 2. Remove the name from the photoFileNames display array
+    const newNames = [...photoFileNames];
+    newNames.splice(indexToRemove, 1);
+    setPhotoFileNames(newNames);
+  };
+
   return (
     <div className="hotels-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
       <div className="section-header">
@@ -104,8 +116,10 @@ export default function HotelsTab() {
                 accept="image/*"
                 onChange={(e) => {
                   const files = Array.from(e.target.files || []);
-                  setFormData({ ...formData, photos: files });
-                  setPhotoFileNames(files.map(f => f.name));
+                  // Append new files to existing files instead of replacing everything
+                  const newPhotosArray = [...(formData.photos || []), ...files];
+                  setFormData({ ...formData, photos: newPhotosArray });
+                  setPhotoFileNames(newPhotosArray.map(f => f.name));
                 }}
                 id="hotel-photos"
                 className="hidden-input"
@@ -116,10 +130,30 @@ export default function HotelsTab() {
               </label>
             </div>
             {photoFileNames.length > 0 && (
-              <div className="file-names-grid">
-                {photoFileNames.map((name, i) => (
-                  <span key={i} className="file-name-tag">{name}</span>
-                ))}
+              <div className="photos-preview-gallery" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+                {photoFileNames.map((name, i) => {
+                  // If it's a File object (new upload), generate a local object URL
+                  const fileObj = formData.photos && formData.photos[i];
+                  const isFile = fileObj instanceof File;
+                  const previewUrl = isFile ? URL.createObjectURL(fileObj) : (editingHotel?.photos?.[i] ? getImageUrl(editingHotel.photos[i]) : null);
+
+                  return (
+                    <div key={i} className="photo-preview-item" style={{ position: 'relative', height: '100px', borderRadius: '12px', overflow: 'hidden', border: '2px solid #edf2f7' }}>
+                      {previewUrl ? (
+                         <img src={previewUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                         <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', fontSize: '0.8rem', color: '#64748b' }}>{name}</div>
+                      )}
+                      <button 
+                        onClick={() => handleRemovePhoto(i)}
+                        title="Remove photo"
+                        style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
             )}
             {editingHotel && photoFileNames.length === 0 && (

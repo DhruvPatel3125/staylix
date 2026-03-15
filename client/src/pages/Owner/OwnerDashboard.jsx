@@ -236,10 +236,12 @@ export default function OwnerDashboard() {
       pincode: hotel.address?.pincode || '',
       description: hotel.description,
       amenities: hotel.amenities?.join(', ') || '',
-      photos: [],
+      photos: hotel.photos || [], 
+      existingPhotos: hotel.photos || [], 
       coordinates: hotel.location?.coordinates || [0.0, 0.0]
     });
-    setPhotoFileNames([]);
+    // Set filenames to a generic string or extract from URL so they appear in the gallery
+    setPhotoFileNames((hotel.photos || []).map(url => url.split('/').pop()));
     setShowHotelForm(true);
   };
 
@@ -268,14 +270,19 @@ export default function OwnerDashboard() {
       submitData.append('amenities', JSON.stringify(amenitiesArray));
       submitData.append('coordinates', JSON.stringify(formData.coordinates));
 
-      if (formData.photos && formData.photos.length > 0) {
-        for (let i = 0; i < formData.photos.length; i++) {
-          submitData.append('photos', formData.photos[i]);
+      // Separate newly uploaded File objects from existing URL strings
+      const newFiles = formData.photos.filter(p => p instanceof File);
+      const existingUrls = formData.photos.filter(p => typeof p === 'string');
+
+      if (newFiles.length > 0) {
+        for (let i = 0; i < newFiles.length; i++) {
+          submitData.append('photos', newFiles[i]);
         }
       }
 
-      if (editingHotel && formData.photos.length === 0) {
-        submitData.append('keepExistingPhotos', 'true');
+      if (editingHotel) {
+        // Send the specific array of existing URLs that the user decided to KEEP
+        submitData.append('existingPhotos', JSON.stringify(existingUrls));
       }
 
       let response;

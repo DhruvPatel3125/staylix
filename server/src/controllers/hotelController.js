@@ -225,9 +225,23 @@ exports.updateHotel = async (req, res) => {
 
         if (req.files && req.files.length > 0) {
             const newPhotos = req.files.map(file => `/uploads/hotels/${file.filename}`);
-            updateData.photos = req.body.keepExistingPhotos === 'true'
-                ? [...(hotel.photos || []), ...newPhotos]
-                : newPhotos;
+            
+            let keptPhotos = [];
+            if (req.body.existingPhotos) {
+                try {
+                    keptPhotos = JSON.parse(req.body.existingPhotos);
+                } catch(e) {
+                    keptPhotos = hotel.photos || [];
+                }
+            } else if (req.body.keepExistingPhotos === 'true') {
+                keptPhotos = hotel.photos || [];
+            }
+            
+            updateData.photos = [...keptPhotos, ...newPhotos];
+        } else if (req.body.existingPhotos) {
+            try {
+                updateData.photos = JSON.parse(req.body.existingPhotos);
+            } catch(e) {}
         }
 
         const updatedHotel = await Hotel.findByIdAndUpdate(req.params.id, updateData, { new: true });

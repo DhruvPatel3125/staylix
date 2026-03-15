@@ -1,6 +1,6 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Plus, Bed, Trash2, Edit3 } from 'lucide-react';
+import { Plus, Bed, Trash2, Edit3, Camera, X } from 'lucide-react';
 
 export default function RoomsTab() {
   const { 
@@ -113,16 +113,54 @@ export default function RoomsTab() {
 
           <div className="form-group">
             <label>Room Image</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                setRoomFormData({ ...roomFormData, image: file });
-                setRoomImageFileName(file?.name || '');
-              }}
-            />
-            {roomImageFileName && <p className="file-name">{roomImageFileName}</p>}
+            <div className="photo-upload-wrapper">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setRoomFormData({ ...roomFormData, image: file });
+                    setRoomImageFileName(file.name);
+                  }
+                }}
+                id="room-photo"
+                className="hidden-input"
+              />
+              <label htmlFor="room-photo" className="photo-upload-label">
+                <Camera size={24} />
+                <span>Select Photo</span>
+              </label>
+            </div>
+            {roomImageFileName && (
+              <div className="photos-preview-gallery" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+                <div className="photo-preview-item" style={{ position: 'relative', height: '100px', width: '150px', borderRadius: '12px', overflow: 'hidden', border: '2px solid #edf2f7' }}>
+                  {(() => {
+                    const isFile = roomFormData.image instanceof File;
+                    const previewUrl = isFile ? URL.createObjectURL(roomFormData.image) : (editingRoom?.image ? getImageUrl(editingRoom.image) : null);
+                    
+                    return previewUrl ? (
+                      <img src={previewUrl} alt="Room" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', fontSize: '0.8rem', color: '#64748b', textAlign: 'center', padding: '0.5rem' }}>{roomImageFileName}</div>
+                    );
+                  })()}
+                  <button 
+                    onClick={() => {
+                      setRoomFormData({ ...roomFormData, image: null });
+                      setRoomImageFileName('');
+                    }}
+                    title="Remove photo"
+                    style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyItems: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}
+                  >
+                    <X size={14} style={{margin: 'auto'}} />
+                  </button>
+                </div>
+              </div>
+            )}
+            {editingRoom && !roomImageFileName && (
+               <p className="helper-text" style={{marginTop: '0.5rem', fontSize: '0.85rem', color: '#64748b'}}>Leave empty to keep existing photo</p>
+            )}
           </div>
 
           <div className="form-actions">

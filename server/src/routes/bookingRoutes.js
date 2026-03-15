@@ -2,7 +2,7 @@ const express = require('express');
 
 const router = express.Router();
 const {
-    createBooking,
+    confirmBooking,
     getUserBookings,
     getOwnerBookings,
     cancelBooking,
@@ -12,7 +12,7 @@ const {
 
 const { protect, owner } = require("../middlewares/authMiddleWare");
 
-router.post('/', protect, createBooking);
+router.post('/', protect, confirmBooking);
 router.post('/create-payment-order', protect, createPaymentOrder);
 router.get("/my", protect, getUserBookings);
 router.get("/owner", protect, owner, getOwnerBookings);

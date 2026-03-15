@@ -28,10 +28,11 @@ const roomSchema = new mongoose.Schema({
     required: true
   },
 
-  availableRooms: {
-    type: Number,
-    required: true
-  },
+  // Available rooms is now calculated dynamically based on date-overlaps
+  // availableRooms: {
+  //   type: Number,
+  //   required: true
+  // },
 
   guestCapacity: {
     type: Number,

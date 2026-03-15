@@ -21,6 +21,7 @@ export default function RoomsTab() {
     handleSaveRoom,
     handleDeleteRoom,
     handleToggleRoomAvailability,
+    getRoomBookings,
     getImageUrl
   } = useOutletContext();
 
@@ -99,15 +100,6 @@ export default function RoomsTab() {
               />
             </div>
             <div className="form-group">
-              <label>Available Rooms *</label>
-              <input
-                type="number"
-                value={roomFormData.availableRooms}
-                onChange={(e) => setRoomFormData({ ...roomFormData, availableRooms: e.target.value })}
-                placeholder="5"
-              />
-            </div>
-            <div className="form-group">
               <label>Guest Capacity *</label>
               <input
                 type="number"
@@ -177,58 +169,75 @@ export default function RoomsTab() {
         </div>
       ) : (
         <div className="rooms-grid">
-          {filteredRooms.map(room => (
-            <div key={room._id} className="room-card">
-              {room.image && (
-                <div className="room-image-container">
-                  <img src={getImageUrl(room.image)} alt={room.title} className="room-image" />
+          {filteredRooms.map(room => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const roomBookings = getRoomBookings(room._id);
+            const occupiedToday = roomBookings.filter(b => {
+              if (b.bookingStatus === 'cancelled') return false;
+              const checkIn = new Date(b.checkIn);
+              const checkOut = new Date(b.checkOut);
+              return today >= checkIn && today < checkOut;
+            }).length;
+
+            return (
+              <div key={room._id} className="room-card">
+                {room.image && (
+                  <div className="room-image-container">
+                    <img src={getImageUrl(room.image)} alt={room.title} className="room-image" />
+                  </div>
+                )}
+                <div className="room-content">
+                  <div className="room-header">
+                    <h3>{room.title}</h3>
+                    <span className={`availability-badge ${room.isAvailable ? 'available' : 'unavailable'}`}>
+                      {room.isAvailable ? 'Available' : 'Unavailable'}
+                    </span>
+                  </div>
+                  <div className="room-info">
+                    <p><strong>Hotel:</strong> {room.hotelId?.name}</p>
+                    <p><strong>Type:</strong> {room.roomType}</p>
+                    <p><strong>Price:</strong> ₹{room.pricePerNight}/night</p>
+                    <p><strong>Total Capacity:</strong> {room.totalRooms} units</p>
+                    <p className="occupancy-info">
+                      <strong>Current Occupancy:</strong> 
+                      <span className={occupiedToday > 0 ? 'occupied' : ''}> {occupiedToday} units booked today</span>
+                    </p>
+                    {room.amenities && room.amenities.length > 0 && (
+                      <div className="room-amenities">
+                        {room.amenities.map((amenity, idx) => (
+                          <span key={idx} className="amenity-tag">{amenity}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-              <div className="room-content">
-                <div className="room-header">
-                  <h3>{room.title}</h3>
-                  <span className={`availability-badge ${room.isAvailable ? 'available' : 'unavailable'}`}>
-                    {room.isAvailable ? 'Available' : 'Unavailable'}
-                  </span>
-                </div>
-                <div className="room-info">
-                  <p><strong>Hotel:</strong> {room.hotelId?.name}</p>
-                  <p><strong>Type:</strong> {room.roomType}</p>
-                  <p><strong>Price:</strong> ₹{room.pricePerNight}/night</p>
-                  <p><strong>Availability:</strong> {room.availableRooms}/{room.totalRooms}</p>
-                  {room.amenities && room.amenities.length > 0 && (
-                    <div className="room-amenities">
-                      {room.amenities.map((amenity, idx) => (
-                        <span key={idx} className="amenity-tag">{amenity}</span>
-                      ))}
-                    </div>
-                  )}
+                <div className="room-actions">
+                  <button
+                    className={`action-btn ${room.isAvailable ? 'block-btn' : 'unblock-btn'}`}
+                    onClick={() => handleToggleRoomAvailability(room._id)}
+                    disabled={processingId === room._id}
+                  >
+                    {processingId === room._id ? '...' : (room.isAvailable ? 'Deactivate' : 'Activate')}
+                  </button>
+                  <button
+                    className="action-btn edit-btn"
+                    onClick={() => handleEditRoom(room)}
+                  >
+                    <Edit3 size={16} /> Edit
+                  </button>
+                  <button
+                    className="action-btn delete-btn"
+                    onClick={() => handleDeleteRoom(room._id)}
+                    disabled={processingId === room._id}
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
-              <div className="room-actions">
-                <button
-                  className={`action-btn ${room.isAvailable ? 'block-btn' : 'unblock-btn'}`}
-                  onClick={() => handleToggleRoomAvailability(room._id)}
-                  disabled={processingId === room._id}
-                >
-                  {processingId === room._id ? '...' : (room.isAvailable ? 'Deactivate' : 'Activate')}
-                </button>
-                <button
-                  className="action-btn edit-btn"
-                  onClick={() => handleEditRoom(room)}
-                >
-                  <Edit3 size={16} /> Edit
-                </button>
-                <button
-                  className="action-btn delete-btn"
-                  onClick={() => handleDeleteRoom(room._id)}
-                  disabled={processingId === room._id}
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

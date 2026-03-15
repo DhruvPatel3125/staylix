@@ -13,107 +13,31 @@ const razorpay = new Razorpay({
 
 exports.createPaymentOrder = async (req, res) => {
     try {
-        const { amount } = req.body;
-
-        if (!amount) {
-            return res.status(400).json({ success: false, message: "Amount is required" });
-        }
-
-        const options = {
-            amount: Math.round(amount * 100), // amount in smallest currency unit
-            currency: "INR",
-            receipt: "receipt_" + Date.now(),
-        };
-
-        const order = await razorpay.orders.create(options);
-
-        res.json({
-            success: true,
-            order
-        });
-    } catch (error) {
-        console.error("Razorpay order creation error:", error);
-        res.status(500).json({
-            success: false,
-            message: "Failed to create payment order"
-        });
-    }
-};
-
-exports.createBooking = async (req, res) => {
-    try {
-        const { roomId, checkIn, checkOut, guests, totalAmount, hotelId, ownerId, discountCode, paymentId, orderId, signature } = req.body;
-
-        // Check if user is owner of this hotel
-        if (ownerId && req.user._id.toString() === ownerId.toString()) {
-            return res.status(403).json({
-                success: false,
-                message: "You cannot book a room in your own hotel"
-            });
-        }
+        const { roomId, checkIn, checkOut, guests, totalAmount, hotelId, ownerId, discountCode } = req.body;
 
         if (!roomId || !checkIn || !checkOut || !guests || !totalAmount || !hotelId || !ownerId) {
-            return res.status(400).json({
-                success: false,
-                message: "All fields are required"
-            });
+            return res.status(400).json({ success: false, message: "All booking details are required" });
         }
 
-        // Verify Payment
-        if (paymentId && orderId && signature) {
-            const body = orderId + "|" + paymentId;
-            const expectedSignature = crypto
-                .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-                .update(body.toString())
-                .digest("hex");
-
-            if (expectedSignature !== signature) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid payment signature"
-                });
-            }
+        const room = await Room.findById(roomId);
+        if (!room) {
+            return res.status(404).json({ success: false, message: "Room not found" });
         }
 
         const checkInDate = new Date(checkIn);
         const checkOutDate = new Date(checkOut);
 
-        if (checkInDate >= checkOutDate) {
-            return res.status(400).json({
-                success: false,
-                message: "Check-out date must be after check-in date"
-            });
-        }
-
-        if (guests <= 0) {
-            return res.status(400).json({
-                success: false,
-                message: "Number of guests must be greater than 0"
-            });
-        }
-
-        const room = await Room.findById(roomId);
-        if (!room) {
-            return res.status(404).json({
-                success: false,
-                message: "Room not found"
-            });
-        }
-
-        // Check Guest Capacity
-        const maxGuests = room.guestCapacity || 1;
-        if (guests > maxGuests) {
-            return res.status(400).json({
-                success: false,
-                message: `This room can only accommodate up to ${maxGuests} guests`
-            });
-        }
-
-        const hotel = await Hotel.findById(hotelId);
-
+        // --- AVAILABILITY CHECK (Including Pending) ---
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
         const activeBookings = await Booking.find({
             roomId,
-            bookingStatus: { $in: ["pending", "confirmed"] },
+            $or: [
+                { bookingStatus: "confirmed" },
+                { 
+                    bookingStatus: "pending", 
+                    createdAt: { $gt: tenMinutesAgo } 
+                }
+            ],
             checkOut: { $gt: checkInDate },
             checkIn: { $lt: checkOutDate }
         });
@@ -128,14 +52,13 @@ exports.createBooking = async (req, res) => {
             });
         }
 
-        // Handle discount if provided
+        // Handle discount if provided (Pre-calculate for the order)
         let discountAmount = 0;
         let finalAmount = totalAmount;
         let validatedDiscountCode = null;
 
         if (discountCode) {
             const discount = await Discount.findOne({ code: discountCode.toUpperCase() });
-
             if (discount && discount.requestStatus === "approved" && discount.isActive) {
                 const now = new Date();
                 const isDateValid = now >= new Date(discount.startDate) && now <= new Date(discount.endDate);
@@ -146,7 +69,6 @@ exports.createBooking = async (req, res) => {
                     discount.applicableHotels.some(id => id.toString() === hotelId.toString());
 
                 if (isDateValid && isUsageLimitOk && isMinAmountMet && isHotelApplicable) {
-                    // Calculate discount
                     if (discount.discountType === "percentage") {
                         discountAmount = (totalAmount * discount.discountValue) / 100;
                     } else {
@@ -155,15 +77,20 @@ exports.createBooking = async (req, res) => {
                     discountAmount = Math.min(discountAmount, totalAmount);
                     finalAmount = totalAmount - discountAmount;
                     validatedDiscountCode = discount.code;
-
-                    // Increment usage count
-                    discount.usageCount += 1;
-                    await discount.save();
                 }
             }
         }
 
-        const booking = await Booking.create({
+        const options = {
+            amount: Math.round(finalAmount * 100), // amount in smallest currency unit
+            currency: "INR",
+            receipt: "receipt_" + Date.now(),
+        };
+
+        const order = await razorpay.orders.create(options);
+
+        // CREATE PENDING BOOKING to "lock" the room
+        const pendingBooking = await Booking.create({
             userId: req.user._id,
             ownerId,
             hotelId,
@@ -175,23 +102,104 @@ exports.createBooking = async (req, res) => {
             discountCode: validatedDiscountCode,
             discountAmount,
             totalAmount: finalAmount,
-            bookingStatus: 'confirmed',
-            paymentStatus: paymentId ? 'paid' : 'pending',
+            bookingStatus: 'pending',
+            paymentStatus: 'pending',
             paymentInfo: {
-                paymentId: paymentId,
-                orderId: orderId
+                orderId: order.id
             }
         });
 
-        // Send Confirmation Email
-        if (req.user && req.user.email) {
-            console.log(`Attempting to send booking confirmation email to: ${req.user.email}`);
+        res.json({
+            success: true,
+            order,
+            bookingId: pendingBooking._id
+        });
+    } catch (error) {
+        console.error("Razorpay order creation error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to create payment order"
+        });
+    }
+};
 
-            // Calculate nights for bill
+exports.confirmBooking = async (req, res) => {
+    try {
+        const { bookingId, paymentId, orderId, signature } = req.body;
+
+        if (!bookingId || !paymentId || !orderId || !signature) {
+            return res.status(400).json({
+                success: false,
+                message: "Payment verification details are required"
+            });
+        }
+
+        // Verify Payment Signature
+        const body = orderId + "|" + paymentId;
+        const expectedSignature = crypto
+            .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+            .update(body.toString())
+            .digest("hex");
+
+        if (expectedSignature !== signature) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid payment signature"
+            });
+        }
+
+        const booking = await Booking.findById(bookingId).populate("hotelId roomId userId");
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "Booking record not found"
+            });
+        }
+
+        if (booking.bookingStatus === 'confirmed') {
+            return res.status(400).json({
+                success: false,
+                message: "Booking is already confirmed"
+            });
+        }
+
+        // Update booking status
+        booking.bookingStatus = 'confirmed';
+        booking.paymentStatus = 'paid';
+        booking.paymentInfo = {
+            paymentId,
+            orderId,
+            method: 'Razorpay'
+        };
+
+        await booking.save();
+
+        // Increment Discount Usage if applicable
+        if (booking.discountCode) {
+            await Discount.findOneAndUpdate(
+                { code: booking.discountCode },
+                { $inc: { usageCount: 1 } }
+            );
+        }
+
+        const hotel = booking.hotelId;
+        const room = booking.roomId;
+        const user = booking.userId;
+
+        // Send Confirmation Email
+        if (user && user.email) {
+            const checkInDate = booking.checkIn;
+            const checkOutDate = booking.checkOut;
+            const finalAmount = booking.totalAmount;
+            const discountAmount = booking.discountAmount;
+            const totalAmount = booking.originalAmount;
+            const guests = booking.guests;
+
+            // Calculate nights
             const oneDay = 24 * 60 * 60 * 1000;
             const nights = Math.round(Math.abs((checkOutDate - checkInDate) / oneDay));
             const basePrice = room.pricePerNight * nights;
-            const taxesAndFees = totalAmount - basePrice; // Assuming totalAmount might include taxes
+            const taxesAndFees = totalAmount - basePrice;
 
             const emailSubject = `Booking Confirmed: Your stay at ${hotel ? hotel.name : 'Staylix'} is secured!`;
             const emailHtml = `
@@ -222,7 +230,6 @@ exports.createBooking = async (req, res) => {
   .footer { background-color: #f9fafb; padding: 20px; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb; }
   .btn { display: inline-block; background-color: #6366f1; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: 600; margin-top: 10px; }
   .status-badge { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 12px; font-weight: 700; background-color: #dcfce7; color: #166534; margin-top: 10px; }
-  .status-badge.pending { background-color: #fef9c3; color: #854d0e; }
 </style>
 </head>
 <body>
@@ -233,13 +240,13 @@ exports.createBooking = async (req, res) => {
     </div>
     
     <div class="content">
-      <div class="greeting">Hello ${req.user.name || 'Traveler'},</div>
+      <div class="greeting">Hello ${user.name || 'Traveler'},</div>
       <p>Thank you for choosing Staylix! We are excited to confirm your reservation at <strong>${hotel ? hotel.name : 'your selected hotel'}</strong>.</p>
       
       <div class="booking-ref">
         <span>Booking Reference ID</span>
         <strong>${booking._id}</strong>
-        <div class="status-badge ${paymentId ? 'paid' : 'pending'}">${paymentId ? 'PAYMENT SUCCESSFUL' : 'PAYMENT PENDING'}</div>
+        <div class="status-badge">PAYMENT SUCCESSFUL</div>
       </div>
 
       <div class="hotel-info">
@@ -252,12 +259,12 @@ exports.createBooking = async (req, res) => {
       <div class="details-grid">
         <div class="detail-item">
           <p>CHECK-IN</p>
-          <strong>${new Date(checkIn).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</strong>
+          <strong>${new Date(checkInDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</strong>
           <p style="font-size: 12px; margin-top: 2px;">After 12:00 PM</p>
         </div>
         <div class="detail-item">
           <p>CHECK-OUT</p>
-          <strong>${new Date(checkOut).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</strong>
+          <strong>${new Date(checkOutDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</strong>
           <p style="font-size: 12px; margin-top: 2px;">Before 11:00 AM</p>
         </div>
         <div class="detail-item">
@@ -305,28 +312,26 @@ exports.createBooking = async (req, res) => {
 
             try {
                 await sendEmail({
-                    email: req.user.email,
+                    email: user.email,
                     subject: emailSubject,
                     html: emailHtml
                 });
                 console.log("Booking confirmation email sent successfully");
             } catch (emailError) {
                 console.error("Failed to send booking email:", emailError);
-                // We don't want to fail the request if email fails, so we just log it
             }
-        } else {
-            console.log("Skipping email: No user email found in request object");
         }
 
-        res.status(201).json({
+        res.status(200).json({
             success: true,
+            message: "Booking confirmed successfully",
             booking
         });
     } catch (err) {
-        console.error("Booking creation error:", err);
+        console.error("Booking confirmation error:", err);
         res.status(500).json({
             success: false,
-            message: err.message || "Booking failed"
+            message: err.message || "Failed to confirm booking"
         });
     }
 };
@@ -559,21 +564,28 @@ exports.checkAvailability = async (req, res) => {
             });
         }
 
+        const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
         const activeBookings = await Booking.find({
             roomId,
-            bookingStatus: { $in: ["pending", "confirmed"] },
+            $or: [
+                { bookingStatus: "confirmed" },
+                { 
+                    bookingStatus: "pending", 
+                    createdAt: { $gt: tenMinutesAgo } 
+                }
+            ],
             checkOut: { $gt: checkInDate },
             checkIn: { $lt: checkOutDate }
         });
 
         const currentOccupiedRooms = activeBookings.length;
-        const availableCount = room.availableRooms || 0;
+        const totalCapacity = room.totalRooms || 0;
 
-        if (currentOccupiedRooms >= availableCount) {
+        if (currentOccupiedRooms >= totalCapacity) {
             return res.json({
                 success: true,
                 available: false,
-                message: `Sold out for these dates (${currentOccupiedRooms}/${availableCount} rooms occupied)`
+                message: `Sold out for these dates (${currentOccupiedRooms}/${totalCapacity} units occupied)`
             });
         }
 

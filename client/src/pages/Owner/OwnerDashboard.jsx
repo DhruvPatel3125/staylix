@@ -49,7 +49,6 @@ export default function OwnerDashboard() {
     roomType: 'single',
     pricePerNight: '',
     totalRooms: '',
-    availableRooms: '',
     guestCapacity: '',
     amenities: '',
     image: null
@@ -335,7 +334,6 @@ export default function OwnerDashboard() {
       roomType: 'single',
       pricePerNight: '',
       totalRooms: '',
-      availableRooms: '',
       guestCapacity: '',
       amenities: '',
       image: null
@@ -352,7 +350,6 @@ export default function OwnerDashboard() {
       roomType: room.roomType,
       pricePerNight: room.pricePerNight,
       totalRooms: room.totalRooms,
-      availableRooms: room.availableRooms,
       guestCapacity: room.guestCapacity || '',
       amenities: room.amenities?.join(', ') || '',
       image: null
@@ -362,7 +359,7 @@ export default function OwnerDashboard() {
   };
 
   const handleSaveRoom = async () => {
-    if (!roomFormData.hotelId || !roomFormData.title || !roomFormData.pricePerNight || !roomFormData.totalRooms || roomFormData.availableRooms === '' || !roomFormData.guestCapacity) {
+    if (!roomFormData.hotelId || !roomFormData.title || !roomFormData.pricePerNight || !roomFormData.totalRooms || !roomFormData.guestCapacity) {
       showToast.error('Please fill in all required fields');
       return;
     }
@@ -381,7 +378,6 @@ export default function OwnerDashboard() {
       submitData.append('roomType', roomFormData.roomType);
       submitData.append('pricePerNight', roomFormData.pricePerNight);
       submitData.append('totalRooms', roomFormData.totalRooms);
-      submitData.append('availableRooms', roomFormData.availableRooms);
       submitData.append('guestCapacity', roomFormData.guestCapacity);
       submitData.append('amenities', JSON.stringify(amenitiesArray));
 
@@ -504,18 +500,30 @@ export default function OwnerDashboard() {
   };
 
   const getOccupancyData = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     return hotels.map(hotel => {
       const hotelRooms = rooms.filter(r => r.hotelId?._id === hotel._id || r.hotelId === hotel._id);
-      const totalRoomsCount = hotelRooms.reduce((sum, r) => sum + (Number(r.totalRooms) || 0), 0);
-      const availableRoomsCount = hotelRooms.reduce((sum, r) => sum + (Number(r.availableRooms) || 0), 0);
-      const occupiedRooms = totalRoomsCount - availableRoomsCount;
-      const occupancyRate = totalRoomsCount > 0 ? (occupiedRooms / totalRoomsCount) * 100 : 0;
+      const roomIds = hotelRooms.map(r => r._id);
+      
+      const totalCapacity = hotelRooms.reduce((sum, r) => sum + (Number(r.totalRooms) || 0), 0);
+      
+      // Count how many rooms are occupied today
+      const occupiedToday = bookings.filter(b => {
+        if (b.bookingStatus === 'cancelled') return false;
+        const checkIn = new Date(b.checkIn);
+        const checkOut = new Date(b.checkOut);
+        return today >= checkIn && today < checkOut && roomIds.includes(b.roomId?._id || b.roomId);
+      }).length;
+
+      const occupancyRate = totalCapacity > 0 ? (occupiedToday / totalCapacity) * 100 : 0;
       
       return {
         name: hotel.name.length > 15 ? hotel.name.substring(0, 15) + '...' : hotel.name,
         occupancyRate: Math.round(occupancyRate),
-        total: totalRoomsCount,
-        occupied: occupiedRooms
+        total: totalCapacity,
+        occupied: occupiedToday
       };
     }).filter(d => d.total > 0);
   };

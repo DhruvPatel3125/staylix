@@ -804,6 +804,29 @@
   cursor: not-allowed;
 }
 
+/* Occupancy Info for Room Cards */
+.occupancy-info {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  border-left: 3px solid #edf2f7;
+}
+
+.occupancy-info span {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.occupancy-info span.occupied {
+  color: #48bb78;
+  background: #f0fff4;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+}
+
 /* Room Card Enhancements */
 .room-header {
   display: flex;

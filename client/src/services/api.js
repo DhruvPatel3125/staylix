@@ -112,8 +112,8 @@ const api = {
   },
 
   rooms: {
-    getByHotel: async (hotelId) => {
-      const response = await instance.get(`/rooms/${hotelId}`);
+    getByHotel: async (hotelId, params = {}) => {
+      const response = await instance.get(`/rooms/${hotelId}`, { params });
       return response.data;
     },
 
@@ -144,7 +144,7 @@ const api = {
   },
 
   bookings: {
-    create: async (bookingData) => {
+    confirm: async (bookingData) => {
       const response = await instance.post('/bookings', bookingData);
       return response.data;
     },
@@ -164,8 +164,8 @@ const api = {
       return response.data;
     },
 
-    createPaymentOrder: async (amount) => {
-      const response = await instance.post('/bookings/create-payment-order', { amount });
+    createPaymentOrder: async (bookingDetails) => {
+      const response = await instance.post('/bookings/create-payment-order', bookingDetails);
       return response.data;
     },
 

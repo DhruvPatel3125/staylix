@@ -137,19 +137,108 @@
   gap: 4rem;
 }
 
+.rooms-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
 .rooms-section h2,
 .reviews-section h2 {
   font-size: 2rem;
   font-weight: 800;
   color: var(--text-primary);
-  margin-bottom: 2rem;
+  margin: 0;
   letter-spacing: -1px;
+}
+
+.global-availability-picker {
+  display: flex;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid #eef2f6;
+  gap: 0.5rem;
+}
+
+.picker-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.5rem 1rem;
+  background: #f8fafc;
+  border-radius: 15px;
+  color: #64748b;
+  min-width: 180px;
+}
+
+.inline-date-picker {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  color: var(--text-primary) !important;
+  width: 100% !important;
+  cursor: pointer;
+}
+
+.inline-date-picker:focus {
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .rooms-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2.5rem;
+}
+
+.room-card {
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.room-card.sold-out {
+  opacity: 0.8;
+  filter: grayscale(0.5);
+}
+
+.room-card.sold-out:hover {
+  transform: none;
+}
+
+.sold-out-overlay {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #ef4444;
+  color: white;
+  padding: 0.4rem 1rem;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  z-index: 5;
+}
+
+.room-card-image {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.room-card.sold-out .book-btn {
+  background: #94a3b8 !important;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 /* ---------- REVIEWS PREMIUM ---------- */
@@ -672,6 +761,45 @@
   .rooms-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Selected Dates Display (for Modal) */
+.selected-dates-display {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 16px;
+  border: 1px dashed #e2e8f0;
+}
+
+.date-info-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.date-info-box svg {
+  color: #4f46e5;
+}
+
+.date-label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.5px;
+}
+
+.date-value {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 @media (max-width: 600px) {

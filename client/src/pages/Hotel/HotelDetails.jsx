@@ -53,24 +53,42 @@ export default function HotelDetails() {
   });
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchHotelData = async () => {
       try {
         const hotelRes = await api.hotels.getById(id);
-        const roomsRes = await api.rooms.getByHotel(id);
         const reviewsRes = await api.reviews.getByHotel(id);
 
         if (hotelRes.success) setHotel(hotelRes.hotel);
-        if (roomsRes.success) setRooms(roomsRes.rooms || []);
         if (reviewsRes.success) setReviews(reviewsRes.reviews || []);
       } catch (err) {
         setError('Failed to load hotel details');
+      }
+    };
+
+    fetchHotelData();
+  }, [id]);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        setLoading(prev => (rooms.length === 0 ? true : prev));
+        const params = {};
+        if (bookingData.checkIn && bookingData.checkOut) {
+          params.checkIn = bookingData.checkIn;
+          params.checkOut = bookingData.checkOut;
+        }
+        const roomsRes = await api.rooms.getByHotel(id, params);
+        if (roomsRes.success) setRooms(roomsRes.rooms || []);
+      } catch (err) {
+        console.error("Failed to load rooms", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [id]);
+    const timer = setTimeout(fetchRooms, 300);
+    return () => clearTimeout(timer);
+  }, [id, bookingData.checkIn, bookingData.checkOut]);
 
   // Real-time Availability Check
   useEffect(() => {
@@ -217,16 +235,27 @@ export default function HotelDetails() {
       }
       setAvailability(prev => ({ ...prev, checking: false, isAvailable: true }));
 
-      // 4. Create Razorpay Order
+      // 4. Create Razorpay Order and Pending Booking
       const totalAmount = nights * selectedRoom.pricePerNight;
       const finalAmount = discountInfo ? discountInfo.finalAmount : totalAmount;
       
-      const orderRes = await api.bookings.createPaymentOrder(finalAmount);
+      const orderRes = await api.bookings.createPaymentOrder({
+        roomId: selectedRoom._id,
+        checkIn: bookingData.checkIn,
+        checkOut: bookingData.checkOut,
+        guests: parseInt(bookingData.guests),
+        totalAmount,
+        hotelId: hotel._id,
+        ownerId: hotel.ownerId,
+        discountCode: discountInfo ? bookingData.discountCode : undefined
+      });
       
       if (!orderRes.success) {
         showToast.error('Failed to initiate payment. Please try again.');
         return;
       }
+
+      const bookingId = orderRes.bookingId;
 
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY || "rzp_test_Dz9hd6AMtKfCZE", // Use env var
@@ -238,16 +267,9 @@ export default function HotelDetails() {
         order_id: orderRes.order.id,
         handler: async function (response) {
           try {
-            // 2. Create Booking with Payment Details
-            const bookingRes = await api.bookings.create({
-              roomId: selectedRoom._id,
-              hotelId: hotel._id,
-              ownerId: hotel.ownerId,
-              checkIn: bookingData.checkIn,
-              checkOut: bookingData.checkOut,
-              guests: parseInt(bookingData.guests),
-              totalAmount, // Original amount
-              discountCode: discountInfo ? bookingData.discountCode : undefined,
+            // 2. Confirm the existing Pending Booking
+            const bookingRes = await api.bookings.confirm({
+              bookingId,
               paymentId: response.razorpay_payment_id,
               orderId: response.razorpay_order_id,
               signature: response.razorpay_signature
@@ -333,7 +355,9 @@ export default function HotelDetails() {
 
       <div className="hotel-content">
         <section className="rooms-section">
-          <h2>Available Rooms</h2>
+          <div className="rooms-section-header">
+            <h2>Available Rooms</h2>
+          </div>
           {rooms.length === 0 ? (
             <p className="no-rooms">No rooms available</p>
           ) : (
@@ -399,7 +423,6 @@ export default function HotelDetails() {
                   selected={bookingData.checkIn}
                   onChange={(date) => {
                     const nextData = { ...bookingData, checkIn: date };
-                    // If check-in is moved after check-out, reset check-out
                     if (date && bookingData.checkOut && date >= bookingData.checkOut) {
                       nextData.checkOut = new Date(date.getTime() + 86400000);
                     }

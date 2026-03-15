@@ -1,21 +1,15 @@
 const Room = require("../models/room");
 const Hotel = require("../models/hotel");
+const Booking = require("../models/booking");
 
 exports.addRoom = async (req, res) => {
     try {
-        const { hotelId, title, roomType, pricePerNight, totalRooms, availableRooms, guestCapacity, amenities } = req.body;
+        const { hotelId, title, roomType, pricePerNight, totalRooms, guestCapacity, amenities } = req.body;
 
-        if (!hotelId || !title || !roomType || !pricePerNight || !totalRooms || availableRooms === undefined || !guestCapacity) {
+        if (!hotelId || !title || !roomType || !pricePerNight || !totalRooms || !guestCapacity) {
             return res.status(400).json({
                 success: false,
                 message: "All fields are required"
-            });
-        }
-
-        if (availableRooms > totalRooms) {
-            return res.status(400).json({
-                success: false,
-                message: "Available rooms cannot exceed total rooms"
             });
         }
 
@@ -36,7 +30,6 @@ exports.addRoom = async (req, res) => {
             roomType,
             pricePerNight,
             totalRooms,
-            availableRooms,
             guestCapacity,
             amenities: amenitiesList
         };
@@ -61,17 +54,57 @@ exports.addRoom = async (req, res) => {
 
 exports.getRoomsByHotel = async (req, res) => {
     try {
-        if (!req.params.hotelId) {
+        const { hotelId } = req.params;
+        const { checkIn, checkOut } = req.query;
+
+        if (!hotelId) {
             return res.status(400).json({
                 success: false,
                 message: "Hotel ID is required"
             });
         }
 
-        const rooms = await Room.find({ hotelId: req.params.hotelId, isAvailable: true });
+        const rooms = await Room.find({ hotelId, isAvailable: true });
+        
+        // If dates are provided, calculate live availability for each room
+        const roomsWithLiveAvailability = await Promise.all(rooms.map(async (room) => {
+            if (checkIn && checkOut) {
+                const checkInDate = new Date(checkIn);
+                const checkOutDate = new Date(checkOut);
+                const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+                const activeBookings = await Booking.find({
+                    roomId: room._id,
+                    $or: [
+                        { bookingStatus: "confirmed" },
+                        { 
+                            bookingStatus: "pending", 
+                            createdAt: { $gt: tenMinutesAgo } 
+                        }
+                    ],
+                    checkOut: { $gt: checkInDate },
+                    checkIn: { $lt: checkOutDate }
+                });
+
+                const occupiedCount = activeBookings.length;
+                const totalCapacity = room.totalRooms || 0;
+                
+                return {
+                    ...room.toObject(),
+                    liveAvailableCount: Math.max(0, totalCapacity - occupiedCount),
+                    isSoldOut: occupiedCount >= totalCapacity
+                };
+            }
+            return {
+                ...room.toObject(),
+                liveAvailableCount: room.totalRooms,
+                isSoldOut: (room.totalRooms || 0) <= 0
+            };
+        }));
+
         res.json({
             success: true,
-            rooms
+            rooms: roomsWithLiveAvailability
         });
     } catch (error) {
         console.error("Get rooms error:", error);

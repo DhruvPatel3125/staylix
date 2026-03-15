@@ -2,7 +2,7 @@ import './RoomCard.css';
 import { getImageUrl } from '../../../utils/imageUrl';
 
 export default function RoomCard({ room, onBooking }) {
-  const availableCount = room.liveAvailableCount !== undefined ? room.liveAvailableCount : room.availableRooms;
+  const availableCount = room.liveAvailableCount !== undefined ? room.liveAvailableCount : room.totalRooms;
   const isAvailable = room.isSoldOut !== undefined ? !room.isSoldOut : availableCount > 0;
 
   return (

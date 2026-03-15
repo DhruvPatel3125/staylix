@@ -338,7 +338,7 @@ export default function AdminDashboard() {
     return hotels.map(hotel => {
       const hotelRooms = rooms.filter(r => r.hotelId?._id === hotel._id || r.hotelId === hotel._id);
       const totalRoomsCount = hotelRooms.reduce((sum, r) => sum + (Number(r.totalRooms) || 0), 0);
-      const availableRoomsCount = hotelRooms.reduce((sum, r) => sum + (Number(r.availableRooms) || 0), 0);
+      const availableRoomsCount = hotelRooms.reduce((sum, r) => sum + (Number(r.liveAvailableCount ?? r.totalRooms) || 0), 0);
       const occupiedRooms = totalRoomsCount - availableRoomsCount;
       const occupancyRate = totalRoomsCount > 0 ? (occupiedRooms / totalRoomsCount) * 100 : 0;
       

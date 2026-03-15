@@ -6,7 +6,7 @@ exports.addRoom = async (req, res) => {
     try {
         const { hotelId, title, roomType, pricePerNight, totalRooms, guestCapacity, amenities } = req.body;
 
-        if (!hotelId || !title || !roomType || !pricePerNight || !totalRooms || !guestCapacity) {
+        if (!hotelId || !title || !roomType || !pricePerNight || !guestCapacity) {
             return res.status(400).json({
                 success: false,
                 message: "All fields are required"
@@ -29,7 +29,7 @@ exports.addRoom = async (req, res) => {
             title,
             roomType,
             pricePerNight,
-            totalRooms,
+            totalRooms: 1,
             guestCapacity,
             amenities: amenitiesList
         };
@@ -70,7 +70,9 @@ exports.getRoomsByHotel = async (req, res) => {
         const roomsWithLiveAvailability = await Promise.all(rooms.map(async (room) => {
             if (checkIn && checkOut) {
                 const checkInDate = new Date(checkIn);
+                checkInDate.setUTCHours(0, 0, 0, 0);
                 const checkOutDate = new Date(checkOut);
+                checkOutDate.setUTCHours(0, 0, 0, 0);
                 const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
 
                 const activeBookings = await Booking.find({
@@ -82,8 +84,10 @@ exports.getRoomsByHotel = async (req, res) => {
                             createdAt: { $gt: tenMinutesAgo } 
                         }
                     ],
-                    checkOut: { $gt: checkInDate },
-                    checkIn: { $lt: checkOutDate }
+                    $and: [
+                        { checkIn: { $lt: checkOutDate } },
+                        { checkOut: { $gt: checkInDate } }
+                    ]
                 });
 
                 const occupiedCount = activeBookings.length;

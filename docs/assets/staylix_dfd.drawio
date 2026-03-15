@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-03-14T13:30:00.000Z" agent="Antigravity AI" version="21.6.8" type="device">
+  <diagram name="Staylix Context DFD" id="staylix-context-0">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Central System -->
+        <mxCell id="system" value="STAYLIX HOTEL MANAGEMENT SYSTEM" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#6366f1;fontColor=#ffffff;strokeColor=#312e81;strokeWidth=3;fontSize=14;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="325" y="440" width="200" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- User Entity -->
+        <mxCell id="user" value="USER / CUSTOMER" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=2;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="160" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Owner Entity -->
+        <mxCell id="owner" value="HOTEL OWNER" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=2;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="650" y="80" width="160" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Admin Entity -->
+        <mxCell id="admin" value="ADMIN" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#64748b;strokeWidth=2;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="880" width="160" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Payment Gateway -->
+        <mxCell id="gateway" value="PAYMENT GATEWAY&#xa;(RAZORPAY)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff7ed;strokeColor=#fb923c;strokeWidth=2;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="650" y="880" width="160" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Email Service -->
+        <mxCell id="email" value="EMAIL SERVICE&#xa;(SMTP / NODEMAILER)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f0fdf4;strokeColor=#4ade80;strokeWidth=2;fontSize=12;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="650" y="480" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- DATA FLOWS -->
+        
+        <!-- User -> System -->
+        <mxCell id="flow1" value="Registration / Login&lt;br&gt;Search Hotels&lt;br&gt;Book Rooms&lt;br&gt;Payment Details&lt;br&gt;Reviews &amp; Ratings" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0;entryDx=0;entryDy=0;curved=1;fontSize=11" edge="1" parent="1" source="user" target="system">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow2" value="Booking Confirmation" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;curved=1;fontSize=11" edge="1" parent="1" source="system" target="user">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Owner -> System -->
+        <mxCell id="flow3" value="Hotel Registration Request&lt;br&gt;Hotel &amp; Room Management&lt;br&gt;Discount Requests" style="endArrow=classic;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0;entryDx=0;entryDy=0;curved=1;fontSize=11" edge="1" parent="1" source="owner" target="system">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow4" value="Booking Notifications" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;curved=1;fontSize=11" edge="1" parent="1" source="system" target="owner">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Admin -> System -->
+        <mxCell id="flow5" value="Owner Verification (KYC)&lt;br&gt;User &amp; Hotel Management&lt;br&gt;Discount Approval&lt;br&gt;System Monitoring" style="endArrow=classic;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;curved=1;fontSize=11" edge="1" parent="1" source="admin" target="system">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- System -> Gateway -->
+        <mxCell id="flow6" value="Payment Request&lt;br&gt;Refund Processing" style="endArrow=classic;html=1;exitX=1;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;curved=1;fontSize=11" edge="1" parent="1" source="system" target="gateway">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="flow7" value="Payment Confirmation" style="endArrow=classic;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=1;entryDx=0;entryDy=0;curved=1;fontSize=11" edge="1" parent="1" source="gateway" target="system">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- System -> Email -->
+        <mxCell id="flow8" value="Booking Confirmation Emails&lt;br&gt;Cancellation Notifications" style="endArrow=classic;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fontSize=11" edge="1" parent="1" source="system" target="email">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -48,7 +48,6 @@ export default function OwnerDashboard() {
     title: '',
     roomType: 'single',
     pricePerNight: '',
-    totalRooms: '',
     guestCapacity: '',
     amenities: '',
     image: null
@@ -333,7 +332,6 @@ export default function OwnerDashboard() {
       title: '',
       roomType: 'single',
       pricePerNight: '',
-      totalRooms: '',
       guestCapacity: '',
       amenities: '',
       image: null
@@ -349,7 +347,6 @@ export default function OwnerDashboard() {
       title: room.title,
       roomType: room.roomType,
       pricePerNight: room.pricePerNight,
-      totalRooms: room.totalRooms,
       guestCapacity: room.guestCapacity || '',
       amenities: room.amenities?.join(', ') || '',
       image: null
@@ -359,7 +356,7 @@ export default function OwnerDashboard() {
   };
 
   const handleSaveRoom = async () => {
-    if (!roomFormData.hotelId || !roomFormData.title || !roomFormData.pricePerNight || !roomFormData.totalRooms || !roomFormData.guestCapacity) {
+    if (!roomFormData.hotelId || !roomFormData.title || !roomFormData.pricePerNight || !roomFormData.guestCapacity) {
       showToast.error('Please fill in all required fields');
       return;
     }
@@ -377,7 +374,6 @@ export default function OwnerDashboard() {
       submitData.append('title', roomFormData.title);
       submitData.append('roomType', roomFormData.roomType);
       submitData.append('pricePerNight', roomFormData.pricePerNight);
-      submitData.append('totalRooms', roomFormData.totalRooms);
       submitData.append('guestCapacity', roomFormData.guestCapacity);
       submitData.append('amenities', JSON.stringify(amenitiesArray));
 

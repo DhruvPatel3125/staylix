@@ -71,10 +71,10 @@ export default function RoomsTab() {
                       <div className="inv-bar">
                         <div 
                           className="inv-fill" 
-                          style={{ width: `${(room.availableRooms / room.totalRooms) * 100}%` }}
+                          style={{ width: `${((room.liveAvailableCount ?? room.totalRooms) / room.totalRooms) * 100}%` }}
                         ></div>
                       </div>
-                      <span className="inv-text">{room.availableRooms} / {room.totalRooms} available</span>
+                      <span className="inv-text">{room.liveAvailableCount ?? room.totalRooms} / {room.totalRooms} available</span>
                     </div>
                   </td>
                   <td>

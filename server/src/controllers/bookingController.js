@@ -25,7 +25,9 @@ exports.createPaymentOrder = async (req, res) => {
         }
 
         const checkInDate = new Date(checkIn);
+        checkInDate.setHours(0, 0, 0, 0);
         const checkOutDate = new Date(checkOut);
+        checkOutDate.setHours(0, 0, 0, 0);
 
         // --- AVAILABILITY CHECK (Including Pending) ---
         const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
@@ -38,17 +40,22 @@ exports.createPaymentOrder = async (req, res) => {
                     createdAt: { $gt: tenMinutesAgo } 
                 }
             ],
-            checkOut: { $gt: checkInDate },
-            checkIn: { $lt: checkOutDate }
+            $and: [
+                { checkIn: { $lt: checkOutDate } },
+                { checkOut: { $gt: checkInDate } }
+            ]
         });
 
         const currentOccupiedRooms = activeBookings.length;
-        const availableCount = room.availableRooms || 0;
+        const totalCapacity = room.totalRooms || 0;
 
-        if (currentOccupiedRooms >= availableCount) {
+        console.log(`[CreateOrder] Room: ${roomId}, Req CheckIn: ${checkInDate.toISOString()}, Req CheckOut: ${checkOutDate.toISOString()}`);
+        console.log(`[CreateOrder] Found ${currentOccupiedRooms} active bookings out of ${totalCapacity} total capacity.`);
+        
+        if (currentOccupiedRooms >= totalCapacity) {
             return res.status(400).json({
                 success: false,
-                message: `No rooms available for the selected dates. (Sold out: ${currentOccupiedRooms}/${availableCount} rooms)`
+                message: `No rooms available for the selected dates. (Sold out: ${currentOccupiedRooms}/${totalCapacity} rooms)`
             });
         }
 
@@ -555,7 +562,9 @@ exports.checkAvailability = async (req, res) => {
         }
 
         const checkInDate = new Date(checkIn);
+        checkInDate.setUTCHours(0, 0, 0, 0);
         const checkOutDate = new Date(checkOut);
+        checkOutDate.setUTCHours(0, 0, 0, 0);
 
         if (checkInDate >= checkOutDate) {
             return res.status(400).json({
@@ -574,12 +583,16 @@ exports.checkAvailability = async (req, res) => {
                     createdAt: { $gt: tenMinutesAgo } 
                 }
             ],
-            checkOut: { $gt: checkInDate },
-            checkIn: { $lt: checkOutDate }
+            $and: [
+                { checkIn: { $lt: checkOutDate } },
+                { checkOut: { $gt: checkInDate } }
+            ]
         });
 
         const currentOccupiedRooms = activeBookings.length;
         const totalCapacity = room.totalRooms || 0;
+
+        console.log(`Checking availability for room ${roomId}: occupied=${currentOccupiedRooms}, capacity=${totalCapacity}`);
 
         if (currentOccupiedRooms >= totalCapacity) {
             return res.json({

@@ -1914,3 +1914,92 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Responsive adjustments */
+@media (max-width: 1100px) {
+  .dashboard-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .dashboard-sidebar {
+    position: static;
+    margin-bottom: 2rem;
+  }
+
+  .admin-dashboard .search-input,
+  .search-input-premium {
+    width: 100%;
+  }
+
+  .admin-dashboard .search-input:focus,
+  .search-input-premium:focus {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-dashboard {
+    padding: 6rem 1rem 2rem;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+
+  .section-header-premium,
+  .users-header, 
+  .hotels-header, 
+  .rooms-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .header-actions,
+  .header-actions-premium {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .header-actions > *,
+  .header-actions-premium > * {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .stats-grid,
+  .reports-grid,
+  .health-metrics,
+  .hotels-grid, 
+  .requests-grid,
+  .requests-grid-modern {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-section,
+  .platform-health,
+  .discount-form-card-premium,
+  .hotel-card, 
+  .request-card,
+  .request-card-premium {
+    padding: 1.5rem;
+  }
+
+  .users-table-wrapper, 
+  .rooms-table-wrapper, 
+  .requests-table-wrapper {
+    padding: 1rem;
+    overflow-x: auto;
+  }
+
+  .discount-form .form-row,
+  .form-grid-modern {
+    grid-template-columns: 1fr;
+  }
+
+  .request-card-actions {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}

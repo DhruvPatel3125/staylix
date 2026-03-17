@@ -347,7 +347,19 @@ const api = {
       const response = await instance.get("/wishlist");
       return response.data
     }
+  },
+
+  users: {
+    updateProfile: async (profileData) => {
+      const response = await instance.put('/users/profile', profileData);
+      return response.data;
+    },
+    getProfile: async () => {
+      const response = await instance.get('/users/profile');
+      return response.data;
+    }
   }
 };
 
 export default api;
+

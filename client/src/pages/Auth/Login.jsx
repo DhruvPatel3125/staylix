@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
@@ -15,8 +16,9 @@ export default function Login() {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, error: authError, clearErrors } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,6 +26,9 @@ export default function Login() {
     // Clear error when user types
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
+    }
+    if (submitError) {
+      setSubmitError('');
     }
   };
 
@@ -37,7 +42,11 @@ export default function Login() {
       return;
     }
     
+    // Clear previous errors
     setErrors({});
+    setSubmitError('');
+    clearErrors();
+    
     setLoading(true);
 
     try {
@@ -51,20 +60,34 @@ export default function Login() {
       });
       navigate('/');
     } catch (err) {
+      console.error('Login error:', err);
+      
+      // Backend field errors (Joi)
       if (err.errors) {
         setErrors(err.errors);
-      } else {
-        const msg = err.message || 'An error occurred';
+      } 
+      
+      // Backend message (already in authError via Redux)
+      const backendMsg = authError || err.message;
+      if (backendMsg) {
+        setSubmitError(backendMsg);
         Swal.fire({
           icon: 'error',
           title: 'Login Failed',
-          text: msg
+          text: backendMsg  // ✅ "Invalid email or password", "Account blocked"
         });
       }
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (authError) {
+      setSubmitError(authError);
+    }
+  }, [authError]);
+
 
 
   return (

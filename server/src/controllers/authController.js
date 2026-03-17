@@ -52,7 +52,7 @@ exports.register = async (req, res) => {
     console.error("Registration error:", err);
     res.status(500).json({
       success: false,
-      message: "Registration failed"
+      message: "Server error during registration. Please try again."
     });
   }
 };
@@ -102,10 +102,11 @@ exports.login = async (req, res) => {
     console.error("Login error:", err);
     res.status(500).json({
       success: false,
-      message: "Login failed"
+      message: "Server error during login. Please try again."
     });
   }
 };
+
 
 exports.getMe = async (req, res) => {
   try {

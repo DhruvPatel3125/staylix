@@ -133,10 +133,16 @@
 
 .nav-item.active {
   background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-  color: white;
+  color: white !important;
   box-shadow: 0 15px 30px rgba(99, 102, 241, 0.2);
   text-decoration: none !important;
 }
+
+.nav-item.active svg {
+  color: white !important;
+  stroke: white !important;
+}
+
 
 /* Responsive adjustments */
 @media (max-width: 1100px) {

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
 import { useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
@@ -19,8 +20,9 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, error: authError, clearErrors } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -28,6 +30,9 @@ export default function Register() {
     // Clear error when user types
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: null }));
+    }
+    if (submitError) {
+      setSubmitError('');
     }
   };
 
@@ -65,7 +70,11 @@ export default function Register() {
       return;
     }
 
+    // Clear previous errors
     setErrors({});
+    setSubmitError('');
+    clearErrors();
+
     setLoading(true);
 
     const data = new FormData();
@@ -89,20 +98,33 @@ export default function Register() {
       navigate('/');
     } catch (err) {
       console.error('Registration error:', err);
+      
+      // Backend field errors (Joi)
       if (err.errors) {
         setErrors(err.errors);
-      } else {
-        const msg = err.message || 'Registration failed';
+      } 
+      
+      // Backend message (already in authError via Redux)
+      const backendMsg = authError || err.message;
+      if (backendMsg) {
+        setSubmitError(backendMsg);
         Swal.fire({
           icon: 'error',
-          title: 'Oops...',
-          text: msg
+          title: 'Registration Failed',
+          text: backendMsg  // ✅ "Email already exists"
         });
       }
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (authError) {
+      setSubmitError(authError);
+    }
+  }, [authError]);
+
 
   return (
     <div className="auth-container">

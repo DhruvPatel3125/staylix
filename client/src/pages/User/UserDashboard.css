@@ -312,14 +312,9 @@
   box-shadow: 0 10px 20px rgba(225, 29, 72, 0.2);
 }
 
-/* Profile Section */
-.profile-section {
-  background: white;
-  border-radius: 32px;
-  padding: 4rem;
-  box-shadow: var(--shadow-premium);
-  border: 1px solid rgba(0, 0, 0, 0.02);
-}
+
+/* Profile Section — styles moved to ProfileTab.css */
+
 
 .profile-form {
   display: grid;

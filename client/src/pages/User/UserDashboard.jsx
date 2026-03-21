@@ -4,7 +4,7 @@ import useAuth from '../../hooks/useAuth';
 import { 
   Calendar, Hotel, User as UserIcon, MapPin, Clock, 
   Briefcase, Trash2, CheckCircle, AlertCircle, FileText, 
-  Plus, X, Heart as HeartIcon, Mail, Shield
+  Plus, X, Heart as HeartIcon, Mail, Shield, LayoutDashboard
 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { showToast, showAlert } from '../../utils/swal';
@@ -153,6 +153,7 @@ export default function UserDashboard() {
   }
 
   const sidebarItems = [
+    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'bookings', label: 'My Bookings', icon: Calendar },
     ...(user?.role === 'user' ? [{ id: 'become-owner', label: 'Become Owner', icon: Briefcase }] : []),
     { id: 'profile', label: 'Profile', icon: UserIcon },

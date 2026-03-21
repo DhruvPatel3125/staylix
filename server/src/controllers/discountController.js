@@ -1,4 +1,5 @@
 const Discount = require("../models/discount.js");
+const Hotel = require("../models/hotel");
 
 exports.createDiscount = async (req, res) => {
   try {
@@ -285,13 +286,31 @@ exports.requestDiscount = async (req, res) => {
       });
     }
 
+    // Verify that all applicableHotels belong to the owner
+    if (applicableHotels && applicableHotels.length > 0) {
+      const ownerHotels = await Hotel.find({ ownerId: req.user._id }, "_id");
+      const ownerHotelIds = ownerHotels.map(h => h._id.toString());
+      
+      const invalidHotels = applicableHotels.filter(id => !ownerHotelIds.includes(id.toString()));
+      if (invalidHotels.length > 0) {
+        return res.status(403).json({
+          success: false,
+          message: "You can only request discounts for hotels you own",
+        });
+      }
+    } else {
+      // If no hotels specified, apply to all hotels owned by this user
+      const ownerHotels = await Hotel.find({ ownerId: req.user._id }, "_id");
+      req.body.applicableHotels = ownerHotels.map(h => h._id);
+    }
+
     const discount = await Discount.create({
       code: code.toUpperCase(),
       description,
       discountType: discountType || "percentage",
       discountValue,
       minBookingAmount: minBookingAmount || 0,
-      applicableHotels: applicableHotels || [],
+      applicableHotels: req.body.applicableHotels || [],
       startDate,
       endDate,
       usageLimit: usageLimit || null,

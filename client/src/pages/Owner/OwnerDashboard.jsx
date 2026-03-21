@@ -4,7 +4,7 @@ import useAuth from '../../hooks/useAuth';
 import { 
   Plus, MapPin, Trash2, Edit3, LayoutDashboard, Hotel as HotelIcon, 
   Bed, Calendar, TrendingUp, X, Camera, CheckCircle, Briefcase, Clock,
-  ArrowRight
+  ArrowRight, Tag
 } from 'lucide-react';
 import { showToast, showAlert } from '../../utils/swal';
 import api from '../../services/api';
@@ -555,8 +555,10 @@ export default function OwnerDashboard() {
     { id: 'overview', label: 'Overview', icon: TrendingUp },
     { id: 'hotels', label: 'My Hotels', icon: HotelIcon },
     { id: 'rooms', label: 'My Rooms', icon: Bed },
-    { id: 'bookings', label: 'Bookings', icon: Calendar },
-    { id: 'my-personal-bookings', label: 'Personal', icon: Briefcase },
+    { id: 'bookings', label: 'Guest Bookings', icon: Calendar },
+    { id: 'my-personal-bookings', label: 'My Bookings', icon: Briefcase },
+    { id: 'discounts', label: 'Discounts', icon: Tag },
+
   ];
 
   if (loading) {

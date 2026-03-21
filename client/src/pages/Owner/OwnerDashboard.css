@@ -1188,3 +1188,112 @@
   }
 }
 
+/* Discounts Specific Styles */
+.hotel-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.hotel-select-card {
+    background: #f8fafc;
+    border: 2px solid #edf2f7;
+    border-radius: 16px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.hotel-select-card:hover {
+    border-color: #cbd5e0;
+    background: #f1f5f9;
+}
+
+.hotel-select-card.selected {
+    border-color: #4f46e5;
+    background: #eef2ff;
+}
+
+.hotel-select-card .check-icon {
+    color: #4f46e5;
+    opacity: 0;
+    transition: all 0.2s ease;
+}
+
+.hotel-select-card.selected .check-icon {
+    opacity: 1;
+}
+
+.hotel-select-card span {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.form-info-banner {
+    background: #eff6ff;
+    border-radius: 16px;
+    padding: 1.25rem 1.75rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #1e40af;
+    border: 1px solid #dbeafe;
+}
+
+.form-info-banner p {
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.status-pill-modern.pending {
+    background: #fffbeb;
+    color: #92400e;
+    border: 1px solid #fef3c7;
+}
+
+.rejection-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #ef4444;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.5rem;
+    padding: 0.4rem 0.65rem;
+    background: #fef2f2;
+    border-radius: 8px;
+    width: fit-content;
+}
+
+.hint-text {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    font-style: italic;
+    margin-top: 0.5rem;
+}
+
+.properties-cell .count-pill {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 0.3rem 0.75rem;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+/* Dashboard Sidebar Badge (Optional - for future use) */
+.sidebar-badge {
+    background: var(--secondary-gradient);
+    color: white;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-weight: 800;
+}

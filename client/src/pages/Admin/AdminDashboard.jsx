@@ -316,6 +316,59 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleApproveDiscount = async (discountId) => {
+    const confirmed = await showAlert.confirm(
+      'Approve Discount?',
+      'Are you sure you want to approve this discount request?'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setProcessingId(discountId);
+      const response = await api.discounts.approveRequest(discountId);
+      if (response.success) {
+        setDiscounts(discounts.map(d =>
+          d._id === discountId ? { ...d, requestStatus: 'approved', isActive: true } : d
+        ));
+        showToast.success('Discount approved and activated');
+      } else {
+        showAlert.error('Error', response.message || 'Failed to approve discount');
+      }
+    } catch (_err) {
+      showAlert.error('Error', 'Failed to approve discount');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleRejectDiscount = async (discountId) => {
+    const { value: reason } = await showAlert.input(
+      'Reject Discount?',
+      'Please provide a reason for rejection:',
+      'Inappropriate discount amount'
+    );
+
+    if (reason === undefined) return; 
+
+    try {
+      setProcessingId(discountId);
+      const response = await api.discounts.rejectRequest(discountId, reason);
+      if (response.success) {
+        setDiscounts(discounts.map(d =>
+          d._id === discountId ? { ...d, requestStatus: 'rejected', isActive: false, rejectionReason: reason } : d
+        ));
+        showToast.success('Discount request rejected');
+      } else {
+        showAlert.error('Error', response.message || 'Failed to reject discount');
+      }
+    } catch (_err) {
+      showAlert.error('Error', 'Failed to reject discount');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   // --- Chart Data Preparation Helpers ---
   const getMonthlyRevenueData = () => {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -335,15 +388,34 @@ export default function AdminDashboard() {
   };
 
   const getOccupancyData = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     return hotels.map(hotel => {
-      const hotelRooms = rooms.filter(r => r.hotelId?._id === hotel._id || r.hotelId === hotel._id);
+      // Use .toString() for reliable ID comparison
+      const hotelRooms = rooms.filter(r => 
+        (r.hotelId?._id?.toString() || r.hotelId?.toString()) === hotel._id?.toString()
+      );
+      
       const totalRoomsCount = hotelRooms.reduce((sum, r) => sum + (Number(r.totalRooms) || 0), 0);
-      const availableRoomsCount = hotelRooms.reduce((sum, r) => sum + (Number(r.liveAvailableCount ?? r.totalRooms) || 0), 0);
-      const occupiedRooms = totalRoomsCount - availableRoomsCount;
+      
+      // Calculate occupied rooms based on active bookings for today
+      const hotelRoomIds = hotelRooms.map(r => r._id.toString());
+      const activeBookings = bookings.filter(b => {
+        if (b.bookingStatus === 'cancelled') return false;
+        const bRoomId = b.roomId?._id?.toString() || b.roomId?.toString();
+        if (!hotelRoomIds.includes(bRoomId)) return false;
+        
+        const checkIn = new Date(b.checkIn);
+        const checkOut = new Date(b.checkOut);
+        return today >= checkIn && today < checkOut;
+      });
+
+      const occupiedRooms = activeBookings.length;
       const occupancyRate = totalRoomsCount > 0 ? (occupiedRooms / totalRoomsCount) * 100 : 0;
       
       return {
-        name: hotel.name.length > 15 ? hotel.name.substring(0, 15) + '...' : hotel.name,
+        name: hotel.name.length > 12 ? hotel.name.substring(0, 12) + '...' : hotel.name,
         occupancyRate: Math.round(occupancyRate),
         total: totalRoomsCount,
         occupied: occupiedRooms
@@ -411,6 +483,7 @@ export default function AdminDashboard() {
               handleBlockUser, handleDeleteUser, handleDeleteHotel, handleDeleteRoom,
               handleApproveOwner, handleRejectOwner,
               handleCreateDiscount, handleToggleDiscount, handleDeleteDiscount,
+              handleApproveDiscount, handleRejectDiscount,
               showDiscountForm, setShowDiscountForm, newDiscount, setNewDiscount,
               getMonthlyRevenueData, getOccupancyData, getPageViewsData, 
               getRoomRevenue, getRoomBookings, CHART_COLORS

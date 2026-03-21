@@ -1,6 +1,6 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Trash2 } from 'lucide-react';
+import { Trash2, MapPin } from 'lucide-react';
 
 export default function PersonalBookingsTab() {
   const { 
@@ -13,7 +13,7 @@ export default function PersonalBookingsTab() {
 
   return (
     <div className="bookings-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
-      <h2>My Personal Bookings (As Guest)</h2>
+      <h2>My Travel Bookings</h2>
 
       {personalBookings.length === 0 ? (
         <div className="empty-state">

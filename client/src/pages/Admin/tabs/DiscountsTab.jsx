@@ -1,6 +1,6 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Search, Plus, X, Calendar, Clock, Tag, Trash2, CheckCircle } from 'lucide-react';
+import { Search, Plus, X, Calendar, Clock, Tag, Trash2, CheckCircle, XCircle } from 'lucide-react';
 
 export default function DiscountsTab() {
   const { 
@@ -14,6 +14,8 @@ export default function DiscountsTab() {
     handleCreateDiscount, 
     handleToggleDiscount, 
     handleDeleteDiscount, 
+    handleApproveDiscount,
+    handleRejectDiscount,
     processingId 
   } = useOutletContext();
 
@@ -194,35 +196,64 @@ export default function DiscountsTab() {
                       </div>
                     </div>
                   </td>
-                  <td>
+                   <td>
                     <div className="date-stack-modern">
                        <Calendar size={14} />
                        <span>{new Date(discount.endDate).toLocaleDateString()}</span>
                     </div>
                   </td>
                   <td>
-                    <span className={`status-pill-modern ${discount.isActive ? 'active' : 'blocked'}`}>
-                      {discount.isActive ? 'Active' : 'Paused'}
-                    </span>
+                    {discount.requestStatus === 'pending' ? (
+                      <span className="status-pill-modern pending">
+                        <Clock size={14} /> Pending
+                      </span>
+                    ) : (
+                      <span className={`status-pill-modern ${discount.isActive ? 'active' : 'blocked'}`}>
+                        {discount.isActive ? 'Active' : 'Paused'}
+                      </span>
+                    )}
                   </td>
                   <td>
                     <div className="compact-actions" style={{ justifyContent: 'flex-end' }}>
-                      <button
-                        className={`action-btn-circle ${discount.isActive ? 'disable' : 'enable'}`}
-                        onClick={() => handleToggleDiscount(discount._id)}
-                        disabled={processingId === discount._id}
-                        title={discount.isActive ? 'Pause Sale' : 'Resume Sale'}
-                      >
-                        {processingId === discount._id ? '...' : (discount.isActive ? <Clock size={18} /> : <CheckCircle size={18} />)}
-                      </button>
-                      <button
-                        className="action-btn-circle delete"
-                        onClick={() => handleDeleteDiscount(discount._id)}
-                        disabled={processingId === discount._id}
-                        title="Delete Discount"
-                      >
-                        {processingId === discount._id ? '...' : <Trash2 size={18} />}
-                      </button>
+                      {discount.requestStatus === 'pending' ? (
+                        <>
+                          <button
+                            className="action-btn-circle enable"
+                            onClick={() => handleApproveDiscount(discount._id)}
+                            disabled={processingId === discount._id}
+                            title="Approve Discount"
+                          >
+                            <CheckCircle size={18} />
+                          </button>
+                          <button
+                            className="action-btn-circle delete"
+                            onClick={() => handleRejectDiscount(discount._id)}
+                            disabled={processingId === discount._id}
+                            title="Reject Discount"
+                          >
+                            <XCircle size={18} />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            className={`action-btn-circle ${discount.isActive ? 'disable' : 'enable'}`}
+                            onClick={() => handleToggleDiscount(discount._id)}
+                            disabled={processingId === discount._id}
+                            title={discount.isActive ? 'Pause Sale' : 'Resume Sale'}
+                          >
+                            {processingId === discount._id ? '...' : (discount.isActive ? <Clock size={18} /> : <CheckCircle size={18} />)}
+                          </button>
+                          <button
+                            className="action-btn-circle delete"
+                            onClick={() => handleDeleteDiscount(discount._id)}
+                            disabled={processingId === discount._id}
+                            title="Delete Discount"
+                          >
+                            {processingId === discount._id ? '...' : <Trash2 size={18} />}
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>

@@ -305,6 +305,7 @@ hotels.push({
     isActive: true,
     location: { type: "Point", coordinates: [70.9083, 26.9157] }
 });
+
 rooms.push({
     hotelId: h8Id,
     title: "Dune View Deluxe",

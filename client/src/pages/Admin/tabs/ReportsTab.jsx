@@ -20,6 +20,9 @@ export default function ReportsTab() {
     CHART_COLORS
   } = useOutletContext();
 
+  const occupancyData = getOccupancyData() || [];
+  const revenueData = getMonthlyRevenueData() || [];
+
   return (
     <div className="reports-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
       <div className="section-header-premium">
@@ -79,7 +82,7 @@ export default function ReportsTab() {
           </div>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height={320}>
-              <AreaChart data={getMonthlyRevenueData()} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="adminColorRevenue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#6366f1" stopOpacity={0.15}/>
@@ -131,7 +134,7 @@ export default function ReportsTab() {
           </div>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={getOccupancyData()} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <BarChart data={occupancyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.5}/>
                 <XAxis 
                   dataKey="name" 
@@ -163,7 +166,7 @@ export default function ReportsTab() {
                   barSize={32}
                   animationDuration={1500}
                 >
-                   {getOccupancyData().map((entry, index) => (
+                   {occupancyData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.occupancyRate > 70 ? '#10b981' : entry.occupancyRate > 40 ? '#3b82f6' : '#f59e0b'} />
                   ))}
                 </Bar>

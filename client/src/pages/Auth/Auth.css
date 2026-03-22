@@ -385,4 +385,12 @@
   .otp-card {
     padding: 2rem 1.5rem;
   }
+  
+  .otp-header h1 {
+    font-size: 1.6rem;
+  }
+  
+  .otp-header p {
+    font-size: 0.9rem;
+  }
 }

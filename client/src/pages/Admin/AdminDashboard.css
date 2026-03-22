@@ -73,6 +73,28 @@
   align-items: start;
 }
 
+@media (max-width: 1200px) {
+  .dashboard-content {
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .admin-dashboard {
+    padding: 7rem 1.5rem 3rem;
+  }
+  
+  .dashboard-content {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 2.8rem;
+  }
+}
+
 /* Sidebar Styling */
 .dashboard-sidebar {
   background: var(--glass-bg);
@@ -2425,3 +2447,54 @@
   font-size: 13px;
 }
 
+/* Responsive Tables & Reviews */
+@media (max-width: 768px) {
+  .admin-table-wrapper-premium {
+    overflow-x: auto;
+    margin: 0 -1rem;
+    padding: 0 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .admin-table-modern {
+    min-width: 800px; /* Force minimum width to enable horizontal scroll */
+  }
+
+  .dashboard-header h1 {
+    font-size: 2.2rem;
+    letter-spacing: -1px;
+  }
+  
+  .section-header-modern {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .search-wrapper-premium, .filter-wrapper {
+    width: 100%;
+  }
+  
+  .filter-select-premium {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-dashboard {
+    padding: 6rem 1rem 2rem;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .section-header-modern h2 {
+    font-size: 1.5rem;
+  }
+}

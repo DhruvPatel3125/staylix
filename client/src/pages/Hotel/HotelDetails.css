@@ -928,3 +928,31 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+@media (max-width: 600px) {
+  .review-actions-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .review-owner-actions {
+    border-left: none;
+    padding-left: 0;
+    margin-top: 0.25rem;
+  }
+
+  .edit-review-form {
+    padding: 1rem;
+  }
+
+  .edit-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .cancel-edit, .save-edit {
+    width: 100%;
+    text-align: center;
+  }
+}

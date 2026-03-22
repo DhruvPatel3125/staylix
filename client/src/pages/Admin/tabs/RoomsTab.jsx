@@ -1,19 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Search, Trash2 } from 'lucide-react';
 
 export default function RoomsTab() {
   const { 
     rooms, 
+    hotels,
     searchTerm, 
     setSearchTerm, 
     handleDeleteRoom, 
     processingId 
   } = useOutletContext();
 
-  const filteredRooms = rooms.filter(room =>
-    room.title?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const [filterHotelId, setFilterHotelId] = useState('');
+
+  const filteredRooms = rooms.filter(room => {
+    const matchesSearch = room.title?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesHotel = filterHotelId === '' || (room.hotelId?._id || room.hotelId) === filterHotelId;
+    return matchesSearch && matchesHotel;
+  });
 
   return (
     <div className="rooms-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
@@ -22,15 +27,29 @@ export default function RoomsTab() {
           <h2>Inventory Management</h2>
           <p className="subtitle-admin">Track room availability and pricing across the entire platform.</p>
         </div>
-        <div className="search-wrapper">
-          <Search size={18} className="search-icon-inside" />
-          <input
-            type="text"
-            className="search-input-premium"
-            placeholder="Search inventory units..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="header-actions">
+          <div className="filter-wrapper">
+            <select 
+              className="filter-select-premium"
+              value={filterHotelId}
+              onChange={(e) => setFilterHotelId(e.target.value)}
+            >
+              <option value="">All Hotels</option>
+              {hotels.map(hotel => (
+                <option key={hotel._id} value={hotel._id}>{hotel.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="search-wrapper">
+            <Search size={18} className="search-icon-inside" />
+            <input
+              type="text"
+              className="search-input-premium"
+              placeholder="Search units..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
         </div>
       </div>
 

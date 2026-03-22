@@ -1,101 +1,108 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import api from '../../services/api';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { Lock } from 'lucide-react';
+import { Lock, ArrowLeft, CheckCircle } from 'lucide-react';
+import Input from '../../components/ui/Input';
+import Button from '../../components/ui/Button';
 import './Auth.css';
 
-const ResetPassword = () => {
-    const { resetToken } = useParams();
-    const navigate = useNavigate();
-    
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [loading, setLoading] = useState(false);
+export default function ResetPassword() {
+  const { token } = useParams();
+  const navigate = useNavigate();
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      Swal.fire({ icon: 'error', title: 'Error', text: 'Passwords do not match' });
+      return;
+    }
 
-        if (password !== confirmPassword) {
-            toast.error("Passwords do not match");
-            return;
-        }
+    setLoading(true);
+    try {
+      await api.auth.resetPassword(token, password);
+      setSuccess(true);
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: 'Password has been reset successfully.',
+        timer: 3000,
+        showConfirmButton: false
+      });
+      setTimeout(() => navigate('/login'), 3000);
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Reset Failed',
+        text: err.message || 'Something went wrong'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        if (password.length < 6) {
-             toast.error("Password must be at least 6 characters");
-             return;
-        }
-
-        setLoading(true);
-
-        try {
-            await api.auth.resetPassword(resetToken, password);
-            toast.success('Password updated successfully! Redirecting to login...');
-            setTimeout(() => {
-                navigate('/login');
-            }, 3000);
-        } catch (error) {
-            console.error(error);
-             toast.error(error.response?.data?.message || 'Failed to reset password. Link might be invalid or expired.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
+  if (success) {
     return (
-        <div className="auth-container">
-            <ToastContainer />
-            <div className="auth-card">
-                <h1>Reset Password</h1>
-                <p style={{ textAlign: 'center', marginBottom: '2rem', color: '#4a5568' }}>
-                    Enter your new password below
-                </p>
-
-                <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="password">New Password</label>
-                        <div className="input-wrapper">
-                            <Lock className="input-icon" size={20} />
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                placeholder="••••••••"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="form-group">
-                        <label htmlFor="confirmPassword">Confirm New Password</label>
-                        <div className="input-wrapper">
-                            <Lock className="input-icon" size={20} />
-                            <input
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                type="password"
-                                placeholder="••••••••"
-                                required
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="submit-btn"
-                    >
-                        {loading ? 'Resetting...' : 'Reset Password'}
-                    </button>
-                </form>
-            </div>
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="otp-icon-wrapper" style={{ color: '#10b981', background: 'rgba(16, 185, 129, 0.1)' }}>
+            <CheckCircle size={40} />
+          </div>
+          <h1>Password Reset!</h1>
+          <p>Your password has been changed successfully. You can now login with your new credentials.</p>
+          <Link to="/login" className="submit-btn" style={{ display: 'block', textDecoration: 'none', textAlign: 'center', marginTop: '2rem' }}>
+            Go to Login
+          </Link>
         </div>
+      </div>
     );
-};
+  }
 
-export default ResetPassword;
+  return (
+    <div className="auth-container">
+      <div className="auth-card">
+        <h1>Set New Password</h1>
+        <p className="auth-subtitle">Please enter your new password below.</p>
+        
+        <form onSubmit={handleSubmit}>
+          <Input
+            label="New Password"
+            name="password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            icon={Lock}
+            placeholder="••••••••"
+            required
+            minLength={6}
+          />
+
+          <Input
+            label="Confirm New Password"
+            name="confirmPassword"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            icon={Lock}
+            placeholder="••••••••"
+            required
+            minLength={6}
+          />
+
+          <Button 
+            type="submit" 
+            loading={loading} 
+            className="submit-btn" 
+            style={{ width: '100%', marginTop: '1.5rem' }}
+          >
+            Reset Password
+          </Button>
+        </form>
+      </div>
+    </div>
+  );
+}

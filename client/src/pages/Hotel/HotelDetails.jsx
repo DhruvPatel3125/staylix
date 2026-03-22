@@ -14,9 +14,11 @@ import {
   Info,
   Calendar,
   CreditCard,
-  Tag
+  Tag,
+  Edit2,
+  Trash2
 } from 'lucide-react';
-import { showToast } from '../../utils/swal';
+import { showToast, showAlert } from '../../utils/swal';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import RoomCard from '../../components/features/RoomCard/RoomCard';
@@ -51,6 +53,8 @@ export default function HotelDetails() {
     isAvailable: true, 
     message: '' 
   });
+  const [editingReviewId, setEditingReviewId] = useState(null);
+  const [editReviewData, setEditReviewData] = useState({ rating: 5, comment: '' });
 
   useEffect(() => {
     const fetchHotelData = async () => {
@@ -311,7 +315,43 @@ export default function HotelDetails() {
       showToast.error(errorMessage);
     }
   };
+  const handleEditReview = async (review) => {
+    setEditingReviewId(review._id);
+    setEditReviewData({ rating: review.rating, comment: review.comment });
+  };
 
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      const confirmed = await showAlert.confirm(
+        'Delete Review?',
+        'Are you sure you want to delete this review? This action cannot be undone.'
+      );
+      
+      if (confirmed) {
+        const response = await api.reviews.delete(reviewId);
+        if (response.success) {
+          setReviews(reviews.filter(r => r._id !== reviewId));
+          showToast.success('Review deleted successfully');
+        }
+      }
+    } catch (err) {
+      showToast.error('Failed to delete review');
+    }
+  };
+
+  const handleUpdateReview = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await api.reviews.update(editingReviewId, editReviewData);
+      if (response.success) {
+        setReviews(reviews.map(r => r._id === editingReviewId ? { ...r, ...response.review } : r));
+        setEditingReviewId(null);
+        showToast.success('Review updated successfully');
+      }
+    } catch (err) {
+      showToast.error('Failed to update review');
+    }
+  };
 
   if (loading) {
     return <div className="loading-container">Loading hotel details...</div>;
@@ -388,21 +428,61 @@ export default function HotelDetails() {
           ) : (
             <div className="reviews-list">
               {reviews.map((review) => (
-                <div key={review._id} className="review-item-premium">
-                  <div className="review-header">
-                    <div className="reviewer-meta">
-                      <div className="reviewer-avatar">
-                        {review.userId?.name?.charAt(0) || 'U'}
+                  <div key={review._id} className="review-item-premium">
+                    <div className="review-header">
+                      <div className="reviewer-meta">
+                        <div className="reviewer-avatar">
+                          {review.userId?.name?.charAt(0) || 'U'}
+                        </div>
+                        <span className="reviewer-name">{review.userId?.name}</span>
                       </div>
-                      <span className="reviewer-name">{review.userId?.name}</span>
+                      <div className="review-actions-wrapper">
+                        <div className="review-rating-pill">
+                          <Star size={14} fill="currentColor" />
+                          <span>{review.rating}/5</span>
+                        </div>
+                        {user && (review.userId?._id === user._id || review.userId === user._id) && (
+                          <div className="review-owner-actions">
+                            <button onClick={() => handleEditReview(review)} className="review-action-btn edit" title="Edit Review">
+                              <Edit2 size={14} />
+                            </button>
+                            <button onClick={() => handleDeleteReview(review._id)} className="review-action-btn delete" title="Delete Review">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="review-rating-pill">
-                      <Star size={14} fill="currentColor" />
-                      <span>{review.rating}/5</span>
-                    </div>
+                    
+                    {editingReviewId === review._id ? (
+                      <form onSubmit={handleUpdateReview} className="edit-review-form">
+                        <div className="star-rating-edit">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              size={20}
+                              fill={star <= editReviewData.rating ? "#ffc107" : "none"}
+                              stroke={star <= editReviewData.rating ? "#ffc107" : "#cbd5e1"}
+                              onClick={() => setEditReviewData({ ...editReviewData, rating: star })}
+                              style={{ cursor: 'pointer' }}
+                            />
+                          ))}
+                        </div>
+                        <textarea
+                          value={editReviewData.comment}
+                          onChange={(e) => setEditReviewData({ ...editReviewData, comment: e.target.value })}
+                          className="edit-comment-area"
+                          rows="3"
+                        />
+                        <div className="edit-actions">
+                          <button type="button" onClick={() => setEditingReviewId(null)} className="cancel-edit">Cancel</button>
+                          <button type="submit" className="save-edit">Save Changes</button>
+                        </div>
+                      </form>
+                    ) : (
+                      <p className="review-comment">{review.comment}</p>
+                    )}
                   </div>
-                  <p className="review-comment">{review.comment}</p>
-                </div>
               ))}
             </div>
           )}

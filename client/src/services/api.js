@@ -61,8 +61,18 @@ const api = {
       return response.data;
     },
 
+    verifyOTP: async (email, otp) => {
+      const response = await instance.post('/auth/verify-otp', { email, otp });
+      return response.data;
+    },
+
     forgotPassword: async (email) => {
       const response = await instance.post('/auth/forgotpassword', { email });
+      return response.data;
+    },
+
+    verifyResetOTP: async (email, otp) => {
+      const response = await instance.post('/auth/verify-reset-otp', { email, otp });
       return response.data;
     },
 
@@ -71,6 +81,7 @@ const api = {
       return response.data;
     }
   },
+
 
   hotels: {
     getAll: async () => {
@@ -184,6 +195,18 @@ const api = {
     getByHotel: async (hotelId) => {
       const response = await instance.get(`/reviews/${hotelId}`);
       return response.data;
+    },
+    update: async (id, reviewData) => {
+      const response = await instance.put(`/reviews/${id}`, reviewData);
+      return response.data;
+    },
+    delete: async (id) => {
+      const response = await instance.delete(`/reviews/${id}`);
+      return response.data;
+    },
+    getAll: async () => {
+      const response = await instance.get('/reviews');
+      return response.data;
     }
   },
 
@@ -267,6 +290,10 @@ const api = {
 
     getAllBookings: async () => {
       const response = await instance.get('/admin/bookings');
+      return response.data;
+    },
+    getAllReviews: async () => {
+      const response = await instance.get('/reviews');
       return response.data;
     }
   },

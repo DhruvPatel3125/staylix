@@ -149,7 +149,11 @@ Staylix proposes a centralized, secure, and highly interactive digital marketpla
 ### **3. Admin Module**
 - **Verification:** Approve or reject owner registration requests.
 - **Analytics:** Platform-wide performance reports (Revenue, User Growth).
-- **Moderation:** Management of users, listings, and global settings.
+### **4. Staylix Concierge (AI Chatbot)**
+- **Guided Assistance:** A menu-driven flow that directs guests to Hotels, Bookings, and exclusive Offers.
+- **Dynamic Interaction:** Fetches real-time cities, user bookings, and active discount codes on-demand.
+- **Automated Support:** Specialized help paths for Payment, Booking issues, and human support contact.
+- **Intelligent Navigation:** Automatically redirects users to relevant dashboard sections based on their interactions.
 
 ---
 

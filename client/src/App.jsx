@@ -16,6 +16,9 @@ import AdminDashboard from './pages/Admin/AdminDashboard';
 import OwnerDashboard from './pages/Owner/OwnerDashboard';
 import AboutUs from './pages/Static/AboutUs';
 import ContactUs from './pages/Static/ContactUs';
+import ChatBot from './components/common/ChatBot/ChatBot';
+import Footer from './components/layout/Footer/Footer';
+
 
 // Admin Tab Components
 import AdminOverviewTab from './pages/Admin/tabs/OverviewTab';
@@ -25,6 +28,7 @@ import AdminHotelsTab from './pages/Admin/tabs/HotelsTab';
 import AdminRoomsTab from './pages/Admin/tabs/RoomsTab';
 import AdminReportsTab from './pages/Admin/tabs/ReportsTab';
 import AdminDiscountsTab from './pages/Admin/tabs/DiscountsTab';
+import AdminReviewsTab from './pages/Admin/tabs/ReviewsTab';
 
 // Owner Tab Components
 import OwnerOverviewTab from './pages/Owner/tabs/OverviewTab';
@@ -69,7 +73,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:resetToken" element={<ResetPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/hotel/:id" element={<HotelDetails />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/contact" element={<ContactUs />} />
@@ -122,12 +126,19 @@ function App() {
               <Route path="rooms" element={<AdminRoomsTab />} />
               <Route path="reports" element={<AdminReportsTab />} />
               <Route path="discounts" element={<AdminDiscountsTab />} />
+              <Route path="reviews" element={<AdminReviewsTab />} />
             </Route>
             
             <Route path="*" element={<div style={{padding: '2rem', textAlign: 'center'}}>Page not found</div>} />
           </Routes>
         </main>
+        <Footer />
+        <ChatBot />
     </Router>
+
+
+
+
   );
 }
 

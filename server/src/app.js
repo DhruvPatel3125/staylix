@@ -14,6 +14,9 @@ const ownerRequestRoutes = require('./routes/ownerRequestRoutes')
 const adminRoutes = require('./routes/adminRoutes')
 const discountRoutes = require('./routes/discountRoutes')
 const wishlistRoutes = require('./routes/wishlistRoutes')
+const chatbotRoutes = require('./routes/chatbotRoute')
+
+
 
 const app = express();
 
@@ -44,6 +47,9 @@ app.use('/api/owner-request',ownerRequestRoutes);
 app.use('/api/admin',adminRoutes);
 app.use('/api/discounts',discountRoutes);
 app.use("/api",wishlistRoutes)
+app.use('/api/chat', chatbotRoutes);
+
+
 
 app.get('/',(req,res)=>{
     res.send("Welcome to Staylix")

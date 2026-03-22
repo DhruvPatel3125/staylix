@@ -46,10 +46,21 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    isVerified: {
+        type: Boolean,
+        default: false,
+    },
+    otp: {
+        type: String,
+    },
+    otpExpires: {
+        type: Date,
+    },
 
 }, {
     timestamps: true,
 })
+
 
 userSchema.methods.comparePassword = async function (password) {
     return await bcrypt.compare(password, this.passwordHash);

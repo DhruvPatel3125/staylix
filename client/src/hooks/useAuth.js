@@ -1,9 +1,9 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { loginUser, registerUser, logoutUser, clearErrors } from '../store/slices/authSlice';
+import { loginUser, registerUser, logoutUser, clearErrors, verifyOTP as verifyOTPAction } from '../store/slices/authSlice';
 
 const useAuth = () => {
     const dispatch = useDispatch();
-    const { user, token, isAuthenticated, loading, error } = useSelector((state) => state.auth);
+    const { user, token, isAuthenticated, loading, error, isUnverified } = useSelector((state) => state.auth);
 
     const login = async (email, password) => {
         return dispatch(loginUser({ email, password })).unwrap();
@@ -11,6 +11,10 @@ const useAuth = () => {
 
     const register = async (userData) => {
         return dispatch(registerUser(userData)).unwrap();
+    };
+
+    const verifyOTP = async (email, otp) => {
+        return dispatch(verifyOTPAction({ email, otp })).unwrap();
     };
 
     const logout = () => {
@@ -23,11 +27,14 @@ const useAuth = () => {
         isAuthenticated,
         loading,
         error,
+        isUnverified,
         login,
         register,
+        verifyOTP,
         logout,
         clearErrors: () => dispatch(clearErrors())
     };
+
 };
 
 export default useAuth;

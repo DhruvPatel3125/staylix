@@ -9,7 +9,8 @@ import {
   PieChart, 
   Tag, 
   LayoutDashboard, 
-  UserPlus
+  UserPlus,
+  MessageSquare
 } from 'lucide-react';
 import { showToast, showAlert } from '../../utils/swal';
 import api from '../../services/api';
@@ -26,6 +27,7 @@ export default function AdminDashboard() {
   const [bookings, setBookings] = useState([]);
   const [ownerRequests, setOwnerRequests] = useState([]);
   const [discounts, setDiscounts] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [processingId, setProcessingId] = useState(null);
@@ -50,14 +52,15 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       setError(null);
-      const [statsRes, usersRes, hotelsRes, roomsRes, requestsRes, discountsRes, bookingsRes] = await Promise.all([
+      const [statsRes, usersRes, hotelsRes, roomsRes, requestsRes, discountsRes, bookingsRes, reviewsRes] = await Promise.all([
         api.admin.getDashboardStats(),
         api.admin.getAllUsers(),
         api.admin.getAllHotels(),
         api.admin.getAllRooms(),
         api.admin.getOwnerRequests(),
         api.discounts.getAll(),
-        api.admin.getAllBookings()
+        api.admin.getAllBookings(),
+        api.reviews.getAll()
       ]);
 
       if (statsRes.success) {
@@ -80,6 +83,9 @@ export default function AdminDashboard() {
       }
       if (bookingsRes.success) {
         setBookings(bookingsRes.bookings || []);
+      }
+      if (reviewsRes.success) {
+        setReviews(reviewsRes.reviews || []);
       }
     } catch (_err) {
       setError('Failed to load dashboard data');
@@ -453,7 +459,8 @@ export default function AdminDashboard() {
     { id: 'hotels', label: 'Hotels', icon: Hotel },
     { id: 'rooms', label: 'Rooms', icon: Bed },
     { id: 'reports', label: 'Reports', icon: LayoutDashboard },
-    { id: 'discounts', label: 'Discounts', icon: Tag }
+    { id: 'discounts', label: 'Discounts', icon: Tag },
+    { id: 'reviews', label: 'Reviews', icon: MessageSquare }
   ];
 
   if (loading) {
@@ -478,8 +485,9 @@ export default function AdminDashboard() {
             {error && <div className="error-banner">{error}</div>}
             
             <Outlet context={{ 
-              stats, users, hotels, rooms, bookings, ownerRequests, discounts,
-              searchTerm, setSearchTerm, processingId,
+              stats, users, hotels, rooms, bookings, ownerRequests, discounts, reviews,
+              searchTerm, setSearchTerm, processingId, setProcessingId,
+              setUsers, setHotels, setRooms, setBookings, setOwnerRequests, setDiscounts, setReviews,
               handleBlockUser, handleDeleteUser, handleDeleteHotel, handleDeleteRoom,
               handleApproveOwner, handleRejectOwner,
               handleCreateDiscount, handleToggleDiscount, handleDeleteDiscount,

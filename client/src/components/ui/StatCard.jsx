@@ -1,9 +1,12 @@
 import React from 'react';
 import './StatCard.css';
 
-export default function StatCard({ icon: Icon, title, value, iconColor, iconBg, className = '' }) {
+export default function StatCard({ icon: Icon, title, value, iconColor, iconBg, className = '', onClick }) {
   return (
-    <div className={`stat-card ${className}`}>
+    <div 
+      className={`stat-card ${className} ${onClick ? 'clickable' : ''}`} 
+      onClick={onClick}
+    >
       <div className="stat-icon" style={{ background: iconBg, color: iconColor }}>
         {Icon && <Icon size={28} />}
       </div>

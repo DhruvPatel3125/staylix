@@ -10,9 +10,17 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.stat-card.clickable {
+  cursor: pointer;
+}
+
 .stat-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.08);
+}
+
+.stat-card.clickable:active {
+  transform: translateY(-4px) scale(0.98);
 }
 
 .stat-icon {

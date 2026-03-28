@@ -134,14 +134,18 @@ export default function ReportsTab() {
           </div>
           <div className="chart-wrapper">
             <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={occupancyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <BarChart data={occupancyData} margin={{ top: 20, right: 30, left: 0, bottom: 50 }} barCategoryGap="20%">
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.5}/>
                 <XAxis 
                   dataKey="name" 
                   axisLine={false} 
                   tickLine={false} 
-                  tick={{fill: '#64748b', fontSize: 12, fontWeight: 500}} 
-                  dy={10}
+                  tick={{fill: '#64748b', fontSize: 11, fontWeight: 500}} 
+                  dy={15}
+                  dx={-5}
+                  angle={-35}
+                  textAnchor="end"
+                  interval={0}
                 />
                 <YAxis 
                   axisLine={false} 
@@ -161,9 +165,8 @@ export default function ReportsTab() {
                 />
                 <Bar 
                   dataKey="occupancyRate" 
-                  fill="#10b981" 
                   radius={[10, 10, 0, 0]} 
-                  barSize={32}
+                  maxBarSize={48}
                   animationDuration={1500}
                 >
                    {occupancyData.map((entry, index) => (

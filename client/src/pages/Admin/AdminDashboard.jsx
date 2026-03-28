@@ -394,10 +394,9 @@ export default function AdminDashboard() {
   };
 
   const getOccupancyData = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
 
-    return hotels.map(hotel => {
+    const data = hotels.map(hotel => {
       // Use .toString() for reliable ID comparison
       const hotelRooms = rooms.filter(r => 
         (r.hotelId?._id?.toString() || r.hotelId?.toString()) === hotel._id?.toString()
@@ -406,15 +405,15 @@ export default function AdminDashboard() {
       const totalRoomsCount = hotelRooms.reduce((sum, r) => sum + (Number(r.totalRooms) || 0), 0);
       
       // Calculate occupied rooms based on active bookings for today
-      const hotelRoomIds = hotelRooms.map(r => r._id.toString());
+      const hotelRoomIds = new Set(hotelRooms.map(r => r._id.toString()));
       const activeBookings = bookings.filter(b => {
         if (b.bookingStatus === 'cancelled') return false;
         const bRoomId = b.roomId?._id?.toString() || b.roomId?.toString();
-        if (!hotelRoomIds.includes(bRoomId)) return false;
+        if (!hotelRoomIds.has(bRoomId)) return false;
         
-        const checkIn = new Date(b.checkIn);
         const checkOut = new Date(b.checkOut);
-        return today >= checkIn && today < checkOut;
+        // An active ongoing booking is one that hasn't checked out yet
+        return checkOut >= now;
       });
 
       const occupiedRooms = activeBookings.length;
@@ -427,6 +426,9 @@ export default function AdminDashboard() {
         occupied: occupiedRooms
       };
     }).filter(d => d.total > 0);
+
+    // Sort by highest occupancy and take top 10 to prevent squishing the chart UI
+    return data.sort((a, b) => b.occupancyRate - a.occupancyRate).slice(0, 10);
   };
 
   const getPageViewsData = () => {

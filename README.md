@@ -37,6 +37,9 @@ The Staylix project is a comprehensive solution for the hospitality industry. It
 - **Dynamic Inventory:** Real-time availability tracking for rooms.
 - **Financial Integration:** Secure payments via Razorpay API.
 - **Verification System:** KYC-based onboarding for property owners.
+- **OTP Authentication:** Secure registration and password reset using email OTPs.
+- **Member Wishlist:** Users can save and manage their favorite properties.
+- **Discount Management:** Owner-requested, admin-approved discount codes.
 - **Business Intelligence:** Data-driven dashboards for owners and admins.
 
 ---
@@ -70,9 +73,11 @@ The Staylix project is a comprehensive solution for the hospitality industry. It
 ## 🚀 Technologies Used
 
 ### **Frontend (Client)**
-- **React.js:** Component-driven UI development.
+- **React.js:** Component-driven UI development (Vite).
 - **Redux Toolkit:** Centralized state management for auth and data.
-- **Leaflet:** Interactive mapping engine.
+- **Leaflet & React-Leaflet:** Interactive mapping engine and spatial queries.
+- **Lucide React:** Premium iconography and UI symbols.
+- **SweetAlert2 & React-Hot-Toast:** Modern, non-blocking user notifications.
 - **Recharts:** Analytics and data visualization.
 - **Axios:** Asynchronous API communication.
 
@@ -80,9 +85,11 @@ The Staylix project is a comprehensive solution for the hospitality industry. It
 - **Node.js:** High-performance JavaScript runtime.
 - **Express.js:** Lightweight web framework.
 - **MongoDB & Mongoose:** Scalable NoSQL database with schema modeling.
-- **JWT:** JSON Web Tokens for stateless authentication.
+- **JWT & Bcryptjs:** Secure authentication and password hashing.
+- **Joi:** Robust request validation and error handling.
+- **Multer:** Multi-part form data handling for image uploads.
 - **Razorpay SDK:** Payment gateway integration.
-- **Nodemailer:** Automated email delivery system.
+- **Nodemailer:** Automated email delivery system (OTP).
 
 ---
 
@@ -138,17 +145,22 @@ Staylix proposes a centralized, secure, and highly interactive digital marketpla
 - **Map View:** Toggle between list and map for spatial awareness.
 - **Booking:** Intuitive room selection and date picking.
 - **Payment:** Integrated checkout with Razorpay.
-- **Reviews:** Rating and feedback system for post-stay.
+- **Wishlist:** Save favorite hotels for future trips.
+- **Profile Management:** Edit personal details and profile picture.
+- **Reviews:** Rating and feedback system with full control (Edit/Delete).
 
 ### **2. Owner Module**
 - **Registration:** Formal KYC request to join the platform.
 - **Dashboard:** Overview of bookings, active listings, and revenue.
-- **Inventory:** Add/Edit hotels and specific room types.
+- **Inventory:** Add/Edit hotels and specific room types with multi-photo management.
 - **Management:** View and manage incoming booking requests.
+- **Discounts:** Request custom discount codes for their properties.
 
 ### **3. Admin Module**
 - **Verification:** Approve or reject owner registration requests.
 - **Analytics:** Platform-wide performance reports (Revenue, User Growth).
+- **Moderation:** Full control over users, properties, and review deletions.
+- **Discounts:** Review and approve owner discount requests.
 ### **4. Staylix Concierge (AI Chatbot)**
 - **Guided Assistance:** A menu-driven flow that directs guests to Hotels, Bookings, and exclusive Offers.
 - **Dynamic Interaction:** Fetches real-time cities, user bookings, and active discount codes on-demand.
@@ -230,10 +242,15 @@ staylix/
 ### **API Modules**
 | Module | Endpoint | Method | Purpose |
 | :--- | :--- | :--- | :--- |
-| **Auth** | `/api/auth` | POST | Login / Register |
-| **Hotels** | `/api/hotels` | GET | Property Search |
+| **Auth** | `/api/auth/register` | POST | Sign up with OTP verification |
+| **Auth** | `/api/auth/login` | POST | Secure Login (JWT + OTP) |
+| **User** | `/api/users/profile` | PUT | Update profile name & image |
+| **Hotels** | `/api/hotels` | GET | Property Discovery & Search |
+| **Wishlist** | `/api/wishlist/:id` | POST | Toggle Favorite status |
+| **Discounts** | `/api/discounts/request` | POST | Owner requests a discount |
 | **Bookings** | `/api/bookings` | POST | Initiate Transaction |
-| **Admin** | `/api/admin` | GET | System Statistics |
+| **Reviews** | `/api/reviews/:id` | PUT/DELETE| Manage personal or admin feedback |
+| **Admin** | `/api/admin/stats` | GET | Global Platform Statistics |
 
 ---
 

@@ -20,6 +20,8 @@ exports.addReview = async (req, res) => {
             userId: req.user._id
         });
 
+        await review.populate('userId', 'name email');
+
         // Calculate average rating and count using aggregation
         const stats = await Review.aggregate([
             { $match: { hotelId: new mongoose.Types.ObjectId(hotelId) } },

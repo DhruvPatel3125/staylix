@@ -503,30 +503,40 @@ export default function OwnerDashboard() {
   };
 
   const getOccupancyData = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const now = new Date();
 
     return hotels.map(hotel => {
-      const hotelRooms = rooms.filter(r => r.hotelId?._id === hotel._id || r.hotelId === hotel._id);
-      const roomIds = hotelRooms.map(r => r._id);
-      
-      const totalCapacity = hotelRooms.reduce((sum, r) => sum + (Number(r.totalRooms) || 0), 0);
-      
-      // Count how many rooms are occupied today
-      const occupiedToday = bookings.filter(b => {
-        if (b.bookingStatus === 'cancelled') return false;
-        const checkIn = new Date(b.checkIn);
-        const checkOut = new Date(b.checkOut);
-        return today >= checkIn && today < checkOut && roomIds.includes(b.roomId?._id || b.roomId);
-      }).length;
+      // Fix: use toString() for reliable MongoDB ObjectId comparison
+      const hotelId = hotel._id?.toString();
+      const hotelRooms = rooms.filter(r =>
+        (r.hotelId?._id?.toString() || r.hotelId?.toString()) === hotelId
+      );
+      // Build a Set of room IDs as strings for fast lookup
+      const roomIdSet = new Set(hotelRooms.map(r => r._id?.toString()));
 
-      const occupancyRate = totalCapacity > 0 ? (occupiedToday / totalCapacity) * 100 : 0;
-      
+      const totalCapacity = hotelRooms.length; // Each room document = 1 room
+
+      // Count unique rooms with an active booking (not cancelled, checkOut in future).
+      // This matches the "Ongoing bookings" stat so the chart shows real data.
+      const occupiedRoomIds = new Set(
+        bookings
+          .filter(b => {
+            if (b.bookingStatus === 'cancelled') return false;
+            const checkOut = new Date(b.checkOut);
+            const roomId = (b.roomId?._id || b.roomId)?.toString();
+            return checkOut >= now && roomIdSet.has(roomId);
+          })
+          .map(b => (b.roomId?._id || b.roomId)?.toString())
+      );
+
+      const occupancyRate =
+        totalCapacity > 0 ? (occupiedRoomIds.size / totalCapacity) * 100 : 0;
+
       return {
         name: hotel.name.length > 15 ? hotel.name.substring(0, 15) + '...' : hotel.name,
         occupancyRate: Math.round(occupancyRate),
         total: totalCapacity,
-        occupied: occupiedToday
+        occupied: occupiedRoomIds.size,
       };
     }).filter(d => d.total > 0);
   };

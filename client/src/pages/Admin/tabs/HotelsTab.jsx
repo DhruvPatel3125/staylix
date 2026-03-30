@@ -90,7 +90,7 @@ export default function HotelsTab() {
                          <Star size={14} fill="#fbbf24" stroke="#fbbf24" />
                          <span>{hotel.rating || 'N/A'}</span>
                       </div>
-                      <span className="review-v">({hotel.numReviews || 0} reviews)</span>
+                      {/* <span className="review-v">({hotel.numReviews || 0} reviews)</span> */}
                     </div>
                   </td>
                   <td>

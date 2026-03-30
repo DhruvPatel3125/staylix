@@ -153,7 +153,7 @@ export default function UserDashboard() {
   }
 
   const sidebarItems = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
+    // { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'bookings', label: 'My Bookings', icon: Calendar },
     ...(user?.role === 'user' ? [{ id: 'become-owner', label: 'Become Owner', icon: Briefcase }] : []),
     { id: 'profile', label: 'Profile', icon: UserIcon },

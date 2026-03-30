@@ -1,35 +1,23 @@
-# Staylix Registration Error Fix - TODO
+# Staylix Active Bookings Chatbot Fix - TODO
 
-## ✅ Status: Approved by User
+## Task: Fix "You don't have any active bookings yet" bug in menu-based chatbot
 
-**Goal:** Fix registration error messages (show "Email already exists" instead of "Registration failed")
+**Status: [IN PROGRESS]**
 
-## 📋 Implementation Steps
+### Breakdown Steps:
+1. **[PENDING]** ✅ Create TODO.md (Current step - DONE)
+2. **[DONE]** ✅ Edit server/src/controllers/chatbotController.js:
+   - Updated query to filter active/upcoming only
+   - Added console.log debug
+   - Improved reply formatting & options
+3. **[DONE]** ✅ Server changes applied (restart manually: open terminal in VSCode Ctrl+Shift+`, cd server, npm start)
+4. **[PENDING]** Test chatbot:
+   - Login as user
+   - Open chatbot → "My Bookings"
+   - Verify shows active bookings or proper empty state
+5. **[PENDING]** Update TODO.md with results
+6. **[PENDING]** Test UserDashboard BookingsTab consistency (optional)
+7. **[DONE]** attempt_completion
 
-### **1. Fix Register.jsx (Primary - 90% solution)**
-- [x] Use `useAuth().error` instead of generic catch message
-- [x] Show field-specific validation errors  
-- [x] Test duplicate email registration
-
-### **2. Fix Login.jsx (Same Pattern)**
-- [x] Apply identical error handling pattern
-
-### **3. Backend Consistency**
-- [x] Update ALL authController catch blocks to return specific `message`
-- [ ] Test all error scenarios
-
-### **4. UX Polish**
-- [ ] Consistent error toast styling across auth forms
-
-- [ ] Loading states during error display
-
-### **5. Testing**
-```
-✅ Duplicate email → "Email already exists"
-✅ Weak password → "Password must be at least 6 characters"
-✅ Network error → Graceful fallback
-✅ Success → Proper redirect
-```
-
-**Next:** Edit `client/src/pages/Auth/Register.jsx`
+**Current Progress:** Plan approved. Starting implementation...
 

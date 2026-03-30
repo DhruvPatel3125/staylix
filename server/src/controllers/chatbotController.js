@@ -64,13 +64,21 @@ exports.handleChat = async (req, res) => {
         reply = "Please log in to view and manage your reservations securely.";
         options = ['Login Now', 'Main Menu'];
       } else {
-        const bookings = await Booking.find({ user: user._id })
+        // Filter for active/upcoming bookings only
+        const now = new Date();
+        const bookings = await Booking.find({ 
+          user: user._id, 
+          checkOut: { $gt: now }, 
+          bookingStatus: { $nin: ['cancelled', 'completed'] }
+        })
           .populate('hotel')
           .sort({ checkIn: -1 })
           .limit(3);
 
+        console.log(`[CHATBOT] User ${user._id}: Found ${bookings.length} active bookings out of total query.`);
+
         if (bookings.length > 0) {
-          reply = `Welcome back, ${user.name}. You have ${bookings.length} upcoming reservations.`;
+          reply = `Welcome back, ${user.name}! 👋 You have ${bookings.length} active/upcoming reservation${bookings.length > 1 ? 's' : ''}:`;
           bookings.forEach((b, i) => {
             reply += `\n${i + 1}. ${b.hotel?.name} (Check-in: ${new Date(b.checkIn).toLocaleDateString()})`;
           });

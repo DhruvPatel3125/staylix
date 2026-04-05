@@ -1,6 +1,7 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Briefcase, Hotel, Calendar } from 'lucide-react';
+import { Briefcase, Hotel, Calendar, Download } from 'lucide-react';
+import { exportToCSV } from '../../../utils/csvExport';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, 
   AreaChart, Area, Cell
@@ -23,6 +24,41 @@ export default function ReportsTab() {
   const occupancyData = getOccupancyData() || [];
   const revenueData = getMonthlyRevenueData() || [];
 
+  const handleExport = () => {
+    const formatDate = (dateStr) => {
+      try {
+        if (!dateStr) return 'N/A';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return 'N/A';
+        return d.toISOString().split('T')[0];
+      } catch (e) { return 'N/A'; }
+    };
+
+    const formatDateTime = (dateStr) => {
+      try {
+        if (!dateStr) return 'N/A';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return 'N/A';
+        return d.toISOString().replace('T', ' ').split('.')[0];
+      } catch (e) { return 'N/A'; }
+    };
+
+    const exportData = bookings.map(b => ({
+      'Booking ID': b._id,
+      'Guest Name': b.userId?.name || 'N/A',
+      'Hotel': b.hotelId?.name || 'N/A',
+      'Room': b.roomId?.title || 'N/A',
+      'Check-in': formatDate(b.checkIn),
+      'Check-out': formatDate(b.checkOut),
+      'Amount': b.totalAmount,
+      'Status': b.bookingStatus,
+      'Payment': b.paymentStatus,
+      'Booked On': formatDateTime(b.createdAt)
+    }));
+    
+    exportToCSV(exportData, 'Admin_Revenue_Report');
+  };
+
   return (
     <div className="reports-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
       <div className="section-header-premium">
@@ -30,6 +66,29 @@ export default function ReportsTab() {
           <h2>Platform Insights</h2>
           <p className="subtitle-admin">Deep dive into your system's performance and revenue.</p>
         </div>
+        <button 
+          onClick={handleExport}
+          className="export-btn-premium"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            background: 'var(--primary-gradient)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 15px rgba(99, 102, 241, 0.2)'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <Download size={20} />
+          Export Revenue
+        </button>
       </div>
       
       <div className="revenue-summary-premium">

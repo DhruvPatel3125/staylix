@@ -1,5 +1,7 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
+import { Download } from 'lucide-react';
+import { exportToCSV } from '../../../utils/csvExport';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, 
   AreaChart, Area, Cell
@@ -18,6 +20,41 @@ export default function OverviewTab() {
     COLORS
   } = useOutletContext();
 
+  const handleExport = () => {
+    const formatDate = (dateStr) => {
+      try {
+        if (!dateStr) return 'N/A';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return 'N/A';
+        return d.toISOString().split('T')[0];
+      } catch (e) { return 'N/A'; }
+    };
+
+    const formatDateTime = (dateStr) => {
+      try {
+        if (!dateStr) return 'N/A';
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return 'N/A';
+        return d.toISOString().replace('T', ' ').split('.')[0];
+      } catch (e) { return 'N/A'; }
+    };
+
+    const exportData = bookings.map(b => ({
+      'Booking ID': b._id,
+      'Guest Name': b.userId?.name || 'N/A',
+      'Hotel': b.hotelId?.name || 'N/A',
+      'Room': b.roomId?.title || 'N/A',
+      'Check-in': formatDate(b.checkIn),
+      'Check-out': formatDate(b.checkOut),
+      'Amount': b.totalAmount,
+      'Status': b.bookingStatus,
+      'Payment': b.paymentStatus,
+      'Booked On': formatDateTime(b.createdAt)
+    }));
+    
+    exportToCSV(exportData, 'Owner_Revenue_Report');
+  };
+
   const activeBookingsCount = bookings.filter(b => b.bookingStatus !== 'cancelled').length;
   const totalRevenue = bookings
     .filter(b => b.bookingStatus !== 'cancelled')
@@ -25,7 +62,32 @@ export default function OverviewTab() {
 
   return (
     <div className="revenue-section analytics-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
-      <h2>Analytics & Reports</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h2 style={{ margin: 0 }}>Analytics & Reports</h2>
+        <button 
+          onClick={handleExport}
+          className="export-btn-owner"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 16px',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '10px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            boxShadow: '0 4px 10px rgba(102, 126, 234, 0.2)'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
+          <Download size={18} />
+          Export Revenue
+        </button>
+      </div>
       
       <div className="revenue-summary" style={{ marginBottom: '2rem' }}>
         <div className="revenue-card">

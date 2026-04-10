@@ -17,10 +17,19 @@ export default function HotelsTab() {
   } = useOutletContext();
 
   const [selectedHotel, setSelectedHotel] = React.useState(null);
+  const [selectedLocation, setSelectedLocation] = React.useState('All');
 
-  const filteredHotels = hotels.filter(hotel =>
-    hotel.name?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const uniqueLocations = React.useMemo(() => {
+    const locations = hotels.map(hotel => hotel.address?.city || hotel.city).filter(Boolean);
+    return ['All', ...new Set(locations)];
+  }, [hotels]);
+
+  const filteredHotels = hotels.filter(hotel => {
+    const matchesSearch = hotel.name?.toLowerCase().includes(searchTerm.toLowerCase());
+    const hotelLocation = hotel.address?.city || hotel.city;
+    const matchesLocation = selectedLocation === 'All' || hotelLocation === selectedLocation;
+    return matchesSearch && matchesLocation;
+  });
 
   return (
     <div className="hotels-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
@@ -29,21 +38,36 @@ export default function HotelsTab() {
           <h2>Property Directory</h2>
           <p className="subtitle-admin">Monitor and manage all hotel properties listed on the platform.</p>
         </div>
-        <div className="search-wrapper">
-          <Search size={18} className="search-icon-inside" />
-          <input
-            type="text"
-            className="search-input-premium"
-            placeholder="Search properties..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+        <div className="filters-container" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div className="search-wrapper">
+            <Search size={18} className="search-icon-inside" />
+            <input
+              type="text"
+              className="search-input-premium"
+              placeholder="Search properties..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="search-wrapper" style={{ minWidth: '150px' }}>
+            <MapPin size={18} className="search-icon-inside" />
+            <select 
+              value={selectedLocation} 
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className="search-input-premium"
+              style={{ paddingLeft: '2.5rem', cursor: 'pointer', appearance: 'auto', backgroundColor: 'transparent' }}
+            >
+              {uniqueLocations.map(loc => (
+                <option key={loc} value={loc}>{loc === 'All' ? 'All Locations' : loc}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
       {filteredHotels.length === 0 ? (
         <div className="empty-state-premium">
-          <p>{searchTerm ? 'No results found' : 'No properties registered'}</p>
+          <p>{(searchTerm || selectedLocation !== 'All') ? 'No results found' : 'No properties registered'}</p>
         </div>
       ) : (
         <div className="admin-table-wrapper-premium" style={{ animation: 'fadeInScale 0.6s ease-out 0.2s both' }}>

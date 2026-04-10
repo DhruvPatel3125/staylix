@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
 import { Mail, Lock, ShieldCheck, ArrowLeft } from 'lucide-react';
@@ -24,7 +25,7 @@ export default function Login() {
   const [verifying, setVerifying] = useState(false);
 
   const navigate = useNavigate();
-  const { login, verifyOTP, error: authError, isUnverified, clearErrors } = useAuth();
+  const { login, googleAuth, verifyOTP, error: authError, isUnverified, clearErrors } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -107,6 +108,29 @@ export default function Login() {
     }
   };
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    setSubmitError('');
+    try {
+      await googleAuth(credentialResponse.credential);
+      Swal.fire({
+        icon: 'success',
+        title: 'Logged in successfully',
+        text: 'Welcome to Staylix!',
+        timer: 1500,
+        showConfirmButton: false
+      });
+      navigate('/');
+    } catch (err) {
+      console.error('Google Auth Error:', err);
+      const backendMsg = err.message || 'Google Login failed';
+      setSubmitError(backendMsg);
+      Swal.fire({ icon: 'error', title: 'Login Failed', text: backendMsg });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (authError && !showOTP) {
       setSubmitError(authError);
@@ -185,6 +209,24 @@ export default function Login() {
             Sign In
           </Button>
         </form>
+
+        <div className="divider-premium">
+          <span>OR</span>
+        </div>
+
+        <div className="google-btn-container">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => {
+              setSubmitError("Google login failed. Please try again.");
+              Swal.fire({ icon: 'error', title: 'Login Failed', text: "Google login failed. Please try again." });
+            }}
+            useOneTap
+            theme="filled_blue"
+            shape="pill"
+            width="350"
+          />
+        </div>
 
         <p className="auth-link">
           New to Staylix? <Link to="/register">Create an account</Link>

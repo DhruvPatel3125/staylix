@@ -8,7 +8,8 @@ const {
   forgotPassword, 
   resetPassword,
   verifyOTP,
-  verifyResetOTP
+  verifyResetOTP,
+  googleLogin
 } = require('../controllers/authController')
 const { protect } = require('../middlewares/authMiddleWare')
 const upload = require('../middlewares/uploadMiddleware')
@@ -20,6 +21,8 @@ router.get('/me', protect, getMe)
 router.post('/forgotpassword', forgotPassword);
 router.post('/verify-reset-otp', verifyResetOTP);
 router.put('/resetpassword/:resetToken', resetPassword);
+router.post('/google', googleLogin);
 
 
 module.exports = router;
+//add a 

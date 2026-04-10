@@ -394,3 +394,74 @@
     font-size: 0.9rem;
   }
 }
+
+/* Premium Google Login Section - Focused on "Real" look */
+.divider-premium {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 2rem 0;
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.divider-premium::before,
+.divider-premium::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.divider-premium span {
+  padding: 0 1.25rem;
+}
+
+.google-btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 4px;
+  margin-bottom: 2rem;
+  background: white;
+  border-radius: 1rem;
+  border: 1px solid #e2e8f0;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  cursor: pointer;
+}
+
+.google-btn-container:hover {
+  border-color: #cbd5e0;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+}
+
+/* Ensure Google's iframe fills the premium container */
+.google-btn-container > div {
+  width: 100% !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+.google-btn-container iframe {
+  width: 100% !important;
+  max-width: 100% !important;
+  transform: scale(0.98); /* Slight scale for internal padding feel */
+  transition: transform 0.3s ease;
+}
+
+.google-btn-container:hover iframe {
+  transform: scale(1);
+}
+
+/* Adding a more premium feel to the card on mobile */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 2rem 1.5rem;
+    margin-top: 80px;
+  }
+}

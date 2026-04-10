@@ -3,6 +3,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const sendEmail = require("../utils/emailService");
+const { OAuth2Client } = require('google-auth-library');
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 exports.register = async (req, res) => {
   try {
@@ -334,6 +337,62 @@ exports.resetPassword = async (req, res, next) => {
     });
   } catch (err) {
     next(err);
+  }
+};
+
+exports.googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID
+    });
+
+    const payload = ticket.getPayload();
+    const { sub: googleId, email, name, picture } = payload;
+
+    let user = await User.findOne({ 
+      $or: [{ googleId }, { email }] 
+    });
+
+    if (!user) {
+      // Create new user
+      user = await User.create({
+        name,
+        email,
+        googleId,
+        profileImage: picture || '',
+        isVerified: true, // Google accounts are pre-verified
+      });
+    } else if (!user.googleId) {
+      // Link existing account
+      user.googleId = googleId;
+      if (!user.profileImage) user.profileImage = picture;
+      user.isVerified = true;
+      await user.save();
+    }
+
+    if (user.isBlocked) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been blocked"
+      });
+    }
+
+    const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+
+    res.json({
+      success: true,
+      token,
+      user: { id: user._id, name: user.name, email: user.email, role: user.role, profileImage: user.profileImage }
+    });
+  } catch (err) {
+    console.error("Google login error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Server error during Google login. Please try again."
+    });
   }
 };
 

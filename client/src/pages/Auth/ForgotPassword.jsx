@@ -59,8 +59,6 @@ export default function ForgotPassword() {
   };
 
   if (step === 3) {
-      // Redirect to ResetPassword page with the token
-      // We could also just render ResetPassword inline here
       return (
           <div className="auth-container">
               <div className="auth-card otp-card">

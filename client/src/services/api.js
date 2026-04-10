@@ -79,6 +79,11 @@ const api = {
     resetPassword: async (token, password) => {
       const response = await instance.put(`/auth/resetpassword/${token}`, { password });
       return response.data;
+    },
+    
+    googleLogin: async (credential) => {
+      const response = await instance.post('/auth/google', { credential });
+      return response.data;
     }
   },
 

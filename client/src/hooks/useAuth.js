@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from 'react-redux';
-import { loginUser, registerUser, logoutUser, clearErrors, verifyOTP as verifyOTPAction } from '../store/slices/authSlice';
+import { loginUser, registerUser, logoutUser, clearErrors, verifyOTP as verifyOTPAction, googleLogin as googleLoginAction } from '../store/slices/authSlice';
 
 const useAuth = () => {
     const dispatch = useDispatch();
@@ -17,6 +17,10 @@ const useAuth = () => {
         return dispatch(verifyOTPAction({ email, otp })).unwrap();
     };
 
+    const googleAuth = async (credential) => {
+        return dispatch(googleLoginAction(credential)).unwrap();
+    };
+
     const logout = () => {
         dispatch(logoutUser());
     };
@@ -31,6 +35,7 @@ const useAuth = () => {
         login,
         register,
         verifyOTP,
+        googleAuth,
         logout,
         clearErrors: () => dispatch(clearErrors())
     };

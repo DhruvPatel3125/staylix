@@ -1,8 +1,7 @@
-import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Search, Trash2, Clock, CheckCircle, Filter } from 'lucide-react';
+import { Search, Trash2, Clock, CheckCircle } from 'lucide-react';
 
-export default function UsersTab() {
+export default function OwnersTab() {
   const { 
     users, 
     searchTerm, 
@@ -12,34 +11,30 @@ export default function UsersTab() {
     processingId 
   } = useOutletContext();
 
-
-
-  const filteredUsers = users.filter(user => {
+  const filteredOwners = users.filter(user => {
     const matchesSearch = 
       user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesRole = user.role === 'user';
+    const matchesRole = user.role === 'owner';
 
     return matchesSearch && matchesRole;
   });
 
   return (
-    <div className="users-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
+    <div className="owners-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
       <div className="section-header-modern">
         <div className="header-info">
-          <h2>User Registry</h2>
-          <p className="subtitle-admin">Manage platform access for regular user accounts.</p>
+          <h2>Owner Registry</h2>
+          <p className="subtitle-admin">Manage platform access for property owners.</p>
         </div>
         <div className="header-actions" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-
-          
           <div className="search-wrapper">
             <Search size={18} className="search-icon-inside" />
             <input
               type="text"
               className="search-input-premium"
-              placeholder="Search users..."
+              placeholder="Search owners..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -47,9 +42,9 @@ export default function UsersTab() {
         </div>
       </div>
 
-      {filteredUsers.length === 0 ? (
+      {filteredOwners.length === 0 ? (
         <div className="empty-state-premium">
-          <p>{searchTerm ? 'No matches found' : 'No users available'}</p>
+          <p>{searchTerm ? 'No matches found' : 'No owners available'}</p>
         </div>
       ) : (
         <div className="admin-table-wrapper-premium" style={{ animation: 'fadeInScale 0.6s ease-out 0.2s both' }}>
@@ -63,40 +58,40 @@ export default function UsersTab() {
               </tr>
             </thead>
             <tbody>
-              {filteredUsers.map((user, idx) => (
-                <tr key={user._id} style={{ animation: `slideInRight 0.4s ease-out ${0.05 * idx}s both` }}>
+              {filteredOwners.map((owner, idx) => (
+                <tr key={owner._id} style={{ animation: `slideInRight 0.4s ease-out ${0.05 * idx}s both` }}>
                   <td>
                     <div className="user-profile-cell">
-                      <div className="user-avatar-small">{user.name.charAt(0)}</div>
+                      <div className="user-avatar-small">{owner.name.charAt(0)}</div>
                       <div className="user-info-stack">
-                        <span className="user-name-bold">{user.name}</span>
-                        <span className="user-email-muted">{user.email}</span>
+                        <span className="user-name-bold">{owner.name}</span>
+                        <span className="user-email-muted">{owner.email}</span>
                       </div>
                     </div>
                   </td>
-                  <td><span className={`badge-premium ${user.role}`}>{user.role}</span></td>
+                  <td><span className={`badge-premium ${owner.role}`}>{owner.role}</span></td>
                   <td>
-                    <span className={`status-pill-modern ${user.isBlocked ? 'blocked' : 'active'}`}>
-                      {user.isBlocked ? 'Restricted' : 'Authorized'}
+                    <span className={`status-pill-modern ${owner.isBlocked ? 'blocked' : 'active'}`}>
+                      {owner.isBlocked ? 'Restricted' : 'Authorized'}
                     </span>
                   </td>
                   <td>
                     <div className="compact-actions" style={{ justifyContent: 'flex-end' }}>
                       <button
-                        className={`action-btn-circle ${user.isBlocked ? 'enable' : 'disable'}`}
-                        onClick={() => handleBlockUser(user._id, user.isBlocked ? 'blocked' : 'active')}
-                        disabled={processingId === user._id}
-                        title={user.isBlocked ? 'Unblock User' : 'Block User'}
+                        className={`action-btn-circle ${owner.isBlocked ? 'enable' : 'disable'}`}
+                        onClick={() => handleBlockUser(owner._id, owner.isBlocked ? 'blocked' : 'active')}
+                        disabled={processingId === owner._id}
+                        title={owner.isBlocked ? 'Unblock Owner' : 'Block Owner'}
                       >
-                        {processingId === user._id ? '...' : (user.isBlocked ? <CheckCircle size={18} /> : <Clock size={18} />)}
+                        {processingId === owner._id ? '...' : (owner.isBlocked ? <CheckCircle size={18} /> : <Clock size={18} />)}
                       </button>
                       <button
                         className="action-btn-circle delete"
-                        onClick={() => handleDeleteUser(user._id)}
-                        disabled={processingId === user._id}
-                        title="Delete User"
+                        onClick={() => handleDeleteUser(owner._id)}
+                        disabled={processingId === owner._id}
+                        title="Delete Owner"
                       >
-                        {processingId === user._id ? '...' : <Trash2 size={18} />}
+                        {processingId === owner._id ? '...' : <Trash2 size={18} />}
                       </button>
                     </div>
                   </td>

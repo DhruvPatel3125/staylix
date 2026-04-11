@@ -23,6 +23,7 @@ import Footer from './components/layout/Footer/Footer';
 // Admin Tab Components
 import AdminOverviewTab from './pages/Admin/tabs/OverviewTab';
 import AdminUsersTab from './pages/Admin/tabs/UsersTab';
+import AdminOwnersTab from './pages/Admin/tabs/OwnersTab';
 import AdminOwnerRequestsTab from './pages/Admin/tabs/OwnerRequestsTab';
 import AdminHotelsTab from './pages/Admin/tabs/HotelsTab';
 import AdminRoomsTab from './pages/Admin/tabs/RoomsTab';
@@ -121,6 +122,7 @@ function App() {
               <Route index element={<AdminOverviewTab />} />
               <Route path="overview" element={<AdminOverviewTab />} />
               <Route path="users" element={<AdminUsersTab />} />
+              <Route path="owners" element={<AdminOwnersTab />} />
               <Route path="owner-requests" element={<AdminOwnerRequestsTab />} />
               <Route path="hotels" element={<AdminHotelsTab />} />
               <Route path="rooms" element={<AdminRoomsTab />} />

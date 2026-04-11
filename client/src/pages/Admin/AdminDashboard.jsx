@@ -457,6 +457,7 @@ export default function AdminDashboard() {
   const sidebarItems = [
     { id: 'overview', label: 'Overview', icon: PieChart },
     { id: 'users', label: 'Users', icon: Users },
+    { id: 'owners', label: 'Owners', icon: Users },
     { id: 'owner-requests', label: 'Owner Requests', icon: UserPlus },
     { id: 'hotels', label: 'Hotels', icon: Hotel },
     { id: 'rooms', label: 'Rooms', icon: Bed },

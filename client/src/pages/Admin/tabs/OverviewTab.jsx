@@ -21,11 +21,19 @@ export default function OverviewTab() {
       <div className="stats-grid">
         <StatCard 
           title="Total Users" 
-          value={stats?.totalUsers || 0} 
+          value={stats?.totalUsers - (stats?.verifiedOwners || 0) || 0} 
           icon={Users} 
           iconColor="#6366f1" 
           iconBg="linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%)" 
           onClick={nav('users')}
+        />
+        <StatCard 
+          title="Total Owners" 
+          value={stats?.verifiedOwners || 0} 
+          icon={Users} 
+          iconColor="#8b5cf6" 
+          iconBg="linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%)" 
+          onClick={nav('owners')}
         />
         <StatCard 
           title="Total Hotels" 

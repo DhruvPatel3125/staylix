@@ -155,7 +155,7 @@ exports.confirmBooking = async (req, res) => {
             });
         }
 
-        const booking = await Booking.findById(bookingId).populate("hotelId roomId userId");
+        const booking = await Booking.findById(bookingId).populate("hotelId roomId userId ownerId");
         if (!booking) {
             return res.status(404).json({
                 success: false,
@@ -192,6 +192,7 @@ exports.confirmBooking = async (req, res) => {
         const hotel = booking.hotelId;
         const room = booking.roomId;
         const user = booking.userId;
+        const owner = booking.ownerId;
 
         // Send Confirmation Email
         if (user && user.email) {
@@ -323,9 +324,88 @@ exports.confirmBooking = async (req, res) => {
                     subject: emailSubject,
                     html: emailHtml
                 });
-                console.log("Booking confirmation email sent successfully");
+                console.log("Booking confirmation email sent to user successfully");
             } catch (emailError) {
-                console.error("Failed to send booking email:", emailError);
+                console.error("Failed to send booking email to user:", emailError);
+            }
+        }
+
+        // Send Notification Email to Owner
+        if (owner && owner.email) {
+            const ownerEmailSubject = `New Booking Received: ${hotel ? hotel.name : 'Staylix'}`;
+            const ownerEmailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+  .email-container { max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+  .header { background: #4f46e5; padding: 30px 20px; text-align: center; color: white; }
+  .header h1 { margin: 0; font-size: 24px; font-weight: 700; }
+  .content { padding: 30px 25px; color: #333333; }
+  .booking-info { background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; margin: 25px 0; }
+  .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; }
+  .info-label { color: #64748b; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .info-value { color: #1e293b; font-weight: 600; font-size: 14px; }
+  .footer { background-color: #f9fafb; padding: 20px; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb; }
+  .btn { display: inline-block; background-color: #4f46e5; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: 600; margin-top: 20px; }
+</style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>New Booking Received!</h1>
+    </div>
+    <div class="content">
+      <p>Hello ${owner.name || 'Owner'},</p>
+      <p>You have received a new confirmed booking for <strong>${hotel ? hotel.name : 'your property'}</strong>.</p>
+      
+      <div class="booking-info">
+        <div class="info-row">
+          <span class="info-label">Guest Name</span>
+          <span class="info-value">${user ? user.name : 'Unknown Guest'}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Room Type</span>
+          <span class="info-value">${room ? room.title : 'Standard Room'}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Check-in</span>
+          <span class="info-value">${new Date(booking.checkIn).toDateString()}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Check-out</span>
+          <span class="info-value">${new Date(booking.checkOut).toDateString()}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Total Payout</span>
+          <span class="info-value">₹${booking.totalAmount}</span>
+        </div>
+      </div>
+      
+      <p>Please ensure the room is ready for the guest's arrival.</p>
+      
+      <div style="text-align: center;">
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/owner-dashboard/bookings" class="btn">View All Bookings</a>
+      </div>
+    </div>
+    <div class="footer">
+      <p>Staylix For Owners</p>
+    </div>
+  </div>
+</body>
+</html>
+            `;
+
+            try {
+                await sendEmail({
+                    email: owner.email,
+                    subject: ownerEmailSubject,
+                    html: ownerEmailHtml
+                });
+                console.log("Booking notification email sent to owner successfully");
+            } catch (emailError) {
+                console.error("Failed to send booking notification to owner:", emailError);
             }
         }
 

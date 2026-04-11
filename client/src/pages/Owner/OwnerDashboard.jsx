@@ -48,6 +48,7 @@ export default function OwnerDashboard() {
     title: '',
     roomType: 'single',
     pricePerNight: '',
+    totalRooms: 1,
     guestCapacity: '',
     amenities: '',
     image: null
@@ -339,6 +340,7 @@ export default function OwnerDashboard() {
       title: '',
       roomType: 'single',
       pricePerNight: '',
+      totalRooms: 1,
       guestCapacity: '',
       amenities: '',
       image: null
@@ -354,6 +356,7 @@ export default function OwnerDashboard() {
       title: room.title,
       roomType: room.roomType,
       pricePerNight: room.pricePerNight,
+      totalRooms: room.totalRooms || 1,
       guestCapacity: room.guestCapacity || '',
       amenities: room.amenities?.join(', ') || '',
       image: null
@@ -381,6 +384,7 @@ export default function OwnerDashboard() {
       submitData.append('title', roomFormData.title);
       submitData.append('roomType', roomFormData.roomType);
       submitData.append('pricePerNight', roomFormData.pricePerNight);
+      submitData.append('totalRooms', roomFormData.totalRooms);
       submitData.append('guestCapacity', roomFormData.guestCapacity);
       submitData.append('amenities', JSON.stringify(amenitiesArray));
 

@@ -29,7 +29,7 @@ exports.addRoom = async (req, res) => {
             title,
             roomType,
             pricePerNight,
-            totalRooms: 1,
+            totalRooms: parseInt(totalRooms) || 1,
             guestCapacity,
             amenities: amenitiesList
         };

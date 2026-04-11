@@ -99,6 +99,16 @@ export default function RoomsTab() {
                 placeholder="2"
               />
             </div>
+            <div className="form-group">
+              <label>Total Rooms (Quantity) *</label>
+              <input
+                type="number"
+                min="1"
+                value={roomFormData.totalRooms}
+                onChange={(e) => setRoomFormData({ ...roomFormData, totalRooms: e.target.value })}
+                placeholder="1"
+              />
+            </div>
           </div>
 
           <div className="form-group">
@@ -229,6 +239,7 @@ export default function RoomsTab() {
                     <p><strong>Type:</strong> {room.roomType}</p>
                     <p><strong>Price:</strong> ₹{room.pricePerNight}/night</p>
                     <p><strong>Capacity:</strong> {room.guestCapacity} Guests</p>
+                    <p><strong>Total Inventory:</strong> {room.totalRooms} rooms</p>
                     {room.amenities && room.amenities.length > 0 && (
                       <div className="room-amenities">
                         {room.amenities.map((amenity, idx) => (

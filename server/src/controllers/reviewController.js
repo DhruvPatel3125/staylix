@@ -119,6 +119,8 @@ exports.updateReview = async (req, res) => {
         review.comment = comment || review.comment;
         await review.save();
 
+        await review.populate('userId', 'name email');
+
         await updateHotelStats(review.hotelId);
 
         res.json({ success: true, review });

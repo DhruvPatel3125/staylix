@@ -344,7 +344,19 @@ export default function HotelDetails() {
     try {
       const response = await api.reviews.update(editingReviewId, editReviewData);
       if (response.success) {
-        setReviews(reviews.map(r => r._id === editingReviewId ? { ...r, ...response.review } : r));
+        setReviews(reviews.map(r => {
+          if (r._id === editingReviewId) {
+            // Merge response while preserving the populated userId object if needed
+            const updated = { ...r, ...response.review };
+            // If the response returned userId as a string (not populated) 
+            // but we already have it as an object, preserve the object
+            if (typeof response.review.userId === 'string' && typeof r.userId === 'object') {
+              updated.userId = r.userId;
+            }
+            return updated;
+          }
+          return r;
+        }));
         setEditingReviewId(null);
         showToast.success('Review updated successfully');
       }
@@ -441,7 +453,7 @@ export default function HotelDetails() {
                           <Star size={14} fill="currentColor" />
                           <span>{review.rating}/5</span>
                         </div>
-                        {user && (review.userId?._id === user._id || review.userId === user._id) && (
+                        {user && (review.userId?._id === user._id || review.userId === user._id) && editingReviewId !== review._id && (
                           <div className="review-owner-actions">
                             <button onClick={() => handleEditReview(review)} className="review-action-btn edit" title="Edit Review">
                               <Edit2 size={14} />

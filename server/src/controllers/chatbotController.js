@@ -67,11 +67,11 @@ exports.handleChat = async (req, res) => {
         // Filter for active/upcoming bookings only
         const now = new Date();
         const bookings = await Booking.find({ 
-          user: user._id, 
+          userId: user._id, 
           checkOut: { $gt: now }, 
           bookingStatus: { $nin: ['cancelled', 'completed'] }
         })
-          .populate('hotel')
+          .populate('hotelId')
           .sort({ checkIn: -1 })
           .limit(3);
 
@@ -80,7 +80,7 @@ exports.handleChat = async (req, res) => {
         if (bookings.length > 0) {
           reply = `Welcome back, ${user.name}! 👋 You have ${bookings.length} active/upcoming reservation${bookings.length > 1 ? 's' : ''}:`;
           bookings.forEach((b, i) => {
-            reply += `\n${i + 1}. ${b.hotel?.name} (Check-in: ${new Date(b.checkIn).toLocaleDateString()})`;
+            reply += `\n${i + 1}. ${b.hotelId?.name} (Check-in: ${new Date(b.checkIn).toLocaleDateString()})`;
           });
           options = ['Cancel Booking', 'Main Menu'];
         } else {

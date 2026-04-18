@@ -389,14 +389,11 @@
 }
 
 .form-group label {
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 0.75rem;
-    font-size: 0.95rem;
-    display: flex;
-    padding: 5px;
-    gap: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
+
 .booking-price {
   font-size: 1.2rem;
   font-weight: 800;

@@ -2393,7 +2393,7 @@
 
 /* Overview Summary Redirection Styles */
 .clickable-summary {
-  cursor: default;
+  cursor: pointer;
   position: relative;
   transition: all 0.3s ease !important;
   border-radius: 20px;

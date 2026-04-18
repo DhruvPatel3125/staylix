@@ -104,10 +104,10 @@ exports.verifyOTP = async (req, res) => {
       return res.status(400).json({ success: false, message: "Email and OTP are required" });
     }
 
-    const user = await User.findOne({ 
-      email, 
-      otp, 
-      otpExpires: { $gt: Date.now() } 
+    const user = await User.findOne({
+      email,
+      otp,
+      otpExpires: { $gt: Date.now() }
     });
 
     if (!user) {
@@ -220,7 +220,7 @@ exports.forgotPassword = async (req, res, next) => {
 
     // Generate 6-digit OTP for reset
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    
+
     // Hash OTP to store in resetPasswordToken (standard practice)
     user.resetPasswordToken = crypto
       .createHash('sha256')
@@ -290,8 +290,8 @@ exports.verifyResetOTP = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
     }
 
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       message: "OTP verified. You can now reset your password.",
       resetToken: hashedOtp // This will be used for the final reset call
     });
@@ -352,8 +352,8 @@ exports.googleLogin = async (req, res) => {
     const payload = ticket.getPayload();
     const { sub: googleId, email, name, picture } = payload;
 
-    let user = await User.findOne({ 
-      $or: [{ googleId }, { email }] 
+    let user = await User.findOne({
+      $or: [{ googleId }, { email }]
     });
 
     if (!user) {

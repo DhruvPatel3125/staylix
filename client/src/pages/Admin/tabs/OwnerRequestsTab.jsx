@@ -94,7 +94,7 @@ export default function OwnerRequestsTab() {
 
       {pastRequests.length > 0 && (
         <div className="past-history-section" style={{ marginTop: '4rem' }}>
-          <h3 className="history-title">Recent Decisions</h3>
+          <h3 style={{margin:"20px"}} className="history-title">Recent Decisions</h3>
           <div className="admin-table-wrapper-premium">
             <table className="admin-table-modern">
                <thead>

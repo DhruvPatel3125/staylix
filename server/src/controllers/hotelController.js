@@ -1,5 +1,10 @@
 const Hotel = require('../models/hotel')
+const Room = require('../models/room')
+const Booking = require('../models/booking')
+const Review = require('../models/review')
+const User = require('../models/user')
 const { getCoordinates } = require('../utils/geocoder');
+const { uploadToCloudinary } = require('../utils/cloudinaryUpload');
 
 exports.createHotel = async (req, res) => {
     try {
@@ -74,7 +79,9 @@ exports.createHotel = async (req, res) => {
         }
 
         if (req.files && req.files.length > 0) {
-            hotelData.photos = req.files.map(file => `/uploads/hotels/${file.filename}`);
+            const uploadPromises = req.files.map(file => uploadToCloudinary(file.buffer, 'hotels'));
+            const results = await Promise.all(uploadPromises);
+            hotelData.photos = results.map(r => r.url);
         }
 
         const hotel = await Hotel.create(hotelData);
@@ -224,24 +231,26 @@ exports.updateHotel = async (req, res) => {
         }
 
         if (req.files && req.files.length > 0) {
-            const newPhotos = req.files.map(file => `/uploads/hotels/${file.filename}`);
-            
+            const uploadPromises = req.files.map(file => uploadToCloudinary(file.buffer, 'hotels'));
+            const results = await Promise.all(uploadPromises);
+            const newPhotos = results.map(r => r.url);
+
             let keptPhotos = [];
             if (req.body.existingPhotos) {
                 try {
                     keptPhotos = JSON.parse(req.body.existingPhotos);
-                } catch(e) {
+                } catch (e) {
                     keptPhotos = hotel.photos || [];
                 }
             } else if (req.body.keepExistingPhotos === 'true') {
                 keptPhotos = hotel.photos || [];
             }
-            
+
             updateData.photos = [...keptPhotos, ...newPhotos];
         } else if (req.body.existingPhotos) {
             try {
                 updateData.photos = JSON.parse(req.body.existingPhotos);
-            } catch(e) {}
+            } catch (e) { }
         }
 
         const updatedHotel = await Hotel.findByIdAndUpdate(req.params.id, updateData, { new: true });
@@ -282,10 +291,39 @@ exports.deleteHotel = async (req, res) => {
             });
         }
 
+        // Check for active bookings
+        const activeBookings = await Booking.find({
+            hotelId: req.params.id,
+            bookingStatus: { $in: ['pending', 'confirmed'] },
+            checkOut: { $gt: new Date() }
+        });
+
+        if (activeBookings.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Cannot delete hotel. There are active or upcoming bookings."
+            });
+        }
+
+        // Delete all rooms associated with this hotel
+        await Room.deleteMany({ hotelId: req.params.id });
+        
+        // Delete all bookings associated with this hotel
+        await Booking.deleteMany({ hotelId: req.params.id });
+
+        // Delete all reviews associated with this hotel
+        await Review.deleteMany({ hotelId: req.params.id });
+
+        // Remove this hotel from all users' wishlists
+        await User.updateMany(
+            { wishlist: req.params.id },
+            { $pull: { wishlist: req.params.id } }
+        );
+
         await Hotel.findByIdAndDelete(req.params.id);
         res.json({
             success: true,
-            message: "Hotel deleted successfully"
+            message: "Hotel and all associated data deleted successfully"
         });
     } catch (error) {
         console.error("Delete hotel error:", error.message);

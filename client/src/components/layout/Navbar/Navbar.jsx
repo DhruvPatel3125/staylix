@@ -58,6 +58,9 @@ export default function Navbar() {
                 <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
                   <Home size={18} /> Home
                 </Link>
+                <Link to="/hotels" className={`nav-link ${location.pathname === '/hotels' ? 'active' : ''}`}>
+                  <Hotel size={18} /> Hotels
+                </Link>
                 <Link to="/about" className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>
                   <Info size={18} /> About
                 </Link>

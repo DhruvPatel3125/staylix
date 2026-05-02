@@ -131,8 +131,8 @@ export default function OwnerDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to cancel booking');
       }
-    } catch {
-      showAlert.error('Error', 'Failed to cancel booking');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to cancel booking');
     } finally {
       setCancelingId(null);
     }
@@ -157,8 +157,8 @@ export default function OwnerDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to cancel booking');
       }
-    } catch {
-      showAlert.error('Error', 'Failed to cancel booking');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to cancel booking');
     } finally {
       setCancelingId(null);
     }
@@ -310,6 +310,7 @@ export default function OwnerDashboard() {
     } catch (err) {
       console.error('Hotel save error:', err);
       setError(err.response?.data?.message || err.message || 'Failed to save hotel');
+      showAlert.error('Error', err.response?.data?.message || 'Failed to save hotel');
     } finally {
       setProcessingId(null);
     }
@@ -326,8 +327,9 @@ export default function OwnerDashboard() {
       } else {
         setError(response.message || 'Failed to delete hotel');
       }
-    } catch (_err) {
-      setError('Failed to delete hotel');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete hotel');
+      showAlert.error('Error', err.response?.data?.message || 'Failed to delete hotel');
     } finally {
       setProcessingId(null);
     }
@@ -437,8 +439,8 @@ export default function OwnerDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to delete room');
       }
-    } catch (_err) {
-      showAlert.error('Error', 'Failed to delete room');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to delete room');
     } finally {
       setProcessingId(null);
     }
@@ -454,8 +456,9 @@ export default function OwnerDashboard() {
       } else {
         setError(response.message || 'Failed to toggle room availability');
       }
-    } catch (_err) {
-      setError('Failed to toggle room availability');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to toggle room availability');
+      showAlert.error('Error', err.response?.data?.message || 'Failed to toggle room availability');
     } finally {
       setProcessingId(null);
     }

@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const sendEmail = require("../utils/emailService");
 const { OAuth2Client } = require('google-auth-library');
+const { uploadToCloudinary } = require('../utils/cloudinaryUpload');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -40,12 +41,19 @@ exports.register = async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
+    // Upload profile image to Cloudinary if provided
+    let profileImageUrl = '';
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer, 'profiles');
+      profileImageUrl = result.url;
+    }
+
     const user = await User.create({
       name,
       email,
       passwordHash,
       role: role || "user",
-      profileImage: req.file ? req.file.path : '',
+      profileImage: profileImageUrl,
       isVerified: false,
       otp,
       otpExpires

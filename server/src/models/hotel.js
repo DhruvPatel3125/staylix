@@ -28,7 +28,11 @@ const hotelSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
-
+  category: {
+    type: String,
+    enum: ['luxury', 'resort', 'boutique', 'business', 'none'],
+    default: 'none'
+  },
   photos: {
     type: [String],
     default: []

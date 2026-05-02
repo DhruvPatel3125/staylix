@@ -1,16 +1,40 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import HotelCard from '../../components/features/HotelCard/HotelCard';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import HotelCardSkeleton from '../../components/features/HotelCard/HotelCardSkeleton';
+import CategoryBar from '../../components/features/CategoryBar/CategoryBar';
 import MapView from '../../components/features/MapView/MapView';
-import { MapPin, Search, SlidersHorizontal, Navigation, Loader2, X, LayoutGrid, Map as MapIcon } from 'lucide-react';
+import { Search, Navigation, Loader2, X, LayoutGrid, Map as MapIcon, ChevronDown } from 'lucide-react';
 import { showToast } from '../../utils/swal';
 import './Home.css';
 
+const INITIAL_VISIBLE_COUNT = 12;
+const LOAD_MORE_COUNT = 8;
+
+const HERO_CATEGORY_FILTERS = {
+  luxury: {
+    label: 'Luxury Hotels',
+    keywords: ['luxury', 'premium', 'spa', 'suite', '5 star']
+  },
+  resort: {
+    label: 'Beach Resorts',
+    keywords: ['resort', 'beach', 'pool', 'sea', 'ocean']
+  },
+  boutique: {
+    label: 'Boutique Stays',
+    keywords: ['boutique', 'heritage', 'design', 'unique']
+  },
+  business: {
+    label: 'Business Travel',
+    keywords: ['business', 'corporate', 'conference', 'meeting']
+  }
+};
+
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [hotels, setHotels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -21,6 +45,32 @@ export default function Home() {
   const [isLocating, setIsLocating] = useState(false);
   const [isNearbyMode, setIsNearbyMode] = useState(false);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  const selectedCategories = useMemo(() => {
+    const rawCategories = searchParams.getAll('category[]');
+    const normalized = rawCategories
+      .map((category) => category.toLowerCase())
+      .filter((category) => HERO_CATEGORY_FILTERS[category]);
+
+    return [...new Set(normalized)];
+  }, [searchParams]);
+
+  useEffect(() => {
+    const cityParam = searchParams.get('city')?.trim() || '';
+    const searchParam = searchParams.get('q')?.trim() || '';
+    const ratingParam = Number(searchParams.get('rating'));
+    const normalizedRating = Number.isFinite(ratingParam) && ratingParam > 0 ? ratingParam : 0;
+    const viewParam = searchParams.get('view');
+
+    setSelectedCity(cityParam);
+    setSearchTerm(searchParam);
+    setMinRating(normalizedRating);
+    if (viewParam === 'map' || viewParam === 'list') {
+      setViewMode(viewParam);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     fetchHotels();
@@ -103,6 +153,25 @@ export default function Home() {
       result = result.filter(hotel => (hotel.rating || 0) >= minRating);
     }
 
+    if (selectedCategories.length > 0) {
+      result = result.filter((hotel) => {
+        const searchableText = [
+          hotel.name,
+          hotel.description,
+          ...(hotel.amenities || [])
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+
+        return selectedCategories.some((category) =>
+          HERO_CATEGORY_FILTERS[category].keywords.some((keyword) =>
+            searchableText.includes(keyword)
+          )
+        );
+      });
+    }
+
     if (sortBy === 'name') {
       result.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortBy === 'rating') {
@@ -110,9 +179,67 @@ export default function Home() {
     }
 
     return result;
-  }, [hotels, searchTerm, selectedCity, minRating, sortBy]);
+  }, [hotels, searchTerm, selectedCity, minRating, selectedCategories, sortBy]);
 
   const uniqueCities = [...new Set(hotels.map(h => h.address?.city).filter(Boolean))].sort();
+  const hasActiveFilters = Boolean(
+    searchTerm ||
+    selectedCity ||
+    minRating > 0 ||
+    selectedCategories.length > 0 ||
+    isNearbyMode ||
+    sortBy !== 'name'
+  );
+
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setSelectedCity('');
+    setMinRating(0);
+    setSortBy('name');
+    setViewMode('list');
+    setVisibleCount(INITIAL_VISIBLE_COUNT);
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('category[]');
+    nextParams.delete('city');
+    nextParams.delete('q');
+    nextParams.delete('rating');
+    setSearchParams(nextParams);
+
+    if (isNearbyMode) {
+      fetchHotels();
+    }
+  };
+  
+  const handleCategoryToggle = (categoryId) => {
+    const nextParams = new URLSearchParams(searchParams);
+    const currentCategories = nextParams.getAll('category[]');
+    
+    if (currentCategories.includes(categoryId)) {
+      // Remove it
+      const updated = currentCategories.filter(c => c !== categoryId);
+      nextParams.delete('category[]');
+      updated.forEach(c => nextParams.append('category[]', c));
+    } else {
+      // Add it
+      nextParams.append('category[]', categoryId);
+    }
+    
+    setSearchParams(nextParams);
+    setVisibleCount(INITIAL_VISIBLE_COUNT);
+  };
+
+  const handleLoadMore = () => {
+    setIsLoadingMore(true);
+    setTimeout(() => {
+      setVisibleCount(prev => prev + LOAD_MORE_COUNT);
+      setIsLoadingMore(false);
+    }, 400); // Small delay for smoother feel
+  };
+
+  const displayedHotels = useMemo(() => {
+    return filteredHotels.slice(0, visibleCount);
+  }, [filteredHotels, visibleCount]);
 
   if (isAuthenticated && user?.role === 'admin') {
     return <Navigate to="/admin-dashboard" />;
@@ -208,6 +335,11 @@ export default function Home() {
         </div>
       </div>
 
+      <CategoryBar 
+        activeCategories={selectedCategories} 
+        onCategoryToggle={handleCategoryToggle} 
+      />
+
       <div className="view-toggle-container">
         <div className="view-toggle-buttons">
           <button 
@@ -223,11 +355,25 @@ export default function Home() {
             <MapIcon size={18} /> <span>Map View</span>
           </button>
         </div>
-        <p className="results-count">Showing {filteredHotels.length} hotels</p>
+        <div className="results-actions">
+          <p className="results-count">Showing {filteredHotels.length} hotels</p>
+          <button
+            type="button"
+            className="clear-filters-btn"
+            onClick={handleClearFilters}
+            disabled={!hasActiveFilters}
+          >
+            Clear Filters
+          </button>
+        </div>
       </div>
 
       {loading ? (
-        <LoadingSpinner />
+        <div className="hotels-grid">
+          {[...Array(8)].map((_, i) => (
+            <HotelCardSkeleton key={i} />
+          ))}
+        </div>
       ) : filteredHotels.length === 0 ? (
         <div className="empty-state">
           <p>No hotels found matching your criteria</p>
@@ -235,11 +381,35 @@ export default function Home() {
       ) : viewMode === 'map' ? (
         <MapView hotels={filteredHotels} />
       ) : (
-        <div className="hotels-grid">
-          {filteredHotels.map((hotel) => (
-            <HotelCard key={hotel._id} hotel={hotel} />
-          ))}
-        </div>
+        <>
+          <div className="hotels-grid">
+            {displayedHotels.map((hotel) => (
+              <HotelCard key={hotel._id} hotel={hotel} />
+            ))}
+          </div>
+          
+          {visibleCount < filteredHotels.length && (
+            <div className="load-more-container">
+              <button 
+                className="load-more-btn" 
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+              >
+                {isLoadingMore ? (
+                  <>
+                    <Loader2 className="load-more-spinner" size={20} />
+                    <span>Loading...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Load More Hotels</span>
+                    <ChevronDown size={20} />
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

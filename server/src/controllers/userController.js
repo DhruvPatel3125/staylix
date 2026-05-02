@@ -1,6 +1,5 @@
 const User = require('../models/user');
-const path = require('path');
-const { uploadImage } = require('../middlewares/uploadMiddleware');
+const { uploadToCloudinary } = require('../utils/cloudinaryUpload');
 
 exports.updateProfile = async (req, res) => {
   try {
@@ -16,9 +15,10 @@ exports.updateProfile = async (req, res) => {
 
     const updateData = { name: name.trim() };
 
-    // Handle profile image upload
+    // Handle profile image upload to Cloudinary
     if (req.file) {
-      updateData.profileImage = req.file.path;
+      const result = await uploadToCloudinary(req.file.buffer, 'profiles');
+      updateData.profileImage = result.url;
     }
 
     const updatedUser = await User.findByIdAndUpdate(

@@ -113,8 +113,8 @@ export default function AdminDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to update user');
       }
-    } catch (_err) {
-      showAlert.error('Error', 'Failed to update user');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to update user');
     } finally {
       setProcessingId(null);
     }
@@ -137,8 +137,8 @@ export default function AdminDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to delete user');
       }
-    } catch (_err) {
-      showAlert.error('Error', 'Failed to delete user');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to delete user');
     } finally {
       setProcessingId(null);
     }
@@ -161,8 +161,8 @@ export default function AdminDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to delete hotel');
       }
-    } catch (_err) {
-      showAlert.error('Error', 'Failed to delete hotel');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to delete hotel');
     } finally {
       setProcessingId(null);
     }
@@ -185,8 +185,8 @@ export default function AdminDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to delete room');
       }
-    } catch (_err) {
-      showAlert.error('Error', 'Failed to delete room');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to delete room');
     } finally {
       setProcessingId(null);
     }
@@ -211,8 +211,8 @@ export default function AdminDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to approve request');
       }
-    } catch (_err) {
-      showAlert.error('Error', 'Failed to approve request');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to approve request');
     } finally {
       setProcessingId(null);
     }
@@ -237,8 +237,8 @@ export default function AdminDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to reject request');
       }
-    } catch (_err) {
-      showAlert.error('Error', 'Failed to reject request');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to reject request');
     } finally {
       setProcessingId(null);
     }
@@ -272,8 +272,8 @@ export default function AdminDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to create discount');
       }
-    } catch (_err) {
-      showAlert.error('Error', 'Failed to create discount');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to create discount');
     } finally {
       setProcessingId(null);
     }
@@ -296,8 +296,8 @@ export default function AdminDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to delete discount');
       }
-    } catch (_err) {
-      showAlert.error('Error', 'Failed to delete discount');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to delete discount');
     } finally {
       setProcessingId(null);
     }
@@ -315,8 +315,8 @@ export default function AdminDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to toggle discount');
       }
-    } catch (_err) {
-      showAlert.error('Error', 'Failed to toggle discount');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to toggle discount');
     } finally {
       setProcessingId(null);
     }
@@ -341,8 +341,8 @@ export default function AdminDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to approve discount');
       }
-    } catch (_err) {
-      showAlert.error('Error', 'Failed to approve discount');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to approve discount');
     } finally {
       setProcessingId(null);
     }
@@ -368,8 +368,8 @@ export default function AdminDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to reject discount');
       }
-    } catch (_err) {
-      showAlert.error('Error', 'Failed to reject discount');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to reject discount');
     } finally {
       setProcessingId(null);
     }

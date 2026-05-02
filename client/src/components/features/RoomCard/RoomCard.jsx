@@ -1,5 +1,6 @@
 import './RoomCard.css';
 import { getImageUrl } from '../../../utils/imageUrl';
+import OptimizedImage from '../../common/OptimizedImage';
 
 export default function RoomCard({ room, onBooking }) {
   const availableCount = room.liveAvailableCount !== undefined ? room.liveAvailableCount : room.totalRooms;
@@ -8,11 +9,11 @@ export default function RoomCard({ room, onBooking }) {
   return (
     <div className={`room-card ${!isAvailable ? 'sold-out' : ''}`}>
       <div className="room-card-image">
-        {room.image || room.photos?.[0] ? (
-          <img src={getImageUrl(room.image || room.photos?.[0])} alt={room.title} />
-        ) : (
-          <div className="room-placeholder">🛏️</div>
-        )}
+        <OptimizedImage 
+          src={(room.image || room.photos?.[0]) ? getImageUrl(room.image || room.photos?.[0]) : ''} 
+          alt={room.title}
+          placeholderText="🛏️"
+        />
         {!isAvailable && <div className="sold-out-overlay">Sold Out</div>}
       </div>
       <div className="room-card-content">

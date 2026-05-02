@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loadUser } from './store/slices/authSlice';
 import { fetchWishlist, clearWishlist } from './store/slices/wishlistSlice';
 import Home from './pages/Home/Home';
+import HeroPage from './pages/Hero/HeroPage';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import ForgotPassword from './pages/Auth/ForgotPassword';
@@ -70,7 +71,8 @@ function App() {
 
         <main className="main-content">
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<HeroPage />} />
+            <Route path="/hotels" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -13,7 +13,6 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1); // 1: Email, 2: OTP
   const [otpError, setOtpError] = useState('');
-  const [verifying, setVerifying] = useState(false);
   const [resetToken, setResetToken] = useState('');
 
   const handleSendOTP = async (e) => {
@@ -45,7 +44,6 @@ export default function ForgotPassword() {
   };
 
   const handleOTPComplete = async (otp) => {
-    setVerifying(true);
     setOtpError('');
     try {
       const response = await api.auth.verifyResetOTP(email, otp);
@@ -53,8 +51,6 @@ export default function ForgotPassword() {
       setStep(3); // 3: Success redirect or New Password step
     } catch (err) {
       setOtpError(err.message || 'Invalid or expired OTP');
-    } finally {
-      setVerifying(false);
     }
   };
 

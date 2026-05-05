@@ -22,10 +22,9 @@ export default function Login() {
   // OTP States
   const [showOTP, setShowOTP] = useState(false);
   const [otpError, setOtpError] = useState('');
-  const [verifying, setVerifying] = useState(false);
 
   const navigate = useNavigate();
-  const { login, googleAuth, verifyOTP, error: authError, isUnverified, clearErrors } = useAuth();
+  const { login, googleAuth, verifyOTP, error: authError, clearErrors } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -89,7 +88,6 @@ export default function Login() {
   };
 
   const handleOTPComplete = async (otp) => {
-    setVerifying(true);
     setOtpError('');
     try {
       await verifyOTP(formData.email, otp);
@@ -103,8 +101,6 @@ export default function Login() {
       navigate('/');
     } catch (err) {
       setOtpError(err.message || 'Invalid verification code');
-    } finally {
-      setVerifying(false);
     }
   };
 
@@ -170,6 +166,8 @@ export default function Login() {
     <div className="auth-container">
       <div className="auth-card">
         <h1>Welcome Back</h1>
+        <p className="auth-subtitle">Access your curated stays and continue your luxury journey.</p>
+        {submitError && <div className="error-message">{submitError}</div>}
         
         <form onSubmit={handleSubmit}>
           <Input
@@ -224,7 +222,7 @@ export default function Login() {
             useOneTap
             theme="filled_blue"
             shape="pill"
-            width="350"
+            width="100%"
           />
         </div>
 
@@ -235,4 +233,3 @@ export default function Login() {
     </div>
   );
 }
-

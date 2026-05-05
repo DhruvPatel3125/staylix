@@ -3,6 +3,7 @@ const Booking = require('../models/booking')
 const Hotel = require('../models/hotel')
 const Room = require('../models/room')
 const OwnerRequest = require('../models/ownerRequest')
+const Review = require('../models/review')
 
 exports.getAllBookings = async (req, res) => {
     try {
@@ -10,7 +11,7 @@ exports.getAllBookings = async (req, res) => {
             .populate('userId', 'name email')
             .populate('hotelId', 'name address')
             .populate('roomId', 'title roomType pricePerNight');
-        
+
         res.json({
             success: true,
             bookings
@@ -22,7 +23,7 @@ exports.getAllBookings = async (req, res) => {
             message: "Failed to fetch all bookings"
         });
     }
-};exports.getAllUsers = async (req, res) => {
+}; exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.find({ role: { $ne: 'admin' } }).select("-passwordHash");// Exclude passwordHash field and admin users
         res.json({
@@ -88,16 +89,62 @@ exports.deleteUser = async (req, res) => {
             });
         }
 
+        // If user is an owner, handle their hotels and rooms
+        if (user.role === 'owner') {
+            const hotels = await Hotel.find({ ownerId: user._id });
+            const hotelIds = hotels.map(h => h._id);
+
+            // Check if any of their hotels have active bookings
+            const activeBookings = await Booking.find({
+                hotelId: { $in: hotelIds },
+                bookingStatus: { $in: ['pending', 'confirmed'] },
+                checkOut: { $gt: new Date() }
+            });
+
+            if (activeBookings.length > 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Cannot delete owner. Some of their hotels have active or upcoming bookings."
+                });
+            }
+
+            // Delete all rooms associated with their hotels
+            await Room.deleteMany({ hotelId: { $in: hotelIds } });
+            
+            // Delete all bookings associated with their hotels
+            await Booking.deleteMany({ hotelId: { $in: hotelIds } });
+
+            // Delete all reviews associated with their hotels
+            await Review.deleteMany({ hotelId: { $in: hotelIds } });
+
+            // Remove their hotels from all users' wishlists
+            await User.updateMany(
+                { wishlist: { $in: hotelIds } },
+                { $pull: { wishlist: { $in: hotelIds } } }
+            );
+
+            // Delete the hotels
+            await Hotel.deleteMany({ ownerId: user._id });
+        }
+
+        // Delete any owner requests (whether pending or approved)
+        await OwnerRequest.deleteMany({ userId: user._id });
+
+        // Also delete guest bookings and reviews written by this user
+        await Booking.deleteMany({ userId: user._id });
+        await Review.deleteMany({ userId: user._id });
+
         await User.findByIdAndDelete(req.params.id);
+        
         res.json({
             success: true,
-            message: "User deleted successfully"
+            message: "User and all associated data deleted successfully"
         });
     } catch (error) {
         console.error("Delete user error:", error);
         res.status(500).json({
             success: false,
-            message: "Failed to delete user"
+            message: "Failed to delete user and associated data"
         });
     }
 };
@@ -177,16 +224,46 @@ exports.deleteHotel = async (req, res) => {
             });
         }
 
+        // Check for active bookings
+        const activeBookings = await Booking.find({
+            hotelId: req.params.id,
+            bookingStatus: { $in: ['pending', 'confirmed'] },
+            checkOut: { $gt: new Date() }
+        });
+
+        if (activeBookings.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Cannot delete hotel. There are active or upcoming bookings."
+            });
+        }
+
+        // Delete all rooms associated with this hotel
+        await Room.deleteMany({ hotelId: req.params.id });
+        
+        // Delete all bookings associated with this hotel
+        await Booking.deleteMany({ hotelId: req.params.id });
+
+        // Delete all reviews associated with this hotel
+        await Review.deleteMany({ hotelId: req.params.id });
+
+        // Remove this hotel from all users' wishlists
+        await User.updateMany(
+            { wishlist: req.params.id },
+            { $pull: { wishlist: req.params.id } }
+        );
+
         await Hotel.findByIdAndDelete(req.params.id);
+        
         res.json({
             success: true,
-            message: "Hotel deleted successfully"
+            message: "Hotel and all associated rooms and bookings deleted successfully"
         });
     } catch (error) {
         console.error("Delete hotel error:", error);
         res.status(500).json({
             success: false,
-            message: "Failed to delete hotel"
+            message: "Failed to delete hotel and associated data"
         });
     }
 };
@@ -227,16 +304,34 @@ exports.deleteRoom = async (req, res) => {
             });
         }
 
+        // Check for active bookings for this room
+        const activeBookings = await Booking.find({
+            roomId: req.params.id,
+            bookingStatus: { $in: ['pending', 'confirmed'] },
+            checkOut: { $gt: new Date() }
+        });
+
+        if (activeBookings.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Cannot delete room. There are active or upcoming bookings for this room."
+            });
+        }
+
+        // Delete all bookings associated with this room
+        await Booking.deleteMany({ roomId: req.params.id });
+
         await Room.findByIdAndDelete(req.params.id);
+        
         res.json({
             success: true,
-            message: "Room deleted successfully"
+            message: "Room and associated bookings deleted successfully"
         });
     } catch (error) {
         console.error("Delete room error:", error);
         res.status(500).json({
             success: false,
-            message: "Failed to delete room"
+            message: "Failed to delete room and its bookings"
         });
     }
 };

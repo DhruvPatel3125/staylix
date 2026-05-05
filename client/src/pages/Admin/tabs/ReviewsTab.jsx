@@ -29,8 +29,8 @@ export default function ReviewsTab() {
       } else {
         showAlert.error('Error', response.message || 'Failed to delete review');
       }
-    } catch (_err) {
-      showAlert.error('Error', 'Failed to delete review');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to delete review');
     } finally {
       setProcessingId(null);
     }

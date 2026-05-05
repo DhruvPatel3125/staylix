@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { Star, MapPin, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getImageUrl } from '../../../utils/imageUrl';
+import OptimizedImage from '../../common/OptimizedImage';
 import './MapView.css';
 
 // Fix for default Leaflet marker icons in React
@@ -68,11 +69,10 @@ export default function MapView({ hotels }) {
               <Popup className="premium-map-popup">
                 <div className="popup-card">
                   <div className="popup-image">
-                    {hotel.photos?.[0] ? (
-                      <img src={getImageUrl(hotel.photos[0])} alt={hotel.name} />
-                    ) : (
-                      <div className="popup-placeholder">No Image</div>
-                    )}
+                    <OptimizedImage 
+                      src={hotel.photos?.[0] ? getImageUrl(hotel.photos[0]) : ''} 
+                      alt={hotel.name} 
+                    />
                     <div className="popup-rating">
                       <Star size={12} fill="currentColor" />
                       <span>{hotel.rating || 0}</span>

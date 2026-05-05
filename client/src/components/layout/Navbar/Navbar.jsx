@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../../hooks/useAuth';
 import { getImageUrl } from '../../../utils/imageUrl';
+import UserAvatar from '../../ui/UserAvatar';
 import { 
   Hotel, 
   Menu, 
@@ -58,6 +59,9 @@ export default function Navbar() {
                 <Link to="/" className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}>
                   <Home size={18} /> Home
                 </Link>
+                <Link to="/hotels" className={`nav-link ${location.pathname === '/hotels' ? 'active' : ''}`}>
+                  <Hotel size={18} /> Hotels
+                </Link>
                 <Link to="/about" className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}>
                   <Info size={18} /> About
                 </Link>
@@ -98,11 +102,7 @@ export default function Navbar() {
             {isAuthenticated ? (
               <div className="user-profile">
                 <div className="user-info">
-                  {user?.profileImage ? (
-                    <img src={getImageUrl(user.profileImage)} alt={user.name} className="navbar-avatar-img" />
-                  ) : (
-                    <UserIcon size={20} className="user-avatar-icon" />
-                  )}
+                  <UserAvatar user={user} size="small" />
                   <span className="user-name">{user?.name}</span>
                 </div>
                 <button onClick={logout} className="logout-btn-nav">

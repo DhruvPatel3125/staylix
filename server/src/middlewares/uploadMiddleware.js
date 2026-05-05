@@ -1,35 +1,7 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    let dir = 'uploads/hotels';
-    if (req.baseUrl && req.baseUrl.includes('/rooms')) {
-      dir = 'uploads/rooms';
-    } else if (req.baseUrl && req.baseUrl.includes('/owner-request')) {
-      dir = 'uploads/documents';
-    } else if (req.baseUrl && req.baseUrl.includes('/auth')) {
-      dir = 'uploads/profiles';
-    }
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    let prefix = 'hotel-';
-    if (req.baseUrl && req.baseUrl.includes('/rooms')) {
-      prefix = 'room-';
-    } else if (req.baseUrl && req.baseUrl.includes('/owner-request')) {
-      prefix = 'doc-';
-    } else if (req.baseUrl && req.baseUrl.includes('/auth')) {
-      prefix = 'profile-';
-    }
-    cb(null, prefix + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Use memory storage — files are kept in buffer for Cloudinary upload
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'application/pdf'];

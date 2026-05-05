@@ -13,6 +13,7 @@ import {
 import { showToast } from '../../../utils/swal';
 import api from '../../../services/api';
 import { getImageUrl } from '../../../utils/imageUrl';
+import UserAvatar from '../../../components/ui/UserAvatar';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import './ProfileTab.css';
@@ -93,16 +94,10 @@ export default function ProfileTab() {
       {/* ── Header: avatar + name/role ── */}
       <div className="profile-header-premium">
         <div className="profile-avatar-wrapper">
-          <div className={`profile-avatar-large ${user.role}-avatar`}>
-            {preview || user.profileImage ? (
-              <img
-                src={preview || getImageUrl(user.profileImage)}
-                alt="Profile"
-              />
-            ) : (
-              <span>{formData.name.charAt(0)?.toUpperCase()}</span>
-            )}
-          </div>
+          <UserAvatar 
+            user={{...user, name: formData.name, profileImage: preview || user.profileImage}} 
+            size="large" 
+          />
 
           {/* Change photo button — only visible in edit mode */}
           {isEditing && (

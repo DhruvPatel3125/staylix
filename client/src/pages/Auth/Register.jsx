@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import Swal from 'sweetalert2';
 import useAuth from '../../hooks/useAuth';
-import { User, Mail, Lock, Camera, X as CloseIcon, CheckCircle, ShieldCheck } from 'lucide-react';
+import { User, Mail, Lock, Camera, X as CloseIcon, ShieldCheck } from 'lucide-react';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import OTPInput from '../../components/common/OTPInput/OTPInput';
@@ -26,7 +26,6 @@ export default function Register() {
   // OTP States
   const [showOTP, setShowOTP] = useState(false);
   const [otpError, setOtpError] = useState('');
-  const [verifying, setVerifying] = useState(false);
 
   const navigate = useNavigate();
   const { register, googleAuth, verifyOTP, error: authError, clearErrors } = useAuth();
@@ -105,7 +104,6 @@ export default function Register() {
   };
 
   const handleOTPComplete = async (otp) => {
-    setVerifying(true);
     setOtpError('');
     try {
       await verifyOTP(formData.email, otp);
@@ -119,8 +117,6 @@ export default function Register() {
       navigate('/');
     } catch (err) {
       setOtpError(err.message || 'Invalid verification code');
-    } finally {
-      setVerifying(false);
     }
   };
 
@@ -192,6 +188,8 @@ export default function Register() {
     <div className="auth-container">
       <div className="auth-card">
         <h1>Create Account</h1>
+        <p className="auth-subtitle">Join Staylix and unlock premium hotel experiences.</p>
+        {submitError && <div className="error-message">{submitError}</div>}
         
         <form onSubmit={handleSubmit}>
           <div className="profile-upload-section">
@@ -277,7 +275,7 @@ export default function Register() {
             useOneTap
             theme="filled_blue"
             shape="pill"
-            width="350"
+            width="100%"
           />
         </div>
 
@@ -288,4 +286,3 @@ export default function Register() {
     </div>
   );
 }
-

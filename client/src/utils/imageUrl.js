@@ -2,7 +2,7 @@ import { API_BASE_URL } from "../services/api";
 
 export const getImageUrl = (photoPath) => {
   if (!photoPath || photoPath === '') return '';
-  if (photoPath.startsWith('http')) return photoPath;
+  if (photoPath.startsWith('http') || photoPath.startsWith('data:') || photoPath.startsWith('blob:')) return photoPath;
   
   const path = photoPath.startsWith('/') ? photoPath : `/${photoPath}`;
   // Normalize backslashes (Windows) to forward slashes for URLs

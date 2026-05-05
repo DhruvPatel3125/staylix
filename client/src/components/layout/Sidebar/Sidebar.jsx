@@ -4,6 +4,7 @@ import useAuth from '../../../hooks/useAuth';
 import { getImageUrl } from '../../../utils/imageUrl';
 import './Sidebar.css';
 
+import UserAvatar from '../../ui/UserAvatar';
 
 export default function Sidebar({ items, basePath = '' }) {
   const { user } = useAuth();
@@ -11,13 +12,7 @@ export default function Sidebar({ items, basePath = '' }) {
   return (
     <aside className="dashboard-sidebar">
       <div className="profile-card">
-        <div className={`profile-avatar ${user?.role}-avatar`}>
-          {user?.profileImage ? (
-            <img src={getImageUrl(user.profileImage)} alt={user.name} className="sidebar-avatar-img" />
-          ) : (
-            user?.name?.charAt(0)?.toUpperCase() || 'U'
-          )}
-        </div>
+        <UserAvatar user={user} size="medium" />
         <div className="profile-info">
           <h3>{user?.name}</h3>
           <p>{user?.email}</p>

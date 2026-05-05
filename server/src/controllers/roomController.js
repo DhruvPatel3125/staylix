@@ -1,6 +1,7 @@
 const Room = require("../models/room");
 const Hotel = require("../models/hotel");
 const Booking = require("../models/booking");
+const { uploadToCloudinary } = require('../utils/cloudinaryUpload');
 
 exports.addRoom = async (req, res) => {
     try {
@@ -10,6 +11,15 @@ exports.addRoom = async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: "All fields are required"
+            });
+        }
+
+        // Verify hotel ownership
+        const hotel = await Hotel.findById(hotelId);
+        if (!hotel || hotel.ownerId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to add rooms to this hotel"
             });
         }
 
@@ -35,7 +45,8 @@ exports.addRoom = async (req, res) => {
         };
 
         if (req.file) {
-            roomData.image = `/uploads/rooms/${req.file.filename}`;
+            const result = await uploadToCloudinary(req.file.buffer, 'rooms');
+            roomData.image = result.url;
         }
 
         const room = await Room.create(roomData);
@@ -65,7 +76,7 @@ exports.getRoomsByHotel = async (req, res) => {
         }
 
         const rooms = await Room.find({ hotelId, isAvailable: true });
-        
+
         // If dates are provided, calculate live availability for each room
         const roomsWithLiveAvailability = await Promise.all(rooms.map(async (room) => {
             if (checkIn && checkOut) {
@@ -79,9 +90,9 @@ exports.getRoomsByHotel = async (req, res) => {
                     roomId: room._id,
                     $or: [
                         { bookingStatus: "confirmed" },
-                        { 
-                            bookingStatus: "pending", 
-                            createdAt: { $gt: tenMinutesAgo } 
+                        {
+                            bookingStatus: "pending",
+                            createdAt: { $gt: tenMinutesAgo }
                         }
                     ],
                     $and: [
@@ -92,7 +103,7 @@ exports.getRoomsByHotel = async (req, res) => {
 
                 const occupiedCount = activeBookings.length;
                 const totalCapacity = room.totalRooms || 0;
-                
+
                 return {
                     ...room.toObject(),
                     liveAvailableCount: Math.max(0, totalCapacity - occupiedCount),
@@ -136,10 +147,20 @@ exports.updateRoom = async (req, res) => {
             });
         }
 
+        // Check if the current user is the owner of the hotel this room belongs to
+        const hotel = await Hotel.findById(room.hotelId);
+        if (!hotel || hotel.ownerId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to update this room"
+            });
+        }
+
         const updateData = { ...req.body };
 
         if (req.file) {
-            updateData.image = `/uploads/rooms/${req.file.filename}`;
+            const result = await uploadToCloudinary(req.file.buffer, 'rooms');
+            updateData.image = result.url;
         }
 
         let amenities = updateData.amenities;
@@ -182,10 +203,36 @@ exports.deleteRoom = async (req, res) => {
             });
         }
 
+        // Check if the current user is the owner of the hotel this room belongs to
+        const hotel = await Hotel.findById(room.hotelId);
+        if (!hotel || hotel.ownerId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to delete this room"
+            });
+        }
+
+        // Check for active bookings for this room
+        const activeBookings = await Booking.find({
+            roomId: req.params.id,
+            bookingStatus: { $in: ['pending', 'confirmed'] },
+            checkOut: { $gt: new Date() }
+        });
+
+        if (activeBookings.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Cannot delete room. There are active or upcoming bookings for this room."
+            });
+        }
+
+        // Delete all bookings associated with this room
+        await Booking.deleteMany({ roomId: req.params.id });
+
         await Room.findByIdAndDelete(req.params.id);
         res.json({
             success: true,
-            message: "Room deleted successfully"
+            message: "Room and its bookings deleted successfully"
         });
     } catch (error) {
         console.error("Delete room error:", error);
@@ -229,6 +276,15 @@ exports.toggleRoomAvailability = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: "Room not found"
+            });
+        }
+
+        // Check if the current user is the owner of the hotel this room belongs to
+        const hotel = await Hotel.findById(room.hotelId);
+        if (!hotel || hotel.ownerId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: "Not authorized to toggle this room"
             });
         }
 

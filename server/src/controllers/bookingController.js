@@ -4,8 +4,7 @@ const Hotel = require("../models/hotel");
 const Discount = require("../models/discount");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
-const sendEmail = require("../utils/emailService");
-
+const emailQueue = require("../utils/emailQueue");
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET
@@ -318,16 +317,14 @@ exports.confirmBooking = async (req, res) => {
 </html>
             `;
 
-            try {
-                await sendEmail({
-                    email: user.email,
-                    subject: emailSubject,
-                    html: emailHtml
-                });
-                console.log("Booking confirmation email sent to user successfully");
-            } catch (emailError) {
-                console.error("Failed to send booking email to user:", emailError);
-            }
+            emailQueue.add({
+                email: user.email,
+                subject: emailSubject,
+                html: emailHtml
+            }, {
+                attempts: 3,
+                backoff: 5000
+            });
         }
 
         // Send Notification Email to Owner
@@ -397,16 +394,14 @@ exports.confirmBooking = async (req, res) => {
 </html>
             `;
 
-            try {
-                await sendEmail({
-                    email: owner.email,
-                    subject: ownerEmailSubject,
-                    html: ownerEmailHtml
-                });
-                console.log("Booking notification email sent to owner successfully");
-            } catch (emailError) {
-                console.error("Failed to send booking notification to owner:", emailError);
-            }
+            emailQueue.add({
+                email: owner.email,
+                subject: ownerEmailSubject,
+                html: ownerEmailHtml
+            }, {
+                attempts: 3,
+                backoff: 5000
+            });
         }
 
         res.status(200).json({
@@ -584,16 +579,14 @@ exports.cancelBooking = async (req, res) => {
 </body>
 </html>`;
 
-            try {
-                await sendEmail({
-                    email: userEmail,
-                    subject: emailSubject,
-                    html: emailHtml
-                });
-                console.log("Cancellation email sent successfully");
-            } catch (emailError) {
-                console.error("Failed to send cancellation email:", emailError);
-            }
+            emailQueue.add({
+                email: userEmail,
+                subject: emailSubject,
+                html: emailHtml
+            }, {
+                attempts: 3,
+                backoff: 5000
+            });
         }
 
         res.json({

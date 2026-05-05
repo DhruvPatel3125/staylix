@@ -273,9 +273,20 @@
 /* Responsive */
 @media (max-width: 480px) {
   .chatbot-window {
-    width: 90vw;
-    height: 80vh;
+    width: calc(100vw - 2rem);
+    height: 70vh;
     bottom: 80px;
-    right: -1rem;
+    right: 0;
+    border-radius: 24px;
+  }
+  
+  .staylix-chatbot-container {
+    right: 1rem;
+    bottom: 1rem;
+  }
+  
+  .chatbot-fab {
+    width: 55px;
+    height: 55px;
   }
 }

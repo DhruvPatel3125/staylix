@@ -1,20 +1,7 @@
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = 'uploads/profiles';
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-    cb(null, 'profile-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Use memory storage — files are kept in buffer for Cloudinary upload
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   const allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'];
@@ -34,4 +21,3 @@ const uploadProfile = multer({
 });
 
 module.exports = uploadProfile;
-

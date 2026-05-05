@@ -15,7 +15,7 @@ const adminRoutes = require('./routes/adminRoutes')
 const discountRoutes = require('./routes/discountRoutes')
 const wishlistRoutes = require('./routes/wishlistRoutes')
 const chatbotRoutes = require('./routes/chatbotRoute')
-
+const rateLimit = require('express-rate-limit')
 
 
 const app = express();
@@ -30,13 +30,23 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
-app.use('/uploads', express.static('uploads'));
+// app.use('/uploads', express.static('uploads'));
 
-
+const apiLimite = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max:100,
+    standardHeaders:true,
+    legacyHeaders:false,
+    message:{
+        success:false,
+        message:"Too many requests from this IP, please try again after 15 minutes"
+    }
+})
 if(process.env.NODE_ENV === 'development'){
     app.use(morgan('dev'));
 }
 
+app.use("/api/",apiLimite);
 app.use("/api/auth",authRoutes)
 app.use('/api/users',userRoutes);
 app.use('/api/hotels',hotelRoutes);

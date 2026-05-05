@@ -1,12 +1,19 @@
 const OwnerRequest = require("../models/ownerRequest.js")
 const User = require('../models/user');
+const { uploadToCloudinary } = require('../utils/cloudinaryUpload');
 
 exports.createRequest = async(req, res) => {
     try {
         const { businessName } = req.body;
-        const document = req.file ? req.file.path : null;
 
-        if (!businessName || !document) {
+        // Upload document to Cloudinary
+        let documentUrl = null;
+        if (req.file) {
+            const result = await uploadToCloudinary(req.file.buffer, 'documents', 'auto');
+            documentUrl = result.url;
+        }
+
+        if (!businessName || !documentUrl) {
             return res.status(400).json({
                 success: false,
                 message: "Business name and document are required"
@@ -24,7 +31,7 @@ exports.createRequest = async(req, res) => {
         const request = await OwnerRequest.create({
             userId: req.user._id,
             businessName,
-            document
+            document: documentUrl
         });
 
         res.status(201).json({

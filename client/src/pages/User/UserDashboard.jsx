@@ -111,8 +111,8 @@ export default function UserDashboard() {
       } else {
         showAlert.error('Error', response.message || 'Failed to cancel booking');
       }
-    } catch {
-      showAlert.error('Error', 'Failed to cancel booking');
+    } catch (err) {
+      showAlert.error('Error', err.response?.data?.message || 'Failed to cancel booking');
     } finally {
       setCancelingId(null);
     }

@@ -260,9 +260,11 @@ exports.updateHotel = async (req, res) => {
             hotel: updatedHotel
         });
 
-        const keys = await redisClient.keys('cache:/api/hotels*');
-        if(keys.length > 0) {
-            await redisClient.del(keys);
+        if (redisClient.isRedisReady && redisClient.isRedisReady()) {
+            const keys = await redisClient.keys('cache:/api/hotels*');
+            if (keys.length > 0) {
+                await redisClient.del(keys);
+            }
         }
         
     } catch (error) {

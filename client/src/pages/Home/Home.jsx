@@ -9,6 +9,8 @@ import { MapPin, Search, SlidersHorizontal, Navigation, Loader2, X, LayoutGrid, 
 import { showToast } from '../../utils/swal';
 import './Home.css';
 
+const HOTELS_BATCH_SIZE = 15;
+
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const [hotels, setHotels] = useState([]);
@@ -21,6 +23,7 @@ export default function Home() {
   const [isLocating, setIsLocating] = useState(false);
   const [isNearbyMode, setIsNearbyMode] = useState(false);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
+  const [visibleHotelsCount, setVisibleHotelsCount] = useState(HOTELS_BATCH_SIZE);
 
   useEffect(() => {
     fetchHotels();
@@ -111,6 +114,17 @@ export default function Home() {
 
     return result;
   }, [hotels, searchTerm, selectedCity, minRating, sortBy]);
+
+  useEffect(() => {
+    setVisibleHotelsCount(HOTELS_BATCH_SIZE);
+  }, [searchTerm, selectedCity, minRating, sortBy, hotels]);
+
+  const visibleHotels = useMemo(
+    () => filteredHotels.slice(0, visibleHotelsCount),
+    [filteredHotels, visibleHotelsCount]
+  );
+
+  const hasMoreHotels = visibleHotelsCount < filteredHotels.length;
 
   const uniqueCities = [...new Set(hotels.map(h => h.address?.city).filter(Boolean))].sort();
 
@@ -223,7 +237,9 @@ export default function Home() {
             <MapIcon size={18} /> <span>Map View</span>
           </button>
         </div>
-        <p className="results-count">Showing {filteredHotels.length} hotels</p>
+        <p className="results-count">
+          Showing {viewMode === 'list' ? visibleHotels.length : filteredHotels.length} of {filteredHotels.length} hotels
+        </p>
       </div>
 
       {loading ? (
@@ -235,11 +251,24 @@ export default function Home() {
       ) : viewMode === 'map' ? (
         <MapView hotels={filteredHotels} />
       ) : (
-        <div className="hotels-grid">
-          {filteredHotels.map((hotel) => (
-            <HotelCard key={hotel._id} hotel={hotel} />
-          ))}
-        </div>
+        <>
+          <div className="hotels-grid">
+            {visibleHotels.map((hotel) => (
+              <HotelCard key={hotel._id} hotel={hotel} />
+            ))}
+          </div>
+          {hasMoreHotels && (
+            <div className="hotels-load-more-wrap">
+              <button
+                type="button"
+                className="hotels-load-more-btn"
+                onClick={() => setVisibleHotelsCount((prev) => prev + HOTELS_BATCH_SIZE)}
+              >
+                Load More Hotels
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

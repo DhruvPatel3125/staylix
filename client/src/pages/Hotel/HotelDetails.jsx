@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
@@ -23,10 +23,14 @@ import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import RoomCard from '../../components/features/RoomCard/RoomCard';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import OptimizedImage from '../../components/common/OptimizedImage';
 import { getImageUrl } from '../../utils/imageUrl';
 import { validate, bookingSchema } from '../../utils/validation';
 import AddReview from '../../components/AddReview';
 import './HotelDetails.css';
+
+const ROOMS_BATCH_SIZE = 15;
+const REVIEWS_BATCH_SIZE = 15;
 
 export default function HotelDetails() {
   const { id } = useParams();
@@ -36,7 +40,10 @@ export default function HotelDetails() {
   const [rooms, setRooms] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [roomsLoading, setRoomsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [visibleRoomsCount, setVisibleRoomsCount] = useState(ROOMS_BATCH_SIZE);
+  const [visibleReviewsCount, setVisibleReviewsCount] = useState(REVIEWS_BATCH_SIZE);
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [bookingData, setBookingData] = useState({
@@ -57,42 +64,92 @@ export default function HotelDetails() {
   const [editReviewData, setEditReviewData] = useState({ rating: 5, comment: '' });
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchHotelData = async () => {
       try {
-        const hotelRes = await api.hotels.getById(id);
-        const reviewsRes = await api.reviews.getByHotel(id);
+        setLoading(true);
+        setError('');
+        const [hotelRes, reviewsRes] = await Promise.all([
+          api.hotels.getById(id),
+          api.reviews.getByHotel(id)
+        ]);
+
+        if (!isMounted) {
+          return;
+        }
 
         if (hotelRes.success) setHotel(hotelRes.hotel);
         if (reviewsRes.success) setReviews(reviewsRes.reviews || []);
       } catch (err) {
-        setError('Failed to load hotel details');
+        if (isMounted) {
+          setError('Failed to load hotel details');
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchHotelData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchRooms = async () => {
       try {
-        setLoading(prev => (rooms.length === 0 ? true : prev));
+        setRoomsLoading(true);
         const params = {};
         if (bookingData.checkIn && bookingData.checkOut) {
           params.checkIn = bookingData.checkIn;
           params.checkOut = bookingData.checkOut;
         }
         const roomsRes = await api.rooms.getByHotel(id, params);
-        if (roomsRes.success) setRooms(roomsRes.rooms || []);
+        if (isMounted && roomsRes.success) {
+          setRooms(roomsRes.rooms || []);
+          setVisibleRoomsCount(ROOMS_BATCH_SIZE);
+        }
       } catch (err) {
         console.error("Failed to load rooms", err);
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setRoomsLoading(false);
+        }
       }
     };
 
-    const timer = setTimeout(fetchRooms, 300);
-    return () => clearTimeout(timer);
+    const timer = setTimeout(fetchRooms, 200);
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
   }, [id, bookingData.checkIn, bookingData.checkOut]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setVisibleRoomsCount(ROOMS_BATCH_SIZE);
+    setVisibleReviewsCount(REVIEWS_BATCH_SIZE);
+  }, [id]);
+
+  const visibleRooms = useMemo(
+    () => rooms.slice(0, visibleRoomsCount),
+    [rooms, visibleRoomsCount]
+  );
+
+  const hasMoreRooms = visibleRoomsCount < rooms.length;
+
+  const visibleReviews = useMemo(
+    () => reviews.slice(0, visibleReviewsCount),
+    [reviews, visibleReviewsCount]
+  );
+
+  const hasMoreReviews = visibleReviewsCount < reviews.length;
 
   // Real-time Availability Check
   useEffect(() => {
@@ -330,7 +387,7 @@ export default function HotelDetails() {
       if (confirmed) {
         const response = await api.reviews.delete(reviewId);
         if (response.success) {
-          setReviews(reviews.filter(r => r._id !== reviewId));
+          setReviews((prev) => prev.filter((r) => r._id !== reviewId));
           showToast.success('Review deleted successfully');
         }
       }
@@ -344,19 +401,18 @@ export default function HotelDetails() {
     try {
       const response = await api.reviews.update(editingReviewId, editReviewData);
       if (response.success) {
-        setReviews(reviews.map(r => {
-          if (r._id === editingReviewId) {
-            // Merge response while preserving the populated userId object if needed
-            const updated = { ...r, ...response.review };
-            // If the response returned userId as a string (not populated) 
-            // but we already have it as an object, preserve the object
-            if (typeof response.review.userId === 'string' && typeof r.userId === 'object') {
-              updated.userId = r.userId;
+        setReviews((prev) =>
+          prev.map((r) => {
+            if (r._id === editingReviewId) {
+              const updated = { ...r, ...response.review };
+              if (typeof response.review.userId === 'string' && typeof r.userId === 'object') {
+                updated.userId = r.userId;
+              }
+              return updated;
             }
-            return updated;
-          }
-          return r;
-        }));
+            return r;
+          })
+        );
         setEditingReviewId(null);
         showToast.success('Review updated successfully');
       }
@@ -366,7 +422,15 @@ export default function HotelDetails() {
   };
 
   if (loading) {
-    return <div className="loading-container">Loading hotel details...</div>;
+    return (
+      <div className="loading-container">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div className="error-container">{error}</div>;
   }
 
   if (!hotel) {
@@ -377,7 +441,13 @@ export default function HotelDetails() {
     <div className="hotel-details-container">
       <div className="hotel-header">
         {hotel.photos?.[0] && (
-          <img src={getImageUrl(hotel.photos[0])} alt={hotel.name} className="hotel-main-image" />
+          <OptimizedImage
+            src={getImageUrl(hotel.photos[0])}
+            alt={hotel.name}
+            className="hotel-main-image"
+            placeholderText={hotel.name}
+            eager
+          />
         )}
         <div className="hotel-info-premium">
           <div className="hotel-title-section">
@@ -410,18 +480,35 @@ export default function HotelDetails() {
           <div className="rooms-section-header">
             <h2>Available Rooms</h2>
           </div>
-          {rooms.length === 0 ? (
+          {roomsLoading ? (
+            <div className="rooms-loading">
+              <LoadingSpinner />
+            </div>
+          ) : rooms.length === 0 ? (
             <p className="no-rooms">No rooms available</p>
           ) : (
-            <div className="rooms-grid">
-              {rooms.map((room) => (
-                <RoomCard 
-                  key={room._id} 
-                  room={room} 
-                  onBooking={handleBooking}
-                />
-              ))}
-            </div>
+            <>
+              <div className="rooms-grid">
+                {visibleRooms.map((room) => (
+                  <RoomCard 
+                    key={room._id} 
+                    room={room} 
+                    onBooking={handleBooking}
+                  />
+                ))}
+              </div>
+              {hasMoreRooms && (
+                <div className="rooms-load-more-wrap">
+                  <button
+                    type="button"
+                    className="rooms-load-more-btn"
+                    onClick={() => setVisibleRoomsCount((prev) => prev + ROOMS_BATCH_SIZE)}
+                  >
+                    Load More Rooms
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </section>
 
@@ -438,8 +525,9 @@ export default function HotelDetails() {
           {reviews.length === 0 ? (
             <p className="no-reviews">No reviews yet</p>
           ) : (
+            <>
             <div className="reviews-list">
-              {reviews.map((review) => (
+              {visibleReviews.map((review) => (
                   <div key={review._id} className="review-item-premium">
                     <div className="review-header">
                       <div className="reviewer-meta">
@@ -497,6 +585,18 @@ export default function HotelDetails() {
                   </div>
               ))}
             </div>
+            {hasMoreReviews && (
+              <div className="reviews-load-more-wrap">
+                <button
+                  type="button"
+                  className="reviews-load-more-btn"
+                  onClick={() => setVisibleReviewsCount((prev) => prev + REVIEWS_BATCH_SIZE)}
+                >
+                  Load More Reviews
+                </button>
+              </div>
+            )}
+            </>
           )}
         </section>
       </div>

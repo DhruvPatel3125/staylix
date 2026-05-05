@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Star, ArrowRight, ShieldCheck, Heart } from 'lucide-react';
 import './HotelCard.css';
 import { getImageUrl } from '../../../utils/imageUrl';
+import OptimizedImage from '../../common/OptimizedImage';
 import { useDispatch,useSelector } from 'react-redux';
 import { toggleWishlist, toggleWishlistLocal } from '../../../store/slices/wishlistSlice';
 import useAuth from '../../../hooks/useAuth';
@@ -30,7 +31,12 @@ export default function HotelCard({ hotel }) {
       <div className="hotel-card premium-hotel-card-main">
         <div className="hotel-card-image">
           {hotel.photos?.[0] ? (
-            <img src={getImageUrl(hotel.photos[0])} alt={hotel.name} loading="lazy" />
+            <OptimizedImage
+              src={getImageUrl(hotel.photos[0])}
+              alt={hotel.name}
+              placeholderText={hotel.name}
+              className="hotel-optimized-image"
+            />
           ) : (
             <div className="hotel-placeholder">
               <ShieldCheck size={48} />

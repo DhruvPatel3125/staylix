@@ -43,10 +43,13 @@
 .hotel-main-image {
   width: 500px;
   height: 350px;
-  object-fit: cover;
   border-radius: 30px;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
   transition: transform 0.5s ease;
+}
+
+.hotel-main-image .optimized-image {
+  object-fit: cover;
 }
 
 .hotel-main-image:hover {
@@ -137,6 +140,12 @@
   gap: 4rem;
 }
 
+.rooms-section,
+.reviews-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 900px;
+}
+
 .rooms-section-header {
   display: flex;
   justify-content: space-between;
@@ -196,6 +205,36 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2.5rem;
+}
+
+.rooms-loading {
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rooms-load-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.rooms-load-more-btn {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #334155;
+  padding: 0.7rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rooms-load-more-btn:hover {
+  transform: translateY(-1px);
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
 
 .room-card {
@@ -311,6 +350,29 @@
   color: var(--text-secondary);
   line-height: 1.7;
   font-size: 1.05rem;
+}
+
+.reviews-load-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.reviews-load-more-btn {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #334155;
+  padding: 0.7rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.reviews-load-more-btn:hover {
+  transform: translateY(-1px);
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
 
 /* ---------- MODAL GLASSMORPHISM ---------- */

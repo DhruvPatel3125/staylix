@@ -298,6 +298,31 @@
   font-size: 0.95rem;
 }
 
+.hotels-load-more-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.hotels-load-more-btn {
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #334155;
+  padding: 0.75rem 1.3rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.hotels-load-more-btn:hover {
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+}
+
 
 /* Loading & Empty States */
 .loading {

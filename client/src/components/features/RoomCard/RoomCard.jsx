@@ -1,5 +1,6 @@
 import './RoomCard.css';
 import { getImageUrl } from '../../../utils/imageUrl';
+import OptimizedImage from '../../common/OptimizedImage';
 
 export default function RoomCard({ room, onBooking }) {
   const availableCount = room.liveAvailableCount !== undefined ? room.liveAvailableCount : room.totalRooms;
@@ -9,9 +10,14 @@ export default function RoomCard({ room, onBooking }) {
     <div className={`room-card ${!isAvailable ? 'sold-out' : ''}`}>
       <div className="room-card-image">
         {room.image || room.photos?.[0] ? (
-          <img src={getImageUrl(room.image || room.photos?.[0])} alt={room.title} />
+          <OptimizedImage
+            src={getImageUrl(room.image || room.photos?.[0])}
+            alt={room.title}
+            placeholderText={room.title}
+            className="room-optimized-image"
+          />
         ) : (
-          <div className="room-placeholder">🛏️</div>
+          <div className="room-placeholder">Room</div>
         )}
         {!isAvailable && <div className="sold-out-overlay">Sold Out</div>}
       </div>
@@ -21,7 +27,7 @@ export default function RoomCard({ room, onBooking }) {
         <p className="room-capacity">
           Capacity: <strong>{availableCount}/{room.totalRooms}</strong> available
         </p>
-        
+
         {room.amenities && room.amenities.length > 0 && (
           <div className="room-amenities">
             {room.amenities.map((amenity, i) => (
@@ -35,7 +41,7 @@ export default function RoomCard({ room, onBooking }) {
             <span className="price">₹{room.pricePerNight}</span>
             <span className="per-night">/night</span>
           </div>
-          <button 
+          <button
             className={`book-btn ${!isAvailable ? 'disabled' : ''}`}
             onClick={() => onBooking && onBooking(room)}
             disabled={!isAvailable}

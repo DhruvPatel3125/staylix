@@ -9,6 +9,7 @@ export default function RoomCard({ room, onBooking }) {
   return (
     <div className={`room-card ${!isAvailable ? 'sold-out' : ''}`}>
       <div className="room-card-image">
+<<<<<<< HEAD
         {room.image || room.photos?.[0] ? (
           <OptimizedImage
             src={getImageUrl(room.image || room.photos?.[0])}
@@ -19,6 +20,13 @@ export default function RoomCard({ room, onBooking }) {
         ) : (
           <div className="room-placeholder">Room</div>
         )}
+=======
+        <OptimizedImage 
+          src={(room.image || room.photos?.[0]) ? getImageUrl(room.image || room.photos?.[0]) : ''} 
+          alt={room.title}
+          placeholderText="🛏️"
+        />
+>>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
         {!isAvailable && <div className="sold-out-overlay">Sold Out</div>}
       </div>
       <div className="room-card-content">

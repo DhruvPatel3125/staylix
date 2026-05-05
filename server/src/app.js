@@ -31,6 +31,10 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 // app.use('/uploads', express.static('uploads'));
+<<<<<<< HEAD
+=======
+
+>>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
 
 const apiLimite = rateLimit({
     windowMs: 15 * 60 * 1000,

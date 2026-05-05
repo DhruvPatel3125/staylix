@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { useEffect, useMemo, useRef, useState } from 'react';
+=======
+import { useState, useEffect } from 'react';
+>>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
 import './OptimizedImage.css';
 
 const PREDEFINED_GRADIENTS = [
@@ -9,6 +13,7 @@ const PREDEFINED_GRADIENTS = [
   'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)',
 ];
 
+<<<<<<< HEAD
 const DEFAULT_FALLBACK =
   'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop';
 
@@ -98,6 +103,63 @@ export default function OptimizedImage({
           <span className="placeholder-text">{placeholderText || alt || 'Staylix Hotel'}</span>
         </div>
       )}
+=======
+export default function OptimizedImage({ 
+  src, 
+  alt, 
+  className = '', 
+  placeholderText = '', 
+  objectFit = 'cover' 
+}) {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [gradient, setGradient] = useState('');
+
+  useEffect(() => {
+    // Select a stable gradient based on the alt text or src
+    const index = (alt?.length || 0) % PREDEFINED_GRADIENTS.length;
+    setGradient(PREDEFINED_GRADIENTS[index]);
+    
+    // Reset state if src changes
+    setLoading(true);
+    setError(false);
+  }, [src, alt]);
+
+  const handleLoad = () => {
+    setLoading(false);
+  };
+
+  const handleError = () => {
+    setLoading(false);
+    setError(true);
+  };
+
+  if (error || !src) {
+    return (
+      <div 
+        className={`optimized-image-placeholder ${className}`}
+        style={{ background: gradient }}
+      >
+        <span className="placeholder-char">
+          {placeholderText || alt?.charAt(0) || 'H'}
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`optimized-image-container ${className}`}>
+      {loading && <div className="image-skeleton-loader" />}
+      <img
+        src={src}
+        alt={alt}
+        className={`optimized-image ${loading ? 'is-loading' : 'is-loaded'}`}
+        style={{ objectFit }}
+        onLoad={handleLoad}
+        onError={handleError}
+        loading="lazy"
+      />
+>>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
     </div>
   );
 }

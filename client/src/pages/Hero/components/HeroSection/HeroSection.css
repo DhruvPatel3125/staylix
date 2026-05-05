@@ -143,9 +143,18 @@
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
+<<<<<<< HEAD
 .property-filters-container {
   width: 95%;
   max-width: 900px;
+=======
+/* Filter Section */
+.property-filters-container {
+  position: absolute;
+  bottom: 2rem;
+  width: 95%;
+  max-width: 900px; /* More compact for premium look */
+>>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(30px) saturate(180%);
   -webkit-backdrop-filter: blur(30px) saturate(180%);
@@ -157,8 +166,11 @@
     0 30px 60px rgba(0, 0, 0, 0.4),
     inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   animation: fadeInUp 1.2s cubic-bezier(0.23, 1, 0.32, 1);
+<<<<<<< HEAD
   margin-top: -80px; /* Pull it up into the content area slightly */
   margin-bottom: 2rem;
+=======
+>>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
 }
 
 .property-buttons {
@@ -342,6 +354,7 @@
 /* Responsive */
 @media (max-width: 768px) {
   .hero-section {
+<<<<<<< HEAD
     padding-top: 100px;
     height: auto;
     min-height: 100vh;
@@ -361,16 +374,31 @@
     font-size: 0.35em;
     letter-spacing: 0.2em;
     margin-top: 0.5rem;
+=======
+    padding-top: 80px;
+  }
+
+  .hero-content {
+    padding-bottom: 120px;
+  }
+
+  .hero-text .main-title {
+    font-size: 2.2rem;
+>>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
   }
   
   .hero-buttons {
     flex-direction: column;
     gap: 1rem;
+<<<<<<< HEAD
     padding: 0 1rem;
+=======
+>>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
   }
   
   .hero-btn {
     width: 100%;
+<<<<<<< HEAD
     padding: 1rem 2rem;
   }
   
@@ -388,15 +416,26 @@
   .filter-btn {
     padding: 0.6rem 1rem;
     font-size: 0.85rem;
+=======
+  }
+  
+  .property-filters-container {
+    padding: 1rem;
+    bottom: 20px;
+    
+>>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
   }
   
   .filter-action-buttons {
     flex-direction: column;
+<<<<<<< HEAD
     width: 100%;
   }
   
   .search-map-btn, .search-properties-btn {
     width: 100%;
     justify-content: center;
+=======
+>>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
   }
 }

@@ -22,7 +22,10 @@ import { showToast, showAlert } from '../../utils/swal';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import RoomCard from '../../components/features/RoomCard/RoomCard';
+<<<<<<< HEAD
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+=======
+>>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
 import OptimizedImage from '../../components/common/OptimizedImage';
 import { getImageUrl } from '../../utils/imageUrl';
 import { validate, bookingSchema } from '../../utils/validation';
@@ -423,6 +426,7 @@ export default function HotelDetails() {
 
   if (loading) {
     return (
+<<<<<<< HEAD
       <div className="loading-container">
         <LoadingSpinner />
       </div>
@@ -431,6 +435,31 @@ export default function HotelDetails() {
 
   if (error) {
     return <div className="error-container">{error}</div>;
+=======
+      <div className="hotel-details-container skeleton-loading">
+        <div className="hotel-header skeleton-header">
+          <div className="skeleton-image skeleton-shimmer"></div>
+          <div className="hotel-info-premium">
+            <div className="skeleton-line title skeleton-shimmer"></div>
+            <div className="skeleton-line location skeleton-shimmer"></div>
+            <div className="skeleton-line description skeleton-shimmer"></div>
+            <div className="skeleton-line description skeleton-shimmer"></div>
+            <div className="skeleton-amenities">
+              <div className="skeleton-tag skeleton-shimmer"></div>
+              <div className="skeleton-tag skeleton-shimmer"></div>
+              <div className="skeleton-tag skeleton-shimmer"></div>
+            </div>
+          </div>
+        </div>
+        <div className="hotel-content">
+          <div className="skeleton-line subtitle skeleton-shimmer"></div>
+          <div className="rooms-grid">
+            {[1, 2, 3].map(i => <div key={i} className="room-card-skeleton skeleton-shimmer"></div>)}
+          </div>
+        </div>
+      </div>
+    );
+>>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
   }
 
   if (!hotel) {
@@ -440,6 +469,7 @@ export default function HotelDetails() {
   return (
     <div className="hotel-details-container">
       <div className="hotel-header">
+<<<<<<< HEAD
         {hotel.photos?.[0] && (
           <OptimizedImage
             src={getImageUrl(hotel.photos[0])}
@@ -449,6 +479,15 @@ export default function HotelDetails() {
             eager
           />
         )}
+=======
+        <div className="hotel-main-image-wrapper">
+          <OptimizedImage 
+            src={hotel.photos?.[0] ? getImageUrl(hotel.photos[0]) : ''} 
+            alt={hotel.name} 
+            className="hotel-main-image"
+          />
+        </div>
+>>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
         <div className="hotel-info-premium">
           <div className="hotel-title-section">
             <h1 className="hotel-name-display">{hotel.name}</h1>

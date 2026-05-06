@@ -352,7 +352,6 @@
   font-size: 0.95rem;
 }
 
-<<<<<<< HEAD
 .hotels-load-more-wrap {
   display: flex;
   justify-content: center;
@@ -368,71 +367,14 @@
   border-radius: 12px;
   font-weight: 700;
   font-size: 0.95rem;
-=======
-.results-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-.clear-filters-btn {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #334155;
-  font-weight: 700;
-  font-size: 0.85rem;
-  border-radius: 12px;
-  padding: 0.45rem 0.9rem;
->>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
   cursor: pointer;
   transition: all 0.25s ease;
 }
 
-<<<<<<< HEAD
 .hotels-load-more-btn:hover {
   transform: translateY(-2px);
   border-color: #cbd5e1;
   box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
-=======
-.clear-filters-btn:hover:not(:disabled) {
-  background: #f8fafc;
-  border-color: #64748b;
-}
-
-.clear-filters-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.hero-categories-active {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin: -1rem 0 1.25rem;
-}
-
-.hero-categories-title {
-  color: #475569;
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
-.hero-categories-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.hero-category-chip {
-  background: #eef2ff;
-  color: #3730a3;
-  border: 1px solid #c7d2fe;
-  font-weight: 600;
-  font-size: 0.8rem;
-  border-radius: 999px;
-  padding: 0.3rem 0.75rem;
->>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
 }
 
 

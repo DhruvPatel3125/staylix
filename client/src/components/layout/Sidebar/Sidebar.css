@@ -49,7 +49,7 @@
   background: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
 }
 .user-avatar {
-  background: linear-gradient(135deg, #f43f5e 0%, #fb923c 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
 }
 
 .profile-avatar:hover {
@@ -86,7 +86,7 @@
   background: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%);
 }
 .user-badge {
-  background: linear-gradient(135deg, #f43f5e 0%, #fb923c 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
 }
 
 .dashboard-nav {

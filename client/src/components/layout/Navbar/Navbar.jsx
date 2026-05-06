@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../../hooks/useAuth';
-import { getImageUrl } from '../../../utils/imageUrl';
 import UserAvatar from '../../ui/UserAvatar';
 import { 
   Hotel, 
@@ -32,9 +31,10 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close menu when route changes
+  // Close menu when route changes (deferred to avoid synchronous setState in effect)
   useEffect(() => {
-    setIsMenuOpen(false);
+    const id = setTimeout(() => setIsMenuOpen(false), 0);
+    return () => clearTimeout(id);
   }, [location]);
 
   return (

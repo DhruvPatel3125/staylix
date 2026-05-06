@@ -22,10 +22,7 @@ import { showToast, showAlert } from '../../utils/swal';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import RoomCard from '../../components/features/RoomCard/RoomCard';
-<<<<<<< HEAD
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-=======
->>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
 import OptimizedImage from '../../components/common/OptimizedImage';
 import { getImageUrl } from '../../utils/imageUrl';
 import { validate, bookingSchema } from '../../utils/validation';
@@ -85,6 +82,7 @@ export default function HotelDetails() {
         if (hotelRes.success) setHotel(hotelRes.hotel);
         if (reviewsRes.success) setReviews(reviewsRes.reviews || []);
       } catch (err) {
+        console.error('Failed to fetch hotel data', err);
         if (isMounted) {
           setError('Failed to load hotel details');
         }
@@ -173,6 +171,7 @@ export default function HotelDetails() {
             message: response.available ? '' : response.message || 'Room not available for these dates'
           });
         } catch (err) {
+          console.error('Availability check failed', err);
           setAvailability(prev => ({ ...prev, checking: false }));
         }
       };
@@ -239,6 +238,7 @@ export default function HotelDetails() {
         showToast.error(response.message || 'Invalid discount code');
       }
     } catch (err) {
+      console.error('Discount validation error', err);
       setDiscountInfo(null);
       setDiscountError(err.response?.data?.message || 'Failed to validate discount code');
     } finally {
@@ -301,7 +301,6 @@ export default function HotelDetails() {
 
       // 4. Create Razorpay Order and Pending Booking
       const totalAmount = nights * selectedRoom.pricePerNight;
-      const finalAmount = discountInfo ? discountInfo.finalAmount : totalAmount;
       
       const orderRes = await api.bookings.createPaymentOrder({
         roomId: selectedRoom._id,
@@ -395,6 +394,7 @@ export default function HotelDetails() {
         }
       }
     } catch (err) {
+      console.error('Delete review failed', err);
       showToast.error('Failed to delete review');
     }
   };
@@ -420,22 +420,13 @@ export default function HotelDetails() {
         showToast.success('Review updated successfully');
       }
     } catch (err) {
+      console.error('Update review failed', err);
       showToast.error('Failed to update review');
     }
   };
 
   if (loading) {
     return (
-<<<<<<< HEAD
-      <div className="loading-container">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-
-  if (error) {
-    return <div className="error-container">{error}</div>;
-=======
       <div className="hotel-details-container skeleton-loading">
         <div className="hotel-header skeleton-header">
           <div className="skeleton-image skeleton-shimmer"></div>
@@ -451,6 +442,9 @@ export default function HotelDetails() {
             </div>
           </div>
         </div>
+
+        {error && <div className="error-message">{error}</div>}
+
         <div className="hotel-content">
           <div className="skeleton-line subtitle skeleton-shimmer"></div>
           <div className="rooms-grid">
@@ -459,7 +453,6 @@ export default function HotelDetails() {
         </div>
       </div>
     );
->>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
   }
 
   if (!hotel) {
@@ -469,17 +462,6 @@ export default function HotelDetails() {
   return (
     <div className="hotel-details-container">
       <div className="hotel-header">
-<<<<<<< HEAD
-        {hotel.photos?.[0] && (
-          <OptimizedImage
-            src={getImageUrl(hotel.photos[0])}
-            alt={hotel.name}
-            className="hotel-main-image"
-            placeholderText={hotel.name}
-            eager
-          />
-        )}
-=======
         <div className="hotel-main-image-wrapper">
           <OptimizedImage 
             src={hotel.photos?.[0] ? getImageUrl(hotel.photos[0]) : ''} 
@@ -487,7 +469,6 @@ export default function HotelDetails() {
             className="hotel-main-image"
           />
         </div>
->>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
         <div className="hotel-info-premium">
           <div className="hotel-title-section">
             <h1 className="hotel-name-display">{hotel.name}</h1>

@@ -9,7 +9,7 @@
 .ui-label {
   font-size: 0.9rem;
   font-weight: 500;
-  color: var(--text-primary, #2d3748);
+  color: #2d3748;
 }
 
 .ui-input-wrapper {
@@ -58,4 +58,25 @@
   font-size: 0.8rem;
   color: #e53e3e;
   margin-top: -0.25rem;
+}
+
+.ui-input::placeholder {
+  color: #94a3b8;
+}
+
+.ui-input:disabled {
+  background-color: #f0f7ff;
+  color: #64748b;
+  cursor: not-allowed;
+  border-color: #e2e8f0;
+}
+
+/* Fix for browser autofill yellow background — making it bluish proper UI */
+.ui-input:-webkit-autofill,
+.ui-input:-webkit-autofill:hover, 
+.ui-input:-webkit-autofill:focus, 
+.ui-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #f0f7ff inset !important;
+  -webkit-text-fill-color: var(--text-primary, #1e293b) !important;
+  transition: background-color 5000s ease-in-out 0s;
 }

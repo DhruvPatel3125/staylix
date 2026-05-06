@@ -419,7 +419,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.user-badge { background: linear-gradient(135deg, #f43f5e 0%, #fb923c 100%); }
+.user-badge { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
 .owner-badge { background: linear-gradient(135deg, #3b82f6 0%, #2dd4bf 100%); }
 .admin-badge { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); }
 
@@ -515,7 +515,7 @@
   margin-top: 2rem;
 }
 
-.pending-message { background: #fffbeb; color: #92400e; }
+.pending-message { background: #eff6ff; color: #1e40af; }
 .approved-message { background: #f0fdf4; color: #166534; }
 .rejected-message { background: #fef2f2; color: #991b1b; }
 
@@ -552,6 +552,20 @@
   background: white;
   outline: none;
   box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+/* Fix for browser autofill yellow background on premium inputs — bluish proper UI */
+.premium-input:-webkit-autofill,
+.premium-input:-webkit-autofill:hover, 
+.premium-input:-webkit-autofill:focus, 
+.premium-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #f0f7ff inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.premium-input:focus:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 30px #fdfdff inset, 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
 }
 
 .premium-input-file {

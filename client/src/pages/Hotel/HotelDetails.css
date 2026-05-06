@@ -110,17 +110,7 @@
 .hotel-main-image-wrapper {
   flex-shrink: 0;
   width: 500px;
-<<<<<<< HEAD
   height: 350px;
-=======
-  height: 400px;
-}
-
-.hotel-main-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
->>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
   border-radius: 30px;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
   transition: transform 0.5s ease;
@@ -161,7 +151,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #f59e0b;
+  color: #3b82f6;
   font-weight: 800;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
   font-size: 1rem;
@@ -414,8 +404,8 @@
 }
 
 .review-rating-pill {
-  background: #fffbeb;
-  color: #f59e0b;
+  background: #eff6ff;
+  color: #3b82f6;
   padding: 0.4rem 0.8rem;
   border-radius: 12px;
   display: flex;

@@ -31,7 +31,6 @@ function HotelCard({ hotel }) {
     <Link to={`/hotel/${hotel._id}`} className="hotel-card-link">
       <div className="hotel-card premium-hotel-card-main">
         <div className="hotel-card-image">
-<<<<<<< HEAD
           {hotel.photos?.[0] ? (
             <OptimizedImage
               src={getImageUrl(hotel.photos[0])}
@@ -44,12 +43,6 @@ function HotelCard({ hotel }) {
               <ShieldCheck size={48} />
             </div>
           )}
-=======
-          <OptimizedImage 
-            src={hotel.photos?.[0] ? getImageUrl(hotel.photos[0]) : ''} 
-            alt={hotel.name} 
-          />
->>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
           <div className="card-badge-rating">
             <Star size={14} fill="currentColor" />
             <span>{hotel.rating || 0}</span>

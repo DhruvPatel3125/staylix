@@ -5,10 +5,7 @@ const Review = require('../models/review')
 const User = require('../models/user')
 const { getCoordinates } = require('../utils/geocoder');
 const { uploadToCloudinary } = require('../utils/cloudinaryUpload');
-<<<<<<< HEAD
 const redisClient = require('../config/redis')
-=======
->>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
 
 exports.createHotel = async (req, res) => {
     try {

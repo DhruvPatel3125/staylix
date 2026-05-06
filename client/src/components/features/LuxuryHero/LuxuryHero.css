@@ -5,8 +5,8 @@
   --hero-midnight: #0f2038;
   --hero-ink: #e9eef5;
   --hero-muted: rgba(229, 237, 250, 0.76);
-  --hero-gold: #c8a96b;
-  --hero-gold-strong: #dfbf7f;
+  --hero-gold: #3b82f6;
+  --hero-gold-strong: #60a5fa;
   --hero-border: rgba(255, 255, 255, 0.2);
 
   position: relative;
@@ -50,7 +50,7 @@
 .luxury-hero__glow--left {
   top: -10rem;
   left: -9rem;
-  background: radial-gradient(circle at center, rgba(212, 173, 100, 0.56), transparent 70%);
+  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.4), transparent 70%);
 }
 
 .luxury-hero__glow--right {
@@ -82,9 +82,9 @@
   display: inline-flex;
   padding: 0.45rem 1rem;
   border-radius: 999px;
-  border: 1px solid rgba(200, 169, 107, 0.4);
-  background: rgba(200, 169, 107, 0.14);
-  color: #f0d9ab;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  background: rgba(59, 130, 246, 0.14);
+  color: #93c5fd;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-size: 0.73rem;
@@ -101,7 +101,7 @@
 }
 
 .luxury-hero__title span {
-  background: linear-gradient(130deg, #fff9eb 0%, #e8c689 56%, #dfbf7f 100%);
+  background: linear-gradient(130deg, #f0f9ff 0%, #7dd3fc 56%, #3b82f6 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -135,14 +135,14 @@
 
 .luxury-hero__btn--primary {
   background: linear-gradient(130deg, var(--hero-gold) 0%, var(--hero-gold-strong) 100%);
-  color: #151107;
+  color: #ffffff;
   padding: 0.86rem 1.3rem;
-  box-shadow: 0 14px 30px rgba(193, 153, 85, 0.36);
+  box-shadow: 0 14px 30px rgba(59, 130, 246, 0.36);
 }
 
 .luxury-hero__btn--primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 35px rgba(193, 153, 85, 0.5);
+  box-shadow: 0 18px 35px rgba(59, 130, 246, 0.5);
 }
 
 .luxury-hero__btn--ghost {
@@ -175,7 +175,7 @@
 
 .luxury-hero__highlights strong {
   display: block;
-  color: #f4ddb0;
+  color: #93c5fd;
   font-size: 1.17rem;
   font-weight: 800;
 }
@@ -241,7 +241,7 @@
 }
 
 .luxury-hero__input-wrap svg {
-  color: #dfbf7f;
+  color: #60a5fa;
   flex-shrink: 0;
 }
 
@@ -297,9 +297,9 @@
 }
 
 .luxury-hero__chip.is-active {
-  color: #1a1408;
+  color: #ffffff;
   background: linear-gradient(130deg, var(--hero-gold), var(--hero-gold-strong));
-  border-color: rgba(228, 191, 127, 0.85);
+  border-color: rgba(59, 130, 246, 0.85);
 }
 
 .luxury-hero__card-actions {
@@ -332,7 +332,7 @@
 
 .luxury-hero__search-btn {
   background: linear-gradient(130deg, var(--hero-gold) 0%, var(--hero-gold-strong) 100%);
-  color: #171005;
+  color: #ffffff;
 }
 
 .luxury-hero__map-btn:hover,

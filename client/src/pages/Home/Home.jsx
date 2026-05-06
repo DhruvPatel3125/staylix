@@ -6,35 +6,11 @@ import HotelCard from '../../components/features/HotelCard/HotelCard';
 import HotelCardSkeleton from '../../components/features/HotelCard/HotelCardSkeleton';
 import CategoryBar from '../../components/features/CategoryBar/CategoryBar';
 import MapView from '../../components/features/MapView/MapView';
-import { Search, Navigation, Loader2, X, LayoutGrid, Map as MapIcon, ChevronDown } from 'lucide-react';
+import { Search, Navigation, Loader2, X, LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { showToast } from '../../utils/swal';
 import './Home.css';
 
-<<<<<<< HEAD
 const HOTELS_BATCH_SIZE = 15;
-=======
-const INITIAL_VISIBLE_COUNT = 12;
-const LOAD_MORE_COUNT = 8;
-
-const HERO_CATEGORY_FILTERS = {
-  luxury: {
-    label: 'Luxury Hotels',
-    keywords: ['luxury', 'premium', 'spa', 'suite', '5 star']
-  },
-  resort: {
-    label: 'Beach Resorts',
-    keywords: ['resort', 'beach', 'pool', 'sea', 'ocean']
-  },
-  boutique: {
-    label: 'Boutique Stays',
-    keywords: ['boutique', 'heritage', 'design', 'unique']
-  },
-  business: {
-    label: 'Business Travel',
-    keywords: ['business', 'corporate', 'conference', 'meeting']
-  }
-};
->>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
@@ -49,36 +25,8 @@ export default function Home() {
   const [isLocating, setIsLocating] = useState(false);
   const [isNearbyMode, setIsNearbyMode] = useState(false);
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
-<<<<<<< HEAD
   const [visibleHotelsCount, setVisibleHotelsCount] = useState(HOTELS_BATCH_SIZE);
-=======
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  const selectedCategories = useMemo(() => {
-    const rawCategories = searchParams.getAll('category[]');
-    const normalized = rawCategories
-      .map((category) => category.toLowerCase())
-      .filter((category) => HERO_CATEGORY_FILTERS[category]);
-
-    return [...new Set(normalized)];
-  }, [searchParams]);
-
-  useEffect(() => {
-    const cityParam = searchParams.get('city')?.trim() || '';
-    const searchParam = searchParams.get('q')?.trim() || '';
-    const ratingParam = Number(searchParams.get('rating'));
-    const normalizedRating = Number.isFinite(ratingParam) && ratingParam > 0 ? ratingParam : 0;
-    const viewParam = searchParams.get('view');
-
-    setSelectedCity(cityParam);
-    setSearchTerm(searchParam);
-    setMinRating(normalizedRating);
-    if (viewParam === 'map' || viewParam === 'list') {
-      setViewMode(viewParam);
-    }
-  }, [searchParams]);
->>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
+  const selectedCategories = useMemo(() => searchParams.getAll('category[]'), [searchParams]);
 
   useEffect(() => {
     fetchHotels();
@@ -114,7 +62,7 @@ export default function Home() {
           const { latitude, longitude } = position.coords;
           setLoading(true);
           const response = await api.hotels.getNearby(latitude, longitude);
-          
+
           if (response.success) {
             setHotels(response.hotels || []);
             setIsNearbyMode(true);
@@ -144,40 +92,26 @@ export default function Home() {
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      result = result.filter(hotel =>
-        hotel.name?.toLowerCase().includes(term) ||
-        hotel.description?.toLowerCase().includes(term) ||
-        hotel.address?.city?.toLowerCase().includes(term)
+      result = result.filter(
+        (hotel) =>
+          hotel.name?.toLowerCase().includes(term) ||
+          hotel.description?.toLowerCase().includes(term) ||
+          hotel.address?.city?.toLowerCase().includes(term)
       );
     }
 
     if (selectedCity) {
-      result = result.filter(hotel =>
-        hotel.address?.city?.toLowerCase() === selectedCity.toLowerCase()
+      result = result.filter(
+        (hotel) => hotel.address?.city?.toLowerCase() === selectedCity.toLowerCase()
       );
     }
 
     if (minRating > 0) {
-      result = result.filter(hotel => (hotel.rating || 0) >= minRating);
+      result = result.filter((hotel) => (hotel.rating || 0) >= minRating);
     }
 
-    if (selectedCategories.length > 0) {
-      result = result.filter((hotel) => {
-        const searchableText = [
-          hotel.name,
-          hotel.description,
-          ...(hotel.amenities || [])
-        ]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase();
-
-        return selectedCategories.some((category) =>
-          HERO_CATEGORY_FILTERS[category].keywords.some((keyword) =>
-            searchableText.includes(keyword)
-          )
-        );
-      });
+    if (selectedCategories && selectedCategories.length > 0) {
+      result = result.filter((hotel) => selectedCategories.includes(hotel.category));
     }
 
     if (sortBy === 'name') {
@@ -191,21 +125,18 @@ export default function Home() {
 
   useEffect(() => {
     setVisibleHotelsCount(HOTELS_BATCH_SIZE);
-  }, [searchTerm, selectedCity, minRating, sortBy, hotels]);
+  }, [searchTerm, selectedCity, minRating, sortBy, hotels, selectedCategories]);
 
-  const visibleHotels = useMemo(
-    () => filteredHotels.slice(0, visibleHotelsCount),
-    [filteredHotels, visibleHotelsCount]
-  );
+  const visibleHotels = useMemo(() => filteredHotels.slice(0, visibleHotelsCount), [filteredHotels, visibleHotelsCount]);
 
   const hasMoreHotels = visibleHotelsCount < filteredHotels.length;
 
-  const uniqueCities = [...new Set(hotels.map(h => h.address?.city).filter(Boolean))].sort();
+  const uniqueCities = [...new Set(hotels.map((h) => h.address?.city).filter(Boolean))].sort();
   const hasActiveFilters = Boolean(
     searchTerm ||
     selectedCity ||
     minRating > 0 ||
-    selectedCategories.length > 0 ||
+    (selectedCategories && selectedCategories.length > 0) ||
     isNearbyMode ||
     sortBy !== 'name'
   );
@@ -216,7 +147,7 @@ export default function Home() {
     setMinRating(0);
     setSortBy('name');
     setViewMode('list');
-    setVisibleCount(INITIAL_VISIBLE_COUNT);
+    setVisibleHotelsCount(HOTELS_BATCH_SIZE);
 
     const nextParams = new URLSearchParams(searchParams);
     nextParams.delete('category[]');
@@ -229,36 +160,24 @@ export default function Home() {
       fetchHotels();
     }
   };
-  
+
   const handleCategoryToggle = (categoryId) => {
     const nextParams = new URLSearchParams(searchParams);
     const currentCategories = nextParams.getAll('category[]');
-    
+
     if (currentCategories.includes(categoryId)) {
-      // Remove it
-      const updated = currentCategories.filter(c => c !== categoryId);
+      const updated = currentCategories.filter((c) => c !== categoryId);
       nextParams.delete('category[]');
-      updated.forEach(c => nextParams.append('category[]', c));
+      updated.forEach((c) => nextParams.append('category[]', c));
     } else {
-      // Add it
       nextParams.append('category[]', categoryId);
     }
-    
+
     setSearchParams(nextParams);
-    setVisibleCount(INITIAL_VISIBLE_COUNT);
+    setVisibleHotelsCount(HOTELS_BATCH_SIZE);
   };
 
-  const handleLoadMore = () => {
-    setIsLoadingMore(true);
-    setTimeout(() => {
-      setVisibleCount(prev => prev + LOAD_MORE_COUNT);
-      setIsLoadingMore(false);
-    }, 400); // Small delay for smoother feel
-  };
-
-  const displayedHotels = useMemo(() => {
-    return filteredHotels.slice(0, visibleCount);
-  }, [filteredHotels, visibleCount]);
+  const handleLoadMore = () => setVisibleHotelsCount((prev) => prev + HOTELS_BATCH_SIZE);
 
   if (isAuthenticated && user?.role === 'admin') {
     return <Navigate to="/admin-dashboard" />;
@@ -288,7 +207,7 @@ export default function Home() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
             />
-            <button 
+            <button
               className={`nearby-btn ${isNearbyMode ? 'active' : ''}`}
               onClick={isNearbyMode ? fetchHotels : handleFindNearMe}
               disabled={isLocating}
@@ -351,46 +270,35 @@ export default function Home() {
               <option value="rating">Rating (High to Low)</option>
             </select>
           </div>
+
+          {hasActiveFilters && (
+            <div className="filter-actions">
+              <button className="clear-filters-btn" onClick={handleClearFilters}>Clear Filters</button>
+            </div>
+          )}
         </div>
       </div>
 
-      <CategoryBar 
-        activeCategories={selectedCategories} 
-        onCategoryToggle={handleCategoryToggle} 
-      />
+      <CategoryBar activeCategories={selectedCategories} onCategoryToggle={handleCategoryToggle} />
 
       <div className="view-toggle-container">
         <div className="view-toggle-buttons">
-          <button 
+          <button
             className={`view-btn ${viewMode === 'list' ? 'active' : ''}`}
             onClick={() => setViewMode('list')}
           >
             <LayoutGrid size={18} /> <span>List View</span>
           </button>
-          <button 
+          <button
             className={`view-btn ${viewMode === 'map' ? 'active' : ''}`}
             onClick={() => setViewMode('map')}
           >
             <MapIcon size={18} /> <span>Map View</span>
           </button>
         </div>
-<<<<<<< HEAD
         <p className="results-count">
           Showing {viewMode === 'list' ? visibleHotels.length : filteredHotels.length} of {filteredHotels.length} hotels
         </p>
-=======
-        <div className="results-actions">
-          <p className="results-count">Showing {filteredHotels.length} hotels</p>
-          <button
-            type="button"
-            className="clear-filters-btn"
-            onClick={handleClearFilters}
-            disabled={!hasActiveFilters}
-          >
-            Clear Filters
-          </button>
-        </div>
->>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
       </div>
 
       {loading ? (
@@ -408,7 +316,6 @@ export default function Home() {
       ) : (
         <>
           <div className="hotels-grid">
-<<<<<<< HEAD
             {visibleHotels.map((hotel) => (
               <HotelCard key={hotel._id} hotel={hotel} />
             ))}
@@ -418,34 +325,9 @@ export default function Home() {
               <button
                 type="button"
                 className="hotels-load-more-btn"
-                onClick={() => setVisibleHotelsCount((prev) => prev + HOTELS_BATCH_SIZE)}
+                onClick={handleLoadMore}
               >
                 Load More Hotels
-=======
-            {displayedHotels.map((hotel) => (
-              <HotelCard key={hotel._id} hotel={hotel} />
-            ))}
-          </div>
-          
-          {visibleCount < filteredHotels.length && (
-            <div className="load-more-container">
-              <button 
-                className="load-more-btn" 
-                onClick={handleLoadMore}
-                disabled={isLoadingMore}
-              >
-                {isLoadingMore ? (
-                  <>
-                    <Loader2 className="load-more-spinner" size={20} />
-                    <span>Loading...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Load More Hotels</span>
-                    <ChevronDown size={20} />
-                  </>
-                )}
->>>>>>> 917d9b2b35052868119d719d8d8c5f4cd66d9f0c
               </button>
             </div>
           )}

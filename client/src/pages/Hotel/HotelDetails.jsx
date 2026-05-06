@@ -326,7 +326,7 @@ export default function HotelDetails() {
         currency: "INR",
         name: "Staylix",
         description: `Booking for ${hotel.name}`,
-        image: "https://example.com/your_logo",
+        image: "/logo.png",
         order_id: orderRes.order.id,
         handler: async function (response) {
           try {

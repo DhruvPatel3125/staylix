@@ -44,15 +44,11 @@
 }
 
 .brand-column .logo-icon {
-  width: 40px;
-  height: 40px;
-  background: white;
-  border-radius: 12px;
-  padding: 6px;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .brand-column .logo-icon img {

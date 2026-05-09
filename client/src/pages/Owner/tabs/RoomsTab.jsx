@@ -1,6 +1,7 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Plus, Bed, Trash2, Edit3, Camera, X } from 'lucide-react';
+import OptimizedImage from '../../../components/common/OptimizedImage';
 
 export default function RoomsTab() {
   const { 
@@ -30,7 +31,7 @@ export default function RoomsTab() {
   );
 
   return (
-    <div className="rooms-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
+    <div className="rooms-section">
       <div className="section-header">
         <h2><Bed size={24} /> My Rooms</h2>
         <button className="add-btn" onClick={handleAddRoom}>
@@ -150,7 +151,11 @@ export default function RoomsTab() {
                     const previewUrl = isFile ? URL.createObjectURL(roomFormData.image) : (editingRoom?.image ? getImageUrl(editingRoom.image) : null);
                     
                     return previewUrl ? (
-                      <img src={previewUrl} alt="Room" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <OptimizedImage 
+                        src={previewUrl} 
+                        alt="Room" 
+                        className="room-preview-image"
+                      />
                     ) : (
                       <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', fontSize: '0.8rem', color: '#64748b', textAlign: 'center', padding: '0.5rem' }}>{roomImageFileName}</div>
                     );
@@ -224,7 +229,11 @@ export default function RoomsTab() {
               <div key={room._id} className="room-card">
                 {room.image && (
                   <div className="room-image-container">
-                    <img src={getImageUrl(room.image)} alt={room.title} className="room-image" />
+                    <OptimizedImage 
+                      src={getImageUrl(room.image)} 
+                      alt={room.title} 
+                      className="room-image" 
+                    />
                   </div>
                 )}
                 <div className="room-content">
@@ -268,7 +277,7 @@ export default function RoomsTab() {
                     onClick={() => handleDeleteRoom(room._id)}
                     disabled={processingId === room._id}
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={16} /> Delete
                   </button>
                 </div>
               </div>

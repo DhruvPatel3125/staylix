@@ -1,6 +1,7 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Plus, MapPin, Trash2, Edit3, X, Camera } from 'lucide-react';
+import OptimizedImage from '../../../components/common/OptimizedImage';
 
 export default function HotelsTab() {
   const { 
@@ -34,7 +35,7 @@ export default function HotelsTab() {
   };
 
   return (
-    <div className="hotels-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
+    <div className="hotels-section">
       <div className="section-header">
         <h2>My Hotels</h2>
         <button className="add-btn" onClick={handleAddHotel}>
@@ -130,7 +131,7 @@ export default function HotelsTab() {
               </label>
             </div>
             {photoFileNames.length > 0 && (
-              <div className="photos-preview-gallery" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+              <div className="photos-preview-gallery">
                 {photoFileNames.map((name, i) => {
                   // If it's a File object (new upload), generate a local object URL
                   const fileObj = formData.photos && formData.photos[i];
@@ -140,14 +141,18 @@ export default function HotelsTab() {
                   return (
                     <div key={i} className="photo-preview-item" style={{ position: 'relative', height: '100px', borderRadius: '12px', overflow: 'hidden', border: '2px solid #edf2f7' }}>
                       {previewUrl ? (
-                         <img src={previewUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                         <OptimizedImage 
+                           src={previewUrl} 
+                           alt={name} 
+                           className="photo-preview-image"
+                         />
                       ) : (
                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', fontSize: '0.8rem', color: '#64748b' }}>{name}</div>
                       )}
                       <button 
                         onClick={() => handleRemovePhoto(i)}
                         title="Remove photo"
-                        style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}
+                        style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(239, 68, 68, 0.9)', color: 'white', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
                       >
                         <X size={14} />
                       </button>
@@ -198,11 +203,12 @@ export default function HotelsTab() {
         <div className="hotels-list">
           {hotels.map(hotel => (
             <div key={hotel._id} className="hotel-card">
-              {hotel.photos && hotel.photos.length > 0 && (
                 <div className="hotel-image">
-                  <img src={getImageUrl(hotel.photos[0])} alt={hotel.name} />
+                  <OptimizedImage 
+                    src={getImageUrl(hotel.photos[0])} 
+                    alt={hotel.name} 
+                  />
                 </div>
-              )}
               <div className="hotel-info">
                 <h3>{hotel.name}</h3>
                 <p className="location">

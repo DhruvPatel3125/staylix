@@ -61,7 +61,7 @@ export default function OverviewTab() {
     .reduce((sum, b) => sum + (b.totalAmount || 0), 0);
 
   return (
-    <div className="revenue-section analytics-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
+    <div className="revenue-section analytics-section">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h2 style={{ margin: 0 }}>Analytics & Reports</h2>
         <button 
@@ -78,11 +78,8 @@ export default function OverviewTab() {
             borderRadius: '10px',
             fontWeight: '600',
             cursor: 'pointer',
-            transition: 'all 0.3s ease',
             boxShadow: '0 4px 10px rgba(102, 126, 234, 0.2)'
           }}
-          onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-          onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
           <Download size={18} />
           Export Revenue

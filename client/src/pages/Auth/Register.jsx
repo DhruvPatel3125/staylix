@@ -275,7 +275,7 @@ export default function Register() {
             useOneTap
             theme="filled_blue"
             shape="pill"
-            width="100%"
+            width="500"
           />
         </div>
 

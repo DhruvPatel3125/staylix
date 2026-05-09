@@ -222,7 +222,7 @@ export default function Login() {
             useOneTap
             theme="filled_blue"
             shape="pill"
-            width="100%"
+            width="400"
           />
         </div>
 

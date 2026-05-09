@@ -322,31 +322,21 @@
 
 .google-btn-container {
   width: 100%;
-  min-height: 42px;
+  min-height: 44px;
   display: flex;
   justify-content: center;
-  margin-bottom: 1rem;
+  margin: 1.25rem 0;
 }
 
 .google-btn-container > div {
   width: 100% !important;
+  max-width: 400px !important;
   display: flex !important;
   justify-content: center !important;
 }
 
 .google-btn-container iframe {
   width: 100% !important;
-  max-width: 100% !important;
+  border-radius: 12px !important; /* Match Sign In button */
 }
-
-@media (max-width: 640px) {
-  .auth-card {
-    margin-top: 56px;
-    border-radius: 20px;
-    padding: 1rem;
-  }
-
-  .auth-subtitle {
-    font-size: 0.85rem;
-  }
-}
+;

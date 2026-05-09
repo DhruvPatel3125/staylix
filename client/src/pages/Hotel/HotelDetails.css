@@ -33,20 +33,10 @@
 
 /* ---------- SKELETON LOADING ---------- */
 .skeleton-shimmer {
-  background: linear-gradient(
-    90deg,
-    #f1f5f9 25%,
-    #e2e8f0 50%,
-    #f1f5f9 75%
-  );
-  background-size: 200% 100%;
-  animation: skeleton-shimmer 1.5s infinite;
+  background: #f1f5f9;
 }
 
-@keyframes skeleton-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
+/* skeleton-shimmer animation removed */
 
 .skeleton-loading .skeleton-image {
   width: 500px;
@@ -104,7 +94,6 @@
   gap: 3rem;
   margin-bottom: 3rem;
   align-items: center;
-  animation: fadeInDown 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hotel-main-image-wrapper {
@@ -113,7 +102,6 @@
   height: 350px;
   border-radius: 30px;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.12);
-  transition: transform 0.5s ease;
   overflow: hidden;
 }
 
@@ -122,7 +110,7 @@
 }
 
 .hotel-main-image:hover {
-  transform: scale(1.02);
+  /* scale removed */
 }
 
 .hotel-info-premium {
@@ -194,11 +182,9 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: all 0.3s ease;
 }
 
 .amenity-badge-premium:hover {
-  transform: translateY(-4px);
   background: white;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
 }
@@ -297,18 +283,15 @@
   border-radius: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .rooms-load-more-btn:hover {
-  transform: translateY(-1px);
   border-color: #cbd5e1;
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
 
 .room-card {
   position: relative;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .room-card.sold-out {
@@ -363,11 +346,9 @@
   border-radius: 24px;
   box-shadow: var(--shadow-premium);
   border: 1px solid rgba(0, 0, 0, 0.01);
-  transition: all 0.3s ease;
 }
 
 .review-item-premium:hover {
-  transform: translateY(-8px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
 }
 
@@ -435,11 +416,9 @@
   border-radius: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .reviews-load-more-btn:hover {
-  transform: translateY(-1px);
   border-color: #cbd5e1;
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
 }
@@ -471,7 +450,6 @@
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  animation: modalAppear 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .close-btn {
@@ -496,7 +474,6 @@
 .close-btn:hover {
   background: #e2e8f0;
   color: #0f172a;
-  transform: rotate(90deg);
 }
 
 @keyframes modalAppear {
@@ -539,7 +516,6 @@
   border-radius: 15px;
   font-size: 0.95rem;
   font-weight: 600;
-  transition: all 0.3s ease;
   width: 100%;
 }
 
@@ -555,12 +531,10 @@
   padding: 0 1.2rem;
   border-radius: 12px;
   font-weight: 700;
-  transition: all 0.3s ease;
 }
 
 .discount-apply-btn:hover:not(:disabled) {
   background: #334155;
-  transform: translateY(-2px);
 }
 
 .price-breakdown {
@@ -589,7 +563,6 @@
   border-radius: 15px;
   box-shadow: 0 15px 30px rgba(79, 70, 229, 0.3);
   margin-top: 1rem;
-  transition: all 0.3s ease;
   width: 100%;
   color: white;
   border: none;
@@ -606,10 +579,7 @@
   transform: translateY(-2px);
 }
 
-@keyframes fadeInDown {
-  from { opacity: 0; transform: translateY(-30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+/* fadeInDown animation removed */
 
 @keyframes modalAppear {
   from { opacity: 0; transform: translateY(20px) scale(0.95); }
@@ -743,7 +713,6 @@
   font-size: 0.95rem;
   font-weight: 600;
   font-family: 'Outfit', sans-serif;
-  transition: all 0.3s ease;
   width: 100%;
   color: var(--text-primary);
 }
@@ -753,7 +722,6 @@
   border-color: #4f46e5;
   box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
   outline: none;
-  transform: translateY(-2px);
 }
 
 .form-group input::placeholder {
@@ -769,13 +737,11 @@
   font-size: 0.9rem;
   border: none;
   cursor: pointer;
-  transition: all 0.3s ease;
   white-space: nowrap;
 }
 
 .discount-apply-btn:hover:not(:disabled) {
   background: #334155;
-  transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(51, 65, 85, 0.3);
 }
 
@@ -793,7 +759,6 @@
   border-radius: 15px;
   box-shadow: 0 15px 30px rgba(79, 70, 229, 0.3);
   margin-top: 1.5rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
   color: white;
   border: none;
@@ -823,7 +788,6 @@
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  animation: modalAppear 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-content::-webkit-scrollbar {
@@ -943,9 +907,15 @@
     font-size: 1.8rem;
   }
 
+  .modal-overlay {
+    padding: 1rem;
+  }
+
   .modal-content {
     padding: 2rem 1.5rem;
     border-radius: 24px;
+    width: 100%;
+    max-width: 100%;
   }
 
   .modal-content h3 {
@@ -954,6 +924,12 @@
 
   .price-breakdown {
     padding: 1rem;
+  }
+
+  .form-group input, 
+  .date-picker-input {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
   }
 }
 
@@ -984,13 +960,11 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
   color: #64748b;
 }
 
 .review-action-btn:hover {
   background: white;
-  transform: translateY(-2px);
 }
 
 .review-action-btn.edit:hover {
@@ -1027,7 +1001,6 @@
   font-family: inherit;
   font-size: 0.95rem;
   margin-bottom: 1rem;
-  transition: border-color 0.2s;
 }
 
 .edit-comment-area:focus {
@@ -1049,7 +1022,6 @@
   color: #64748b;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
   font-size: 0.9rem;
 }
 
@@ -1061,7 +1033,6 @@
   color: white;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s;
   font-size: 0.9rem;
 }
 

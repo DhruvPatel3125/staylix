@@ -1,6 +1,7 @@
 import React from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { MapPin, Hotel, Heart } from 'lucide-react';
+import OptimizedImage from '../../../components/common/OptimizedImage';
 
 export default function WishlistTab() {
   const { 
@@ -13,7 +14,7 @@ export default function WishlistTab() {
   } = useOutletContext();
 
   return (
-    <div className="wishlist-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
+    <div className="wishlist-section">
       <h2>My Wishlist</h2>
       
       {wishlistLoading ? (
@@ -32,7 +33,7 @@ export default function WishlistTab() {
             <div key={hotel._id} className="wishlist-card">
               <Link to={`/hotel/${hotel._id}`} className="wishlist-card-image">
                 {hotel.photos?.[0] ? (
-                  <img src={getImageUrl(hotel.photos[0])} alt={hotel.name} loading="lazy" />
+                  <OptimizedImage src={getImageUrl(hotel.photos[0])} alt={hotel.name} />
                 ) : (
                   <div className="wishlist-placeholder">
                     <Hotel size={32} />

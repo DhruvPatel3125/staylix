@@ -111,7 +111,7 @@ export default function DiscountsTab() {
   }
 
   return (
-    <div className="discounts-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
+    <div className="discounts-section">
       <div className="section-header-modern">
         <div className="header-info">
           <h2>Property Offers</h2>
@@ -138,7 +138,7 @@ export default function DiscountsTab() {
       </div>
 
       {showForm && (
-        <div className="discount-form-card-premium" style={{ animation: 'fadeInScale 0.6s ease-out both' }}>
+        <div className="discount-form-card-premium">
            <div className="form-info-banner">
             <Info size={18} />
             <p>Your request will be reviewed by the administration. Approved discounts will automatically go live on the specified start date.</p>
@@ -259,7 +259,7 @@ export default function DiscountsTab() {
           <p>You haven't requested any discounts yet. Start by clicking the 'Request Discount' button.</p>
         </div>
       ) : (
-        <div className="admin-table-wrapper-premium" style={{ animation: 'fadeInScale 0.6s ease-out 0.2s both' }}>
+        <div className="admin-table-wrapper-premium">
           <table className="admin-table-modern">
             <thead>
               <tr>
@@ -272,7 +272,7 @@ export default function DiscountsTab() {
             </thead>
             <tbody>
               {filteredDiscounts.map((discount, idx) => (
-                <tr key={discount._id} style={{ animation: `slideInRight 0.4s ease-out ${idx * 0.05}s both` }}>
+                <tr key={discount._id}>
                   <td>
                     <div className="promo-cell">
                       <div className="promo-icon"><Tag size={18} /></div>

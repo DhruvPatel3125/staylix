@@ -11,7 +11,7 @@ export default function BookingsTab() {
   } = useOutletContext();
 
   return (
-    <div className="bookings-section" style={{ animation: 'slideInRight 0.6s ease-out both' }}>
+    <div className="bookings-section">
       <h2>Bookings for My Rooms (Received)</h2>
 
       {bookings.length === 0 ? (

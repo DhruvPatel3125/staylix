@@ -14,7 +14,6 @@
   border-radius: 20px; /* Refined radius */
   overflow: hidden;
   box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05); /* Clean, modern shadow */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -24,7 +23,6 @@
 }
 
 .premium-hotel-card-main:hover {
-  transform: translateY(-8px);
   box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.12);
   border-color: rgba(99, 102, 241, 0.2); /* Indigo tint */
 }
@@ -42,7 +40,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hotel-optimized-image {
@@ -51,7 +48,7 @@
 }
 
 .premium-hotel-card-main:hover .hotel-card-image img {
-  transform: scale(1.05); /* Subtle zoom */
+  /* scale removed */
 }
 
 .hotel-placeholder {
@@ -78,7 +75,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
 }
 
 .wishlist-btn svg{
@@ -86,7 +82,7 @@
 }
 
 .wishlist-btn:hover{
-  transform: scale(1.1);
+  /* scale removed */
 }
 
 .wishlist-btn.active {
@@ -247,7 +243,6 @@
   justify-content: center;
   gap: 0.5rem;
   cursor: pointer;
-  transition: all 0.2s ease;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
 }
 
@@ -256,5 +251,4 @@
   color: white;
   border-color: #4f46e5;
   box-shadow: 0 8px 15px rgba(79, 70, 229, 0.25);
-  transform: translateY(-2px);
 }

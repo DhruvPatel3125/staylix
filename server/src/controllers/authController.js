@@ -5,6 +5,7 @@ const crypto = require("crypto");
 const sendEmail = require("../utils/emailService");
 const { OAuth2Client } = require('google-auth-library');
 const { uploadToCloudinary } = require('../utils/cloudinaryUpload');
+const { triggerAutomation } = require("../utils/webhookUtils");
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -57,6 +58,15 @@ exports.register = async (req, res) => {
       isVerified: false,
       otp,
       otpExpires
+    });
+
+    // Trigger Automation (Make.com) - New Lead/User Registration
+    triggerAutomation({
+      event: 'user.registered',
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role
     });
 
     // Send OTP Email
@@ -372,6 +382,15 @@ exports.googleLogin = async (req, res) => {
         googleId,
         profileImage: picture || '',
         isVerified: true, // Google accounts are pre-verified
+      });
+
+      // Trigger Automation (Make.com) - New Google User
+      triggerAutomation({
+        event: 'user.registered.google',
+        userId: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
       });
     } else if (!user.googleId) {
       // Link existing account

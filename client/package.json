@@ -13,7 +13,7 @@
     "@react-oauth/google": "^0.13.5",
     "@reduxjs/toolkit": "^2.11.2",
     "@tailwindcss/vite": "^4.2.4",
-    "axios": "^1.13.2",
+    "axios": "^1.16.0",
     "framer-motion": "^12.38.0",
     "joi": "^18.0.2",
     "leaflet": "^1.9.4",

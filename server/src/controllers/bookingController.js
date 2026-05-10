@@ -5,6 +5,7 @@ const Discount = require("../models/discount");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
 const emailQueue = require("../utils/emailQueue");
+const { triggerAutomation } = require("../utils/webhookUtils");
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET
@@ -180,6 +181,24 @@ exports.confirmBooking = async (req, res) => {
 
         await booking.save();
 
+        const hotel = booking.hotelId;
+        const room = booking.roomId;
+        const user = booking.userId;
+        const owner = booking.ownerId;
+
+        // Trigger Automation (Make.com)
+        triggerAutomation({
+            event: 'booking.confirmed',
+            bookingId: booking._id,
+            guestName: user ? user.name : 'Unknown',
+            guestEmail: user ? user.email : 'Unknown',
+            hotelName: hotel ? hotel.name : 'Unknown',
+            roomTitle: room ? room.title : 'Standard Room',
+            checkIn: booking.checkIn,
+            checkOut: booking.checkOut,
+            totalAmount: booking.totalAmount
+        });
+
         // Increment Discount Usage if applicable
         if (booking.discountCode) {
             await Discount.findOneAndUpdate(
@@ -188,10 +207,6 @@ exports.confirmBooking = async (req, res) => {
             );
         }
 
-        const hotel = booking.hotelId;
-        const room = booking.roomId;
-        const user = booking.userId;
-        const owner = booking.ownerId;
 
         // Send Confirmation Email
         if (user && user.email) {
@@ -507,6 +522,14 @@ exports.cancelBooking = async (req, res) => {
 
         booking.bookingStatus = "cancelled";
         await booking.save();
+
+        // Trigger Automation (Make.com)
+        triggerAutomation({
+            event: 'booking.cancelled',
+            bookingId: booking._id,
+            status: booking.bookingStatus,
+            refundStatus: booking.refundStatus
+        });
 
         // Send Cancellation Email
         const user = await Booking.findById(booking._id).populate("userId hotelId roomId");

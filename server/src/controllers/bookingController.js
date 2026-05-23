@@ -186,18 +186,22 @@ exports.confirmBooking = async (req, res) => {
         const user = booking.userId;
         const owner = booking.ownerId;
 
-        // Trigger Automation (Make.com)
-        triggerAutomation({
-            event: 'booking.confirmed',
-            bookingId: booking._id,
-            guestName: user ? user.name : 'Unknown',
-            guestEmail: user ? user.email : 'Unknown',
-            hotelName: hotel ? hotel.name : 'Unknown',
-            roomTitle: room ? room.title : 'Standard Room',
-            checkIn: booking.checkIn,
-            checkOut: booking.checkOut,
-            totalAmount: booking.totalAmount
-        });
+        // Trigger Automation (Make.com) - Booking Confirmed
+        try {
+            triggerAutomation({
+                event: 'booking.confirmed',
+                bookingId: booking._id,
+                guestName: user ? user.name : 'Guest',
+                guestEmail: user ? user.email : 'Unknown',
+                hotelName: hotel ? hotel.name : 'Staylix Hotel',
+                roomTitle: room ? room.title : 'Standard Room',
+                checkIn: booking.checkIn,
+                checkOut: booking.checkOut,
+                totalAmount: booking.totalAmount
+            });
+        } catch (autoErr) {
+            console.error("Automation Trigger Error:", autoErr.message);
+        }
 
         // Increment Discount Usage if applicable
         if (booking.discountCode) {
@@ -492,12 +496,13 @@ exports.cancelBooking = async (req, res) => {
             });
         }
 
-        if (booking.bookingStatus === "cancelled") {
-            return res.status(400).json({
-                success: false,
-                message: "Booking is already cancelled"
-            });
-        }
+      if (booking.bookingStatus === "cancelled") {
+        return res.status(200).json({ 
+            success: true, 
+            message: "Booking was already cancelled", 
+            booking 
+        });
+      }
 
         // Handle Refund if paid
         if (booking.paymentStatus === "paid" && booking.paymentInfo && booking.paymentInfo.paymentId) {
@@ -523,20 +528,31 @@ exports.cancelBooking = async (req, res) => {
         booking.bookingStatus = "cancelled";
         await booking.save();
 
-        // Trigger Automation (Make.com)
-        triggerAutomation({
-            event: 'booking.cancelled',
-            bookingId: booking._id,
-            status: booking.bookingStatus,
-            refundStatus: booking.refundStatus
-        });
+        // Populate data for automation and email
+        const populatedBooking = await Booking.findById(booking._id).populate("userId hotelId roomId");
+        const guest = populatedBooking.userId;
+        const hotel = populatedBooking.hotelId;
+
+        // Trigger Automation (Make.com) - Booking Cancelled
+        try {
+            triggerAutomation({
+                event: 'booking.cancelled',
+                bookingId: booking._id,
+                guestName: guest ? guest.name : 'Guest',
+                guestEmail: guest ? guest.email : 'Unknown',
+                hotelName: hotel ? hotel.name : 'Staylix Hotel',
+                status: 'cancelled',
+                amount: booking.totalAmount
+            });
+        } catch (autoErr) {
+            console.error("Automation Trigger Error:", autoErr.message);
+        }
 
         // Send Cancellation Email
-        const user = await Booking.findById(booking._id).populate("userId hotelId roomId");
-        const userEmail = user.userId ? user.userId.email : null;
+        const userEmail = guest ? guest.email : null;
 
         if (userEmail) {
-            const emailSubject = `Booking Cancelled: Your reservation at ${user.hotelId ? user.hotelId.name : 'Staylix'}`;
+            const emailSubject = `Booking Cancelled: Your reservation at ${hotel ? hotel.name : 'Staylix'}`;
             const isRefundable = booking.paymentStatus === "paid";
 
             const emailHtml = `
@@ -567,8 +583,8 @@ exports.cancelBooking = async (req, res) => {
     </div>
     
     <div class="content">
-      <div class="greeting">Hello ${user.userId.name || 'Traveler'},</div>
-      <p>This is to confirm that your booking at <strong>${user.hotelId ? user.hotelId.name : 'your selected hotel'}</strong> has been successfully cancelled.</p>
+      <div class="greeting">Hello ${guest ? guest.name : 'Traveler'},</div>
+      <p>This is to confirm that your booking at <strong>${hotel ? hotel.name : 'your selected hotel'}</strong> has been successfully cancelled.</p>
       
       ${isRefundable ? `
       <div class="refund-box">

@@ -11,7 +11,8 @@ import {
   LayoutDashboard, 
   Info, 
   MessageSquare,
-  Home
+  Home,
+  Newspaper
 } from 'lucide-react';
 import './Navbar.css';
 
@@ -67,6 +68,9 @@ export default function Navbar() {
                 </Link>
                 <Link to="/contact" className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}>
                   <MessageSquare size={18} /> Contact
+                </Link>
+                <Link to="/blogs" className={`nav-link ${location.pathname === '/blogs' ? 'active' : ''}`}>
+                  <Newspaper size={18} /> Blogs
                 </Link>
                 
                 {user?.role === 'user' && (

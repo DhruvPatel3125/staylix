@@ -15,6 +15,8 @@ const adminRoutes = require('./routes/adminRoutes')
 const discountRoutes = require('./routes/discountRoutes')
 const wishlistRoutes = require('./routes/wishlistRoutes')
 const chatbotRoutes = require('./routes/chatbotRoute')
+const blogRoutes = require('./routes/blogRoutes')
+const contactRoutes = require('./routes/contactRoutes')
 const rateLimit = require('express-rate-limit')
 
 
@@ -58,6 +60,8 @@ app.use('/api/admin',adminRoutes);
 app.use('/api/discounts',discountRoutes);
 app.use("/api",wishlistRoutes)
 app.use('/api/chat', chatbotRoutes);
+app.use('/api/blogs', blogRoutes);
+app.use('/api/contact', contactRoutes);
 
 
 

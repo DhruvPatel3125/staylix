@@ -1,6 +1,7 @@
 const Review = require("../models/review");
 const mongoose = require('mongoose');
 const Hotel = require('../models/hotel');
+const { triggerAutomation } = require('../utils/webhookUtils');
 
 exports.addReview = async (req, res) => {
     try {
@@ -40,6 +41,15 @@ exports.addReview = async (req, res) => {
                 reviewsCount: stats[0].reviewsCount
             });
         }
+
+        // Trigger Automation (Make.com) - Review Added
+        triggerAutomation({
+            event: "review.added",
+            hotelId: req.body.hotelId,
+            rating: req.body.rating,
+            comment: req.body.comment,
+            guestName: req.user.name,
+        });
 
         res.status(201).json({
             success: true,

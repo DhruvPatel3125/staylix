@@ -19,6 +19,8 @@ import AboutUs from './pages/Static/AboutUs';
 import ContactUs from './pages/Static/ContactUs';
 import ChatBot from './components/common/ChatBot/ChatBot';
 import Footer from './components/layout/Footer/Footer';
+import BlogList from './pages/Blog/BlogList';
+import BlogDetails from './pages/Blog/BlogDetails';
 
 
 // Admin Tab Components
@@ -31,6 +33,9 @@ import AdminRoomsTab from './pages/Admin/tabs/RoomsTab';
 import AdminReportsTab from './pages/Admin/tabs/ReportsTab';
 import AdminDiscountsTab from './pages/Admin/tabs/DiscountsTab';
 import AdminReviewsTab from './pages/Admin/tabs/ReviewsTab';
+import AdminAutomationLogsTab from './pages/Admin/tabs/AutomationLogsTab';
+import AdminBlogsTab from './pages/Admin/tabs/BlogsTab';
+import AdminEnquiriesTab from './pages/Admin/tabs/EnquiriesTab';
 
 // Owner Tab Components
 import OwnerOverviewTab from './pages/Owner/tabs/OverviewTab';
@@ -79,6 +84,8 @@ function App() {
             <Route path="/hotel/:id" element={<HotelDetails />} />
             <Route path="/about" element={<AboutUs />} />
             <Route path="/contact" element={<ContactUs />} />
+            <Route path="/blogs" element={<BlogList />} />
+            <Route path="/blog/:id" element={<BlogDetails />} />
             
             <Route 
               path="/user-dashboard" 
@@ -130,6 +137,9 @@ function App() {
               <Route path="reports" element={<AdminReportsTab />} />
               <Route path="discounts" element={<AdminDiscountsTab />} />
               <Route path="reviews" element={<AdminReviewsTab />} />
+              <Route path="automation" element={<AdminAutomationLogsTab />} />
+              <Route path="blogs" element={<AdminBlogsTab />} />
+              <Route path="enquiries" element={<AdminEnquiriesTab />} />
             </Route>
             
             <Route path="*" element={<div style={{padding: '2rem', textAlign: 'center'}}>Page not found</div>} />

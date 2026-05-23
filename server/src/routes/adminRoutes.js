@@ -13,11 +13,13 @@ const {
     getOwnerRequests,
     approveOwnerRequest,
     rejectOwnerRequest,
-    getAllBookings
+    getAllBookings,
+    getWebhookLogs
 } = require('../controllers/adminController');
 const { protect, admin } = require('../middlewares/authMiddleWare');
 
 router.get("/stats", protect, admin, getDashboardStats);
+router.get("/webhook-logs", protect, admin, getWebhookLogs);
 router.get("/users", protect, admin, getAllUsers);
 router.put("/users/block/:id", protect, admin, blockUser);
 router.delete("/users/:id", protect, admin, deleteUser);

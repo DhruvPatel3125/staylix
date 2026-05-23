@@ -10,7 +10,10 @@ import {
   Tag, 
   LayoutDashboard, 
   UserPlus,
-  MessageSquare
+  MessageSquare,
+  Activity,
+  Newspaper,
+  Mail as MailIcon
 } from 'lucide-react';
 import { showToast, showAlert } from '../../utils/swal';
 import api from '../../services/api';
@@ -463,7 +466,10 @@ export default function AdminDashboard() {
     { id: 'rooms', label: 'Rooms', icon: Bed },
     { id: 'reports', label: 'Reports', icon: LayoutDashboard },
     { id: 'discounts', label: 'Discounts', icon: Tag },
-    { id: 'reviews', label: 'Reviews', icon: MessageSquare }
+    { id: 'reviews', label: 'Reviews', icon: MessageSquare },
+    { id: 'automation', label: 'Automation Logs', icon: Activity },
+    { id: 'blogs', label: 'Blogs', icon: Newspaper },
+    { id: 'enquiries', label: 'Enquiries', icon: MailIcon }
   ];
 
   if (loading) {

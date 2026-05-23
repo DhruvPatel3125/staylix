@@ -300,6 +300,10 @@ const api = {
     getAllReviews: async () => {
       const response = await instance.get('/reviews');
       return response.data;
+    },
+    getWebhookLogs: async () => {
+      const response = await instance.get('/admin/webhook-logs');
+      return response.data;
     }
   },
 
@@ -388,6 +392,48 @@ const api = {
     },
     getProfile: async () => {
       const response = await instance.get('/users/profile');
+      return response.data;
+    }
+  },
+
+  contact: {
+    submit: async (data) => {
+      const response = await instance.post('/contact', data);
+      return response.data;
+    },
+    getAllEnquiries: async (params = {}) => {
+      const response = await instance.get('/contact', { params });
+      return response.data;
+    },
+    getEnquiryById: async (id) => {
+      const response = await instance.get(`/contact/${id}`);
+      return response.data;
+    }
+  },
+
+  blogs: {
+    getAll: async () => {
+      const response = await instance.get('/blogs');
+      return response.data;
+    },
+
+    getById: async (id) => {
+      const response = await instance.get(`/blogs/${id}`);
+      return response.data;
+    },
+
+    create: async (blogData) => {
+      const response = await instance.post('/blogs', blogData);
+      return response.data;
+    },
+
+    update: async (id, blogData) => {
+      const response = await instance.put(`/blogs/${id}`, blogData);
+      return response.data;
+    },
+
+    delete: async (id) => {
+      const response = await instance.delete(`/blogs/${id}`);
       return response.data;
     }
   }

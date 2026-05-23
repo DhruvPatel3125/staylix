@@ -433,4 +433,20 @@ exports.rejectOwnerRequest = async (req, res) => {
     }
 };
 
+const WebhookLog = require('../models/WebhookLog');
 
+exports.getWebhookLogs = async (req, res) => {
+    try {
+        const logs = await WebhookLog.find().sort({ createdAt: -1 }).limit(100);
+        res.json({
+            success: true,
+            logs
+        });
+    } catch (error) {
+        console.error("Get webhook logs error:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch automation logs"
+        });
+    }
+};

@@ -6,6 +6,7 @@ const User = require('../models/user')
 const { getCoordinates } = require('../utils/geocoder');
 const { uploadToCloudinary } = require('../utils/cloudinaryUpload');
 const redisClient = require('../config/redis')
+const { triggerAutomation } = require('../utils/webhookUtils');
 
 exports.createHotel = async (req, res) => {
     try {
@@ -86,6 +87,15 @@ exports.createHotel = async (req, res) => {
         }
 
         const hotel = await Hotel.create(hotelData);
+        // Trigger Automation (Make.com) - Hotel Registered
+        triggerAutomation({
+            event: "hotel.registered",
+            hotelName: hotel.name,
+            ownerName: req.user.name,
+            location: hotel.address.city,
+            status: "pending_verification"
+        });
+
         res.status(201).json({
             success: true,
             hotel

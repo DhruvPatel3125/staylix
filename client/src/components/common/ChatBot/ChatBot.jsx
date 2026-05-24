@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  MessageSquare, X, Send, Bot, User, Loader2, Sparkles, Home, ChevronLeft,
-  Hotel, Calendar, MapPin, Tag, Briefcase, HelpCircle, LogIn, LayoutDashboard, Trash2, Filter, Search
+import {
+  MessageSquare, X, Send, Loader2, Home, ChevronLeft,
+  Sparkles, Mic, RefreshCw
 } from 'lucide-react';
 
 import axios from 'axios';
@@ -10,16 +10,40 @@ import { useSelector } from 'react-redux';
 import { API_BASE_URL } from '../../../services/api';
 import './ChatBot.css';
 
-
 const INITIAL_MESSAGES = [
   {
     id: 1,
-    text: "Welcome to Staylix. How can I assist you with your luxury stay today?",
-    options: ['Hotels', 'My Bookings', 'Search by City', 'Offers', 'Become an Owner', 'Support'],
+    text: "Hi! I'm your Staylix AI Concierge ✨\n\nI can help you with:\n• Finding hotels in any city\n• Your active bookings\n• Current offers & deals\n• Booking support\n\nAsk me anything!",
     sender: 'bot',
     timestamp: new Date()
   }
 ];
+
+const QUICK_PROMPTS = [
+  'Show me hotels in Mumbai',
+  'What offers are available?',
+  'View my bookings',
+  'Talk to human support',
+];
+
+// Simple markdown-like renderer for bot messages
+const BotMessage = ({ text }) => {
+  const lines = text.split('\n');
+  return (
+    <div className="bot-message-content">
+      {lines.map((line, i) => {
+        if (line.startsWith('• ') || line.startsWith('- ')) {
+          return <div key={i} className="bot-list-item">{line.replace(/^[•\-]\s/, '')}</div>;
+        }
+        if (line.match(/^\d+\./)) {
+          return <div key={i} className="bot-numbered-item">{line}</div>;
+        }
+        if (line === '') return <div key={i} className="bot-spacer" />;
+        return <p key={i} className="bot-text-line">{line}</p>;
+      })}
+    </div>
+  );
+};
 
 const ChatBot = () => {
   const navigate = useNavigate();
@@ -29,11 +53,14 @@ const ChatBot = () => {
   const [messages, setMessages] = useState(INITIAL_MESSAGES);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showQuickPrompts, setShowQuickPrompts] = useState(true);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
   // Reset chat when user logs in or out
   useEffect(() => {
     setMessages(INITIAL_MESSAGES);
+    setShowQuickPrompts(true);
     setIsOpen(false);
   }, [user?._id, isAuthenticated]);
 
@@ -44,81 +71,58 @@ const ChatBot = () => {
   useEffect(() => {
     if (isOpen) {
       scrollToBottom();
+      inputRef.current?.focus();
     }
   }, [messages, isOpen]);
 
-
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
-    const text = inputValue;
+    const text = inputValue.trim();
+    if (!text || isLoading) return;
     setInputValue('');
-    handleAction(text);
+    sendMessage(text);
   };
 
-  const handleOptionClick = (option) => {
-    handleAction(option, true);
+  const handleQuickPrompt = (prompt) => {
+    if (isLoading) return;
+    setShowQuickPrompts(false);
+    sendMessage(prompt);
   };
 
-  const getOptionIcon = (option) => {
-
-    const opt = option.toLowerCase();
-    if (opt.includes('hotel')) return <Hotel size={14} />;
-    if (opt.includes('booking')) return <Calendar size={14} />;
-    if (opt.includes('city')) return <MapPin size={14} />;
-    if (opt.includes('offer')) return <Tag size={14} />;
-    if (opt.includes('owner')) return <Briefcase size={14} />;
-    if (opt.includes('support')) return <HelpCircle size={14} />;
-    if (opt.includes('login')) return <LogIn size={14} />;
-    if (opt.includes('dashboard')) return <LayoutDashboard size={14} />;
-    if (opt.includes('cancel')) return <Trash2 size={14} />;
-    if (opt.includes('filter')) return <Filter size={14} />;
-    if (opt.includes('main menu')) return <Home size={14} />;
-    if (opt.includes('back')) return <ChevronLeft size={14} />;
-    return <Search size={14} />; // Default for cities
-  };
-
-  const handleAction = async (actionText, isButton = false) => {
+  const sendMessage = async (text) => {
     if (isLoading) return;
 
-    // Add user message to UI
+    setShowQuickPrompts(false);
+
+    // Add user message
     const userMsg = {
       id: Date.now(),
-      text: actionText,
+      text,
       sender: 'user',
       timestamp: new Date()
     };
     setMessages(prev => [...prev, userMsg]);
     setIsLoading(true);
 
-    // --- Navigation Actions (Instant) ---
-    if (isButton) {
-      const lowerAction = actionText.toLowerCase();
-      if (lowerAction.includes('go to dashboard')) {
+    // Navigation shortcuts
+    const lower = text.toLowerCase();
+    if (lower.includes('dashboard') || lower.includes('my account')) {
+      setTimeout(() => {
         setIsLoading(false);
         navigate('/user-dashboard');
         setIsOpen(false);
-        return;
-      }
-      if (lowerAction.includes('book now')) {
-        setIsLoading(false);
-        navigate('/');
-        setIsOpen(false);
-        return;
-      }
+      }, 300);
+      return;
     }
 
-
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/chat`, { 
-        message: actionText,
-        isAction: isButton 
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API_BASE_URL}/api/chat`, {
+        message: text
       }, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
-      
+
       const botResponse = {
         id: Date.now() + 1,
         text: response.data.reply,
@@ -126,14 +130,17 @@ const ChatBot = () => {
         sender: 'bot',
         timestamp: new Date()
       };
-      
+
       setMessages(prev => [...prev, botResponse]);
     } catch (error) {
       console.error('Chat error:', error);
+      const isApiError = error.response?.status === 500;
       const errorMessage = {
         id: Date.now() + 1,
-        text: "I'm having a bit of trouble reaching the concierge desk. Please try again or visit our Contact page.",
-        options: ['Main Menu'],
+        text: isApiError
+          ? "I'm having trouble connecting to the AI right now. Please try again in a moment, or contact support at help@staylix.com."
+          : "Something went wrong. Please try again!",
+        options: [],
         sender: 'bot',
         timestamp: new Date()
       };
@@ -144,8 +151,8 @@ const ChatBot = () => {
   };
 
   const handleReset = () => {
-
-    handleOptionClick('Main Menu');
+    setMessages(INITIAL_MESSAGES);
+    setShowQuickPrompts(true);
   };
 
   // Hide for Owners and Admins
@@ -155,77 +162,149 @@ const ChatBot = () => {
 
   return (
     <div className="staylix-chatbot-container">
-      <button 
-        className={`chatbot-fab ${isOpen ? 'active' : ''}`} 
+      {/* FAB Button */}
+      <button
+        id="chatbot-fab-btn"
+        className={`chatbot-fab ${isOpen ? 'active' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
+        aria-label="Open AI Concierge"
       >
-        {isOpen ? <X size={28} /> : <MessageSquare size={28} />}
-        {!isOpen && <span className="pulse-dot"></span>}
+        {isOpen ? <X size={26} /> : <MessageSquare size={26} />}
+        {!isOpen && <span className="pulse-dot" />}
       </button>
 
+      {/* Chat Window */}
       <div className={`chatbot-window ${isOpen ? 'open' : ''}`}>
+
+        {/* Header */}
         <div className="chatbot-header">
           <div className="header-info">
+            <div className="header-avatar">
+              <Sparkles size={16} />
+            </div>
             <div>
-              <h3>Staylix Concierge</h3>
-              <span className="online-status">Online Assistant</span>
+              <h3>Staylix AI Concierge</h3>
+              <span className="online-status">
+                <span className="online-dot" />
+                Powered by Grok AI
+              </span>
             </div>
           </div>
           <div className="header-actions">
-            <button className="icon-btn-prem" onClick={() => handleOptionClick('Back')} title="Back"><ChevronLeft size={18} /></button>
-            <button className="icon-btn-prem" onClick={handleReset} title="Main Menu"><Home size={18} /></button>
-            <button className="icon-btn-prem" onClick={() => setIsOpen(false)} title="Close"><X size={18} /></button>
+            <button className="icon-btn-prem" onClick={handleReset} title="New Chat">
+              <RefreshCw size={16} />
+            </button>
+            <button className="icon-btn-prem" onClick={() => setIsOpen(false)} title="Close">
+              <X size={16} />
+            </button>
           </div>
         </div>
 
-        <div className="chatbot-messages">
+        {/* Messages */}
+        <div className="chatbot-messages" id="chatbot-messages-area">
           {messages.map((msg) => (
-            <div key={msg.id} className={`message-group ${msg.sender}`}>
-              <div className={`message-wrapper ${msg.sender}`}>
-                <div className="message-bubble">
-                  {msg.text}
+            <div key={msg.id} className={`message-row ${msg.sender}`}>
+              {msg.sender === 'bot' && (
+                <div className="bot-avatar-sm">
+                  <Sparkles size={12} />
+                </div>
+              )}
+              <div className="message-bubble-wrap">
+                <div className={`message-bubble ${msg.sender}`}>
+                  {msg.sender === 'bot' ? (
+                    <BotMessage text={msg.text} />
+                  ) : (
+                    <span>{msg.text}</span>
+                  )}
                   <span className="message-time">
                     {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
+
+                {/* Quick action options from AI response */}
+                {msg.options && msg.options.length > 0 && (
+                  <div className="options-container">
+                    {msg.options.map((opt, idx) => (
+                      <button
+                        key={idx}
+                        className="option-chip"
+                        onClick={() => handleQuickPrompt(opt)}
+                        disabled={isLoading}
+                        id={`option-btn-${idx}`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-              {msg.options && msg.options.length > 0 && (
-                <div className="options-container">
-                  {msg.options.map((opt, idx) => (
-                    <button 
-                      key={idx} 
-                      className="menu-option-btn-prem"
-                      onClick={() => handleOptionClick(opt)}
-                      disabled={isLoading}
-                    >
-                      {getOptionIcon(opt)}
-                      <span>{opt}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           ))}
 
+          {/* Typing Indicator */}
           {isLoading && (
-            <div className="message-wrapper bot">
-              <div className="message-bubble loading">
-                <Loader2 size={18} className="animate-spin" />
-                <span>Processing...</span>
+            <div className="message-row bot">
+              <div className="bot-avatar-sm">
+                <Sparkles size={12} />
+              </div>
+              <div className="typing-indicator">
+                <span /><span /><span />
               </div>
             </div>
           )}
+
+          {/* Quick Prompts (only on fresh chat) */}
+          {showQuickPrompts && !isLoading && messages.length === 1 && (
+            <div className="quick-prompts-section">
+              <p className="quick-prompts-label">Quick questions</p>
+              <div className="quick-prompts-grid">
+                {QUICK_PROMPTS.map((prompt, i) => (
+                  <button
+                    key={i}
+                    className="quick-prompt-card"
+                    onClick={() => handleQuickPrompt(prompt)}
+                    id={`quick-prompt-${i}`}
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="chatbot-footer-minimal">
-          <p>Select an option above to continue</p>
+        {/* Input Area */}
+        <div className="chatbot-input-area">
+          <form onSubmit={handleSendMessage} className="input-form">
+            <input
+              ref={inputRef}
+              id="chatbot-text-input"
+              type="text"
+              className="chat-input"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Ask anything about Staylix..."
+              disabled={isLoading}
+              maxLength={500}
+              autoComplete="off"
+            />
+            <button
+              id="chatbot-send-btn"
+              type="submit"
+              className={`send-btn ${inputValue.trim() && !isLoading ? 'active' : ''}`}
+              disabled={!inputValue.trim() || isLoading}
+              aria-label="Send message"
+            >
+              {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+            </button>
+          </form>
+          <p className="input-disclaimer">AI responses are based on Staylix data only</p>
         </div>
       </div>
     </div>
   );
 };
 
-
 export default ChatBot;
-

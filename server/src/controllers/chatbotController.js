@@ -3,16 +3,20 @@ const Booking = require('../models/booking');
 const Discount = require('../models/discount');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const axios = require('axios');
 
 /**
- * @desc    Handle menu-based chatbot flows
+ * @desc    Handle AI-based chatbot flows via Grok
  * @route   POST /api/chat
  * @access  Public (Optional Auth)
  */
 exports.handleChat = async (req, res) => {
   try {
-    const { message, isAction } = req.body;
-    const lowerMsg = message?.toLowerCase() || "";
+    const { message } = req.body;
+    
+    if (!message) {
+      return res.status(400).json({ success: false, message: "Message is required." });
+    }
 
     // Auth Helper (Soft Check)
     let user = null;
@@ -35,179 +39,96 @@ exports.handleChat = async (req, res) => {
       }
     }
 
+    // 1. Gather Context Data from Database
+    // Fetching active hotels, offers, and user-specific bookings to provide context to the AI
+    const hotels = await Hotel.find({ isActive: true }).select('name address.city rating category amenities description').limit(15);
+    const offers = await Discount.find({ isActive: true, requestStatus: 'approved' }).select('code discountType discountValue description').limit(5);
+    
+    let userBookings = [];
+    if (user) {
+      const now = new Date();
+      userBookings = await Booking.find({ 
+        userId: user._id, 
+        checkOut: { $gt: now }, 
+        bookingStatus: { $nin: ['cancelled', 'completed'] }
+      }).populate('hotelId', 'name address.city').sort({ checkIn: -1 }).limit(3);
+    }
 
-    let reply = "";
-    let options = [];
+    // Prepare Context String
+    const contextData = {
+      hotels: hotels,
+      offers: offers,
+      userBookings: userBookings,
+      userInfo: user ? { name: user.name, email: user.email } : "Guest"
+    };
 
-    // --- 1. MAIN MENU & START ---
-    if (lowerMsg === "main menu" || lowerMsg === "start" || lowerMsg === "hi" || lowerMsg === "hello" || lowerMsg === "hey") {
-      reply = "Welcome to Staylix. How can I assist you with your luxury stay today?";
-      options = ['Hotels', 'My Bookings', 'Search by City', 'Offers', 'Become an Owner', 'Support'];
-    } 
+    const systemPrompt = `
+You are the official Staylix AI Concierge, an expert assistant for the Staylix hotel booking platform.
 
-    // --- 2. HOTELS FLOW & SEARCH BY CITY ---
-    else if (lowerMsg.includes("hotels") || lowerMsg.includes("search by city")) {
-      const availableCities = await Hotel.distinct('address.city', { isActive: true });
-      if (availableCities.length > 0) {
-        reply = "Explore our world-class properties. Which city are you interested in?";
-        options = [...availableCities.slice(0, 8), 'Main Menu'];
-      } else {
-        reply = "We are currently moving to new luxury heights and will have properties available soon!";
-        options = ['Main Menu'];
+Your ONLY purpose is to assist users with finding hotels, booking information, and offers available on Staylix.
+
+STRICT RULES:
+1. You MUST ONLY use the context data provided below to answer user questions.
+2. If a user asks a general knowledge question, coding question, or anything unrelated to Staylix hotels, bookings, or offers, politely refuse and redirect them back to Staylix-related queries.
+3. Match the user's tone professionally:
+   - If the user is polite, respond politely.
+   - If the user is frustrated or angry, respond calmly, confidently, and slightly firm.
+   - If the user uses abusive language, do NOT use abusive language back. Instead, warn them respectfully and continue helping if possible.
+4. Keep responses concise and readable using line breaks.
+5. If the user asks about hotels, list matching hotels from the context.
+6. If the user asks about bookings, refer to the userBookings context.
+7. Never invent hotels, amenities, pricing, or offers not present in the context.
+8. Never generate hate speech, threats, harassment, or explicit abusive content.
+
+EXAMPLE BEHAVIOR:
+User: "Your app is useless!"
+Assistant: "I understand you're frustrated. Please share the issue you're facing with your booking or hotel search, and I'll help resolve it."
+
+User: "This booking system is trash"
+Assistant: "I'm sorry the experience has been frustrating. Let me help you fix the issue quickly."
+
+CONTEXT DATA:
+${JSON.stringify(contextData)}
+`;
+
+    if (!process.env.GROQ_API_KEY) {
+      console.warn("GROQ_API_KEY is not set in environment variables.");
+      return res.status(500).json({ 
+        success: false, 
+        message: "AI integration is not configured. Please contact admin to set GROQ_API_KEY." 
+      });
+    }
+
+    // Call Groq API via Axios (Free tier - groq.com)
+    const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
+      model: "llama-3.3-70b-versatile", // Fast & free LLaMA model on Groq
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: message }
+      ],
+      temperature: 0.3, // Low temperature for more factual responses
+      max_tokens: 512
+    }, {
+      headers: {
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+        'Content-Type': 'application/json'
       }
-    } 
+    });
 
-
-    // --- 3. MY BOOKINGS FLOW (Restored) ---
-    else if (lowerMsg.includes("my bookings")) {
-      if (!user) {
-        reply = "Please log in to view and manage your reservations securely.";
-        options = ['Login Now', 'Main Menu'];
-      } else {
-        // Filter for active/upcoming bookings only
-        const now = new Date();
-        const bookings = await Booking.find({ 
-          userId: user._id, 
-          checkOut: { $gt: now }, 
-          bookingStatus: { $nin: ['cancelled', 'completed'] }
-        })
-          .populate('hotelId')
-          .sort({ checkIn: -1 })
-          .limit(3);
-
-        console.log(`[CHATBOT] User ${user._id}: Found ${bookings.length} active bookings out of total query.`);
-
-        if (bookings.length > 0) {
-          reply = `Welcome back, ${user.name}! 👋 You have ${bookings.length} active/upcoming reservation${bookings.length > 1 ? 's' : ''}:`;
-          bookings.forEach((b, i) => {
-            reply += `\n${i + 1}. ${b.hotelId?.name} (Check-in: ${new Date(b.checkIn).toLocaleDateString()})`;
-          });
-          options = ['Cancel Booking', 'Main Menu'];
-        } else {
-          reply = "You don't have any active bookings yet. Ready to plan your next escape?";
-          options = ['Hotels', 'Main Menu'];
-        }
-      }
-    }
-
-    // --- 4. OFFERS FLOW (Restored) ---
-    else if (lowerMsg.includes("offers")) {
-      const offers = await Discount.find({ isActive: true, requestStatus: 'approved' }).limit(3);
-      if (offers.length > 0) {
-        reply = "Indulge in our current exclusive promotions:";
-        offers.forEach(o => {
-          const typeLabel = o.discountType === 'percentage' ? '%' : '₹';
-          reply += `\n- ${o.code}: ${o.discountValue}${typeLabel} OFF`;
-        });
-        options = ['Apply Offer', 'Main Menu'];
-      } else {
-        reply = "Sign up for our newsletter to receive exclusive luxury offers and updates.";
-        options = ['Main Menu'];
-      }
-    }
-
-
-    // --- 5. SUPPORT FLOW ---
-    else if (lowerMsg.includes("support")) {
-      reply = "Our dedicated team is here to ensure your experience is seamless. How can we assist you?";
-      options = ['Payment Issue', 'Booking Issue', 'Talk to Human', 'Main Menu'];
-    }
-
-    else if (lowerMsg.includes("payment issue")) {
-      reply = "At Staylix, your financial security is our top priority. All transactions are encrypted and processed through secure portals. Need a manual review? Our accounts team can help.";
-      options = ['Talk to Human', 'Main Menu'];
-    }
-
-    else if (lowerMsg.includes("talk to human")) {
-      reply = "Our premium support team is ready to assist you personally. Contact us at help@staylix.com or +91 98765 43210.";
-      options = ['Main Menu'];
-    }
-
-    else if (lowerMsg.includes("booking issue")) {
-      reply = "Encountering a reservation challenge? Please check your dashboard or contact our concierge desks for immediate modification assistance.";
-      options = ['Talk to Human', 'Main Menu'];
-    }
-
-
-
-
-
-    // --- 6. BECOME AN OWNER FLOW ---
-    else if (lowerMsg === "become an owner") {
-      reply = "Elevate your property's potential. Join our exclusive circle of luxury hosts and start welcoming guests from around the world!";
-      options = ['Go to Dashboard', 'Main Menu'];
-    }
-
-    // --- 7. BACK NAVIGATION ---
-    else if (lowerMsg.includes("back")) {
-      reply = "How can I assist you today?";
-      options = ['Hotels', 'My Bookings', 'Search by City', 'Offers', 'Become an Owner', 'Support'];
-    }
-
-    // --- 8. SPECIFIC ACTIONS ---
-    else if (lowerMsg.includes("view details")) {
-      reply = "To view full details and photos of our curated properties, simply click on any hotel card on our main discovery page.";
-      options = ['Main Menu', 'Back'];
-    }
-
-    else if (lowerMsg.includes("filter")) {
-      reply = "Refine your luxury search to find your perfect match. What criteria are most important for your stay?";
-      options = ['Luxury Only', 'Budget-Friendly', 'Pet-Friendly', 'Spa & Wellness', 'Main Menu'];
-    }
-
-    else if (lowerMsg === "go to dashboard" || lowerMsg === "login now") {
-      reply = "Redirecting you to the portal... You can easily access this from the top right of your screen.";
-      options = ['Main Menu'];
-    }
-
-    else if (lowerMsg.includes("cancel booking")) {
-      reply = "To ensure security, all cancellations must be performed directly through your User Dashboard under the 'My Bookings' section.";
-      options = ['Go to Dashboard', 'Main Menu'];
-    }
-
-    else if (lowerMsg.includes("apply offer")) {
-      reply = "Ready for your next escape? Just enter your discount code at the 'Payment' step during your next hotel booking.";
-      options = ['Hotels', 'Main Menu'];
-    }
-
-
-    // --- 9. DYNAMIC CITY SELECTION & FALLBACK ---
-
-
-    // --- 9. CITY SELECTION Result ---
-    else {
-      const citySearch = message.trim();
-      const hotels = await Hotel.find({
-        'address.city': { $regex: new RegExp(`^${citySearch}$`, 'i') },
-        isActive: true
-      }).limit(3);
-
-      if (hotels.length > 0) {
-        reply = `Fetching premium hotels in ${citySearch}... 🏨\n\nHere are our top recommendations:\n`;
-        hotels.forEach((h, i) => {
-          reply += `${i + 1}. ${h.name} ⭐${h.rating || 'N/A'}\n`;
-        });
-        options = ['View Details', '⬅ Back', '🏠 Main Menu'];
-      } else {
-        reply = "I'm here to help you with your Staylix experience. Would you like to explore our hotels or view your bookings?";
-        options = ['🏨 Hotels', '📖 My Bookings', '🏠 Main Menu'];
-      }
-    }
-
-
-
+    const reply = response.data.choices[0].message.content;
 
     res.status(200).json({
       success: true,
-      reply,
-      options
+      reply: reply,
+      // You can return some quick option buttons if desired, keeping a few generic ones for UI continuity
+      options: ['Main Menu', 'Talk to Human']
     });
+
   } catch (error) {
-    console.error("Chatbot Controller Error:", error);
+    console.error("Chatbot Controller Error:", error.response?.data || error.message);
     res.status(500).json({
       success: false,
-      message: "Our concierge desk is currently busy. Please try again soon."
+      message: "Our AI concierge is currently busy. Please try again soon."
     });
   }
 };
-

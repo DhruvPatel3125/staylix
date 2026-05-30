@@ -32,7 +32,9 @@ export default function Sidebar({ items, basePath = '' }) {
               end={item.id === 'overview'}
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
             >
-              {Icon && <Icon size={20} />} {item.label}
+              {Icon && <Icon size={20} />}
+              <span className="nav-item-label">{item.label}</span>
+              {item.badge ? <span className="nav-item-badge">{item.badge}</span> : null}
             </NavLink>
           );
         })}

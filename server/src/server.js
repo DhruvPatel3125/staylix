@@ -1,14 +1,22 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config();
+const http = require('http');
 const app = require('./app');
+const { initSocket } = require('./socket');
 
 const port = process.env.PORT || 3001;
+
+// Create HTTP server from express app
+const httpServer = http.createServer(app);
+
+// Initialize Socket.io
+initSocket(httpServer);
 
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log("Connected to MongoDB");
-        app.listen(port, () => {
+        httpServer.listen(port, () => {
             console.log(`Server running on port ${port}`);
         });
     })

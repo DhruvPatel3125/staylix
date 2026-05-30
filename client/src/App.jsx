@@ -44,6 +44,7 @@ import OwnerRoomsTab from './pages/Owner/tabs/RoomsTab';
 import OwnerBookingsTab from './pages/Owner/tabs/BookingsTab';
 import OwnerPersonalBookingsTab from './pages/Owner/tabs/PersonalBookingsTab';
 import OwnerDiscountsTab from './pages/Owner/tabs/DiscountsTab';
+import OwnerChatTab from './pages/Owner/tabs/OwnerChatTab';
 
 // User Tab Components
 import UserBookingsTab from './pages/User/tabs/BookingsTab';
@@ -117,6 +118,7 @@ function App() {
               <Route path="bookings" element={<OwnerBookingsTab />} />
               <Route path="my-personal-bookings" element={<OwnerPersonalBookingsTab />} />
               <Route path="discounts" element={<OwnerDiscountsTab />} />
+              <Route path="messages" element={<OwnerChatTab />} />
             </Route>
             
             <Route 

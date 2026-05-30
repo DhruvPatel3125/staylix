@@ -17,6 +17,7 @@ const wishlistRoutes = require('./routes/wishlistRoutes')
 const chatbotRoutes = require('./routes/chatbotRoute')
 const blogRoutes = require('./routes/blogRoutes')
 const contactRoutes = require('./routes/contactRoutes')
+const supportChatRoutes = require('./routes/supportChatRoutes')
 const rateLimit = require('express-rate-limit')
 
 
@@ -62,6 +63,7 @@ app.use("/api",wishlistRoutes)
 app.use('/api/chat', chatbotRoutes);
 app.use('/api/blogs', blogRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/support-chat', supportChatRoutes);
 
 
 

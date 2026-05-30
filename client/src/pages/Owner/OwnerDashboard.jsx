@@ -4,7 +4,7 @@ import useAuth from '../../hooks/useAuth';
 import { 
   Plus, MapPin, Trash2, Edit3, LayoutDashboard, Hotel as HotelIcon, 
   Bed, Calendar, TrendingUp, X, Camera, CheckCircle, Briefcase, Clock,
-  ArrowRight, Tag
+  ArrowRight, Tag, MessageSquare
 } from 'lucide-react';
 import { showToast, showAlert } from '../../utils/swal';
 import api from '../../services/api';
@@ -24,6 +24,7 @@ export default function OwnerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [showHotelForm, setShowHotelForm] = useState(false);
   const [showRoomForm, setShowRoomForm] = useState(false);
 
@@ -66,6 +67,19 @@ export default function OwnerDashboard() {
       setActiveTab('my-bookings');
     }
   }, [location.search]);
+
+  // Fetch unread chat count for notification badge
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const res = await api.supportChat.getUnreadCount();
+        if (res.success) setUnreadChatCount(res.unreadCount);
+      } catch (_) {}
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, []);
   
   // Automatic Geocoding Effect
   useEffect(() => {
@@ -575,7 +589,7 @@ export default function OwnerDashboard() {
     { id: 'bookings', label: 'Guest Bookings', icon: Calendar },
     { id: 'my-personal-bookings', label: 'My Bookings', icon: Briefcase },
     { id: 'discounts', label: 'Discounts', icon: Tag },
-
+    { id: 'messages', label: 'Guest Messages', icon: MessageSquare, badge: unreadChatCount || null },
   ];
 
   if (loading) {

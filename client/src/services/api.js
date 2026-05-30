@@ -411,6 +411,37 @@ const api = {
     }
   },
 
+  supportChat: {
+    startChat: async (hotelId) => {
+      const response = await instance.post('/support-chat/start', { hotelId });
+      return response.data;
+    },
+    getChatById: async (chatId) => {
+      const response = await instance.get(`/support-chat/${chatId}`);
+      return response.data;
+    },
+    getUserChats: async () => {
+      const response = await instance.get('/support-chat/user/my-chats');
+      return response.data;
+    },
+    getOwnerInbox: async () => {
+      const response = await instance.get('/support-chat/owner/inbox');
+      return response.data;
+    },
+    getBookedHotels: async () => {
+      const response = await instance.get('/support-chat/user/bookable-hotels');
+      return response.data;
+    },
+    sendMessage: async (chatId, text) => {
+      const response = await instance.post(`/support-chat/${chatId}/message`, { text });
+      return response.data;
+    },
+    getUnreadCount: async () => {
+      const response = await instance.get('/support-chat/unread-count');
+      return response.data;
+    }
+  },
+
   blogs: {
     getAll: async () => {
       const response = await instance.get('/blogs');

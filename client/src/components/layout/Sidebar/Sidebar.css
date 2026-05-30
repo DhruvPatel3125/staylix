@@ -144,6 +144,28 @@
   stroke: white !important;
 }
 
+.nav-item-label {
+  flex: 1;
+}
+
+.nav-item-badge {
+  background: linear-gradient(135deg, #e53e3e, #c53030);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  min-width: 20px;
+  text-align: center;
+  line-height: 1.4;
+  box-shadow: 0 2px 6px rgba(229, 62, 62, 0.4);
+}
+
+.nav-item.active .nav-item-badge {
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: none;
+}
+
 
 /* Responsive adjustments */
 @media (max-width: 1100px) {

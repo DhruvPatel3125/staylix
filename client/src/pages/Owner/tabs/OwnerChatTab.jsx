@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MessageSquare, ChevronLeft, Send, Loader2, User, Inbox } from 'lucide-react';
+import { useSelector } from 'react-redux';
 import api from '../../../services/api';
 import { useSocket } from '../../../hooks/useSocket';
 import '../../../components/common/ChatBot/SupportChat.css';
@@ -10,6 +11,7 @@ import '../../../components/common/ChatBot/SupportChat.css';
  */
 const OwnerChatTab = () => {
   const { joinChat, leaveChat, sendMessage: socketSend, emitTyping, emitStopTyping, onEvent } = useSocket();
+  const { user: currentUser } = useSelector((state) => state.auth);
 
   const [chats, setChats] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
@@ -105,6 +107,7 @@ const OwnerChatTab = () => {
         setChats((prev) =>
           prev.map((c) => (c._id === chat._id ? { ...c, ownerUnreadCount: 0 } : c))
         );
+        window.dispatchEvent(new Event('update_unread_count'));
         setTimeout(() => inputRef.current?.focus(), 200);
       }
     } catch (e) {
@@ -245,7 +248,11 @@ const OwnerChatTab = () => {
         )}
 
         {messages.map((msg) => {
-          const isMe = msg.senderRole === 'owner';
+          // Use senderId comparison for accurate real-time alignment.
+          // Relying only on senderRole can cause left-side display on fresh sends
+          const senderId = msg.senderId?._id || msg.senderId;
+          const isMe = senderId?.toString() === currentUser?._id?.toString() ||
+                       msg.senderRole === 'owner'; // fallback for DB-loaded messages
           return (
             <div key={msg._id} className={`owner-message-row ${isMe ? 'me' : 'them'}`}>
               {!isMe && (

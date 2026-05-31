@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
-import { 
-  Plus, MapPin, Trash2, Edit3, LayoutDashboard, Hotel as HotelIcon, 
+import {
+  Plus, MapPin, Trash2, Edit3, LayoutDashboard, Hotel as HotelIcon,
   Bed, Calendar, TrendingUp, X, Camera, CheckCircle, Briefcase, Clock,
   ArrowRight, Tag, MessageSquare
 } from 'lucide-react';
@@ -59,7 +59,7 @@ export default function OwnerDashboard() {
 
   useEffect(() => {
     fetchData();
-    
+
     // Check for tab in URL
     const params = new URLSearchParams(location.search);
     const tab = params.get('tab');
@@ -74,17 +74,17 @@ export default function OwnerDashboard() {
       try {
         const res = await api.supportChat.getUnreadCount();
         if (res.success) setUnreadChatCount(res.unreadCount);
-      } catch (_) {}
+      } catch (_) { }
     };
     fetchUnread();
     const interval = setInterval(fetchUnread, 30000);
     return () => clearInterval(interval);
   }, []);
-  
+
   // Automatic Geocoding Effect
   useEffect(() => {
     if (!showHotelForm) return;
-    
+
     const { city, state, country } = formData;
     if (!city && !state && !country) return;
 
@@ -138,7 +138,7 @@ export default function OwnerDashboard() {
       setCancelingId(bookingId);
       const response = await api.bookings.cancel(bookingId);
       if (response.success) {
-        setBookings(prev => prev.map(b => 
+        setBookings(prev => prev.map(b =>
           b._id === bookingId ? { ...b, bookingStatus: 'cancelled', refundStatus: 'processed' } : b
         ));
         showToast.success('Booking cancelled and refund initiated');
@@ -164,7 +164,7 @@ export default function OwnerDashboard() {
       setCancelingId(bookingId);
       const response = await api.bookings.cancel(bookingId);
       if (response.success) {
-        setPersonalBookings(prev => prev.map(b => 
+        setPersonalBookings(prev => prev.map(b =>
           b._id === bookingId ? { ...b, bookingStatus: 'cancelled' } : b
         ));
         showToast.success('Booking cancelled successfully');
@@ -251,8 +251,8 @@ export default function OwnerDashboard() {
       pincode: hotel.address?.pincode || '',
       description: hotel.description,
       amenities: hotel.amenities?.join(', ') || '',
-      photos: hotel.photos || [], 
-      existingPhotos: hotel.photos || [], 
+      photos: hotel.photos || [],
+      existingPhotos: hotel.photos || [],
       coordinates: hotel.location?.coordinates || [0.0, 0.0]
     });
     // Set filenames to a generic string or extract from URL so they appear in the gallery
@@ -269,7 +269,7 @@ export default function OwnerDashboard() {
     try {
       setProcessingId(editingHotel?._id || 'new');
       setError(null);
-      
+
       const amenitiesArray = formData.amenities
         .split(',')
         .map(a => a.trim())
@@ -389,7 +389,7 @@ export default function OwnerDashboard() {
 
     try {
       setProcessingId(editingRoom?._id || 'new-room');
-      
+
       const amenitiesArray = roomFormData.amenities
         .split(',')
         .map(a => a.trim())
@@ -485,7 +485,7 @@ export default function OwnerDashboard() {
   const getStats = () => {
     const activeBookings = bookings.filter(b => b.bookingStatus !== 'cancelled');
     const cancelledBookings = bookings.filter(b => b.bookingStatus === 'cancelled');
-    
+
     return {
       totalHotels: hotels.length,
       totalRooms: rooms.length,
@@ -510,7 +510,7 @@ export default function OwnerDashboard() {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const currentYear = new Date().getFullYear();
     const data = months.map(month => ({ name: month, revenue: 0 }));
-    
+
     bookings.forEach(booking => {
       if (booking.bookingStatus !== 'cancelled' && booking.checkIn) {
         const date = new Date(booking.checkIn);
@@ -565,16 +565,16 @@ export default function OwnerDashboard() {
   const getPageViewsData = () => {
     return hotels.map(hotel => {
       // Create a pseudo-random number based on hotel ID for consistent mockup views
-      const seed = hotel._id ? hotel._id.charCodeAt(0) + hotel._id.charCodeAt(hotel._id.length-1) : 50;
+      const seed = hotel._id ? hotel._id.charCodeAt(0) + hotel._id.charCodeAt(hotel._id.length - 1) : 50;
       const baseViews = (seed * 15) % 1500;
-      
+
       return {
         name: hotel.name.length > 15 ? hotel.name.substring(0, 15) + '...' : hotel.name,
         views: baseViews + 100 + (hotel.photos?.length || 0) * 50
       };
     });
   };
-  
+
   const COLORS = ['#667eea', '#48bb78', '#f6ad55', '#e53e3e', '#38b6ff', '#805ad5', '#d53f8c'];
 
   const stats = getStats();

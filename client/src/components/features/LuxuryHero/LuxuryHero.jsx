@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
@@ -9,7 +9,8 @@ import {
   Search,
   ShieldCheck,
   Star,
-  Users
+  Users,
+  Sparkles
 } from 'lucide-react';
 import './LuxuryHero.css';
 
@@ -33,8 +34,20 @@ function LuxuryHero() {
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState('2');
   const [categories, setCategories] = useState(['luxury']);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [focusedField, setFocusedField] = useState(null);
 
+  const videoRef = useRef(null);
   const today = new Date().toISOString().split('T')[0];
+
+  useEffect(() => {
+    // Attempt to play video manually if autoplay fails or delayed
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => {
+        console.log("Video autoplay blocked, waiting for user interaction");
+      });
+    }
+  }, []);
 
   const handleToggleCategory = (categoryId) => {
     setCategories((prev) =>
@@ -71,74 +84,106 @@ function LuxuryHero() {
   };
 
   return (
-    <section className="luxury-hero">
+    <section className="luxury-hero" aria-label="Welcome to Staylix">
+      {/* Background Visual Layer */}
       <div className="luxury-hero__media">
-        <video className="luxury-hero__video" autoPlay muted loop playsInline>
+        {/* Placeholder image loaded instantly to prevent black screen */}
+        <div className={`luxury-hero__placeholder ${videoLoaded ? 'is-hidden' : ''}`} />
+        
+        <video 
+          ref={videoRef}
+          className={`luxury-hero__video ${videoLoaded ? 'is-visible' : ''}`}
+          autoPlay 
+          muted 
+          loop 
+          playsInline
+          preload="auto"
+          onLoadedData={() => setVideoLoaded(true)}
+        >
           <source src="/video/15768401-uhd_4096_2160_24fps.mp4" type="video/mp4" />
         </video>
+        
+        {/* Visual overlays for text readability & atmosphere */}
         <div className="luxury-hero__overlay" />
         <div className="luxury-hero__glow luxury-hero__glow--left" />
         <div className="luxury-hero__glow luxury-hero__glow--right" />
+        <div className="luxury-hero__ambient-mesh" />
       </div>
 
       <div className="luxury-hero__container">
+        {/* Left Side: Rich Copywriting & Brand Vision */}
         <div className="luxury-hero__content luxury-hero__content--animated">
-          <span className="luxury-hero__eyebrow">Curated Luxury Collection</span>
+          <span className="luxury-hero__eyebrow">
+            <Sparkles size={12} className="sparkle-icon" />
+            Curated Luxury Collection
+          </span>
           <h1 className="luxury-hero__title">
-            Reserve your next <span>extraordinary stay</span>
+            Reserve your next <br />
+            <span className="gradient-highlight">extraordinary stay</span>
           </h1>
           <p className="luxury-hero__subtitle">
-            From skyline suites to private island resorts, Staylix helps you book unforgettable
-            hospitality with confidence.
+            Discover a handpicked ecosystem of sublime hotels and resorts. Staylix connects you to unforgettable hospitality with flawless execution.
           </p>
 
           <div className="luxury-hero__actions">
-            <Link to="/hotels" className="luxury-hero__btn luxury-hero__btn--primary">
-              Explore Stays <ArrowRight size={18} />
+            <Link to="/hotels" className="luxury-hero__btn luxury-hero__btn--primary" id="hero-btn-explore">
+              Explore Stays 
+              <span className="arrow-wrapper">
+                <ArrowRight size={18} className="arrow-icon" />
+              </span>
             </Link>
-            <Link to="/about" className="luxury-hero__btn luxury-hero__btn--ghost">
+            <Link to="/about" className="luxury-hero__btn luxury-hero__btn--ghost" id="hero-btn-about">
               Our Story
             </Link>
           </div>
 
-          <ul className="luxury-hero__highlights" aria-label="Staylix highlights">
+          <ul className="luxury-hero__highlights" aria-label="Staylix platform statistics">
             {HIGHLIGHTS.map((item) => (
-              <li key={item.label}>
-                <strong>{item.value}</strong>
-                <span>{item.label}</span>
+              <li key={item.label} className="luxury-hero__highlight-item">
+                <span className="highlight-value">{item.value}</span>
+                <span className="highlight-label">{item.label}</span>
               </li>
             ))}
           </ul>
         </div>
 
+        {/* Right Side: High-End Glassmorphic Booking Panel */}
         <form
           className="luxury-hero__booking-card luxury-hero__booking-card--animated"
           onSubmit={handleSearchSubmit}
+          id="hero-booking-form"
         >
           <div className="luxury-hero__card-head">
             <h2>Plan Your Stay</h2>
-            <p>Smart search with premium filters</p>
+            <p>Smart filters & real-time availability</p>
           </div>
 
-          <label className="luxury-hero__field">
-            <span>Destination</span>
+          {/* Destination Search Field */}
+          <div className={`luxury-hero__field ${focusedField === 'destination' ? 'is-focused' : ''}`}>
+            <span className="field-label">Destination</span>
             <div className="luxury-hero__input-wrap">
-              <MapPin size={18} />
+              <MapPin size={18} className="input-icon" />
               <input
+                id="hero-input-destination"
                 type="text"
-                placeholder="City, hotel, or landmark"
+                placeholder="City, hotel, or destination..."
                 value={destination}
                 onChange={(event) => setDestination(event.target.value)}
+                onFocus={() => setFocusedField('destination')}
+                onBlur={() => setFocusedField(null)}
+                autoComplete="off"
               />
             </div>
-          </label>
+          </div>
 
+          {/* Calendar CheckIn / CheckOut Grid */}
           <div className="luxury-hero__field-grid">
-            <label className="luxury-hero__field">
-              <span>Check In</span>
+            <div className={`luxury-hero__field ${focusedField === 'checkIn' ? 'is-focused' : ''}`}>
+              <span className="field-label">Check In</span>
               <div className="luxury-hero__input-wrap">
-                <CalendarDays size={18} />
+                <CalendarDays size={18} className="input-icon" />
                 <input
+                  id="hero-input-checkin"
                   type="date"
                   min={today}
                   value={checkIn}
@@ -149,29 +194,41 @@ function LuxuryHero() {
                       setCheckOut('');
                     }
                   }}
+                  onFocus={() => setFocusedField('checkIn')}
+                  onBlur={() => setFocusedField(null)}
                 />
               </div>
-            </label>
+            </div>
 
-            <label className="luxury-hero__field">
-              <span>Check Out</span>
+            <div className={`luxury-hero__field ${focusedField === 'checkOut' ? 'is-focused' : ''}`}>
+              <span className="field-label">Check Out</span>
               <div className="luxury-hero__input-wrap">
-                <CalendarDays size={18} />
+                <CalendarDays size={18} className="input-icon" />
                 <input
+                  id="hero-input-checkout"
                   type="date"
                   min={checkIn || today}
                   value={checkOut}
                   onChange={(event) => setCheckOut(event.target.value)}
+                  onFocus={() => setFocusedField('checkOut')}
+                  onBlur={() => setFocusedField(null)}
                 />
               </div>
-            </label>
+            </div>
           </div>
 
-          <label className="luxury-hero__field">
-            <span>Guests</span>
+          {/* Guests Count Selection */}
+          <div className={`luxury-hero__field ${focusedField === 'guests' ? 'is-focused' : ''}`}>
+            <span className="field-label">Guests</span>
             <div className="luxury-hero__input-wrap">
-              <Users size={18} />
-              <select value={guests} onChange={(event) => setGuests(event.target.value)}>
+              <Users size={18} className="input-icon" />
+              <select 
+                id="hero-select-guests"
+                value={guests} 
+                onChange={(event) => setGuests(event.target.value)}
+                onFocus={() => setFocusedField('guests')}
+                onBlur={() => setFocusedField(null)}
+              >
                 <option value="1">1 Guest</option>
                 <option value="2">2 Guests</option>
                 <option value="3">3 Guests</option>
@@ -180,31 +237,44 @@ function LuxuryHero() {
                 <option value="6">6+ Guests</option>
               </select>
             </div>
-          </label>
+          </div>
 
+          {/* Luxury Categories Chips Selection */}
           <div className="luxury-hero__category-group">
-            <span className="luxury-hero__field-label">Experience Type</span>
+            <span className="field-label">Experience Type</span>
             <div className="luxury-hero__category-chips">
               {CATEGORY_OPTIONS.map(({ id, label, icon }) => (
                 <button
                   key={id}
                   type="button"
+                  id={`hero-chip-${id}`}
                   className={`luxury-hero__chip ${categories.includes(id) ? 'is-active' : ''}`}
                   onClick={() => handleToggleCategory(id)}
+                  aria-pressed={categories.includes(id)}
                 >
-                  {icon}
-                  {label}
+                  <span className="chip-icon">{icon}</span>
+                  <span className="chip-label">{label}</span>
                 </button>
               ))}
             </div>
           </div>
 
+          {/* Booking Card Submit Triggers */}
           <div className="luxury-hero__card-actions">
-            <button type="button" className="luxury-hero__map-btn" onClick={handleSearchByMap}>
+            <button 
+              type="button" 
+              className="luxury-hero__map-btn" 
+              onClick={handleSearchByMap}
+              id="hero-btn-map"
+            >
               <Map size={17} />
-              Explore on Map
+              Map View
             </button>
-            <button type="submit" className="luxury-hero__search-btn">
+            <button 
+              type="submit" 
+              className="luxury-hero__search-btn"
+              id="hero-btn-search"
+            >
               <Search size={18} />
               Search Stays
             </button>

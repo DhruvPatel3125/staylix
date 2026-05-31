@@ -216,7 +216,11 @@ const SupportChatWindow = ({ onClose }) => {
             )}
 
             {messages.map((msg) => {
-              const isMe = msg.senderRole === 'user';
+              // Use senderId comparison for accurate real-time alignment
+              // senderRole alone can be stale from socket events
+              const senderId = msg.senderId?._id || msg.senderId;
+              const isMe = senderId?.toString() === user?._id?.toString() ||
+                           msg.senderRole === 'user'; // fallback for older messages
               return (
                 <div key={msg._id} className={`sc-message-row ${isMe ? 'me' : 'them'}`}>
                   {!isMe && (

@@ -25,10 +25,17 @@ export const useSocket = () => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    // Reuse existing connection
+    // Reuse existing connection ONLY if it belongs to the SAME user.
+    // If user changed (e.g., guest → owner or vice versa), force reconnect
+    // with the new token so the server authenticates the correct identity.
     if (globalSocket && globalSocket.connected) {
-      socketRef.current = globalSocket;
-      return;
+      if (globalSocket._staylix_uid === user._id?.toString()) {
+        socketRef.current = globalSocket;
+        return;
+      }
+      // Different user – tear down old socket
+      globalSocket.disconnect();
+      globalSocket = null;
     }
 
     globalSocket = io(API_BASE_URL, {
@@ -37,6 +44,9 @@ export const useSocket = () => {
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
     });
+
+    // Tag the socket with the current user id so we can detect stale sessions
+    globalSocket._staylix_uid = user._id?.toString();
 
     globalSocket.on('connect', () => {
       console.log('[Socket] Connected:', globalSocket.id);

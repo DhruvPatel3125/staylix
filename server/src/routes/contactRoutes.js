@@ -4,7 +4,7 @@ const {
     getEnquiries,
     getEnquiry
 } = require('../controllers/contactController');
-const { protect, admin } = require('../middlewares/authMiddleware');
+const { protect, admin } = require('../middlewares/authMiddleWare');
 const rateLimit = require('express-rate-limit');
 
 const router = express.Router();

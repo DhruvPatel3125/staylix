@@ -1,11 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { Navigate, useSearchParams } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import api from '../../services/api';
 import HotelCard from '../../components/features/HotelCard/HotelCard';
 import HotelCardSkeleton from '../../components/features/HotelCard/HotelCardSkeleton';
 import CategoryBar from '../../components/features/CategoryBar/CategoryBar';
-import MapView from '../../components/features/MapView/MapView';
+const MapView = lazy(() => import('../../components/features/MapView/MapView'));
 import { Search, Navigation, Loader2, X, LayoutGrid, Map as MapIcon } from 'lucide-react';
 import { showToast } from '../../utils/swal';
 import './Home.css';
@@ -312,7 +312,9 @@ export default function Home() {
           <p>No hotels found matching your criteria</p>
         </div>
       ) : viewMode === 'map' ? (
-        <MapView hotels={filteredHotels} />
+        <Suspense fallback={<div className="loading"><Loader2 className="animate-spin" size={32} /> Loading Map...</div>}>
+          <MapView hotels={filteredHotels} />
+        </Suspense>
       ) : (
         <>
           <div className="hotels-grid">

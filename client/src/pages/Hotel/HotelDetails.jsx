@@ -25,7 +25,7 @@ import api from '../../services/api';
 import RoomCard from '../../components/features/RoomCard/RoomCard';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import OptimizedImage from '../../components/common/OptimizedImage';
-import { getImageUrl } from '../../utils/imageUrl';
+import { getImageUrl, getOptimizedImageUrl } from '../../utils/imageUrl';
 import { validate, bookingSchema } from '../../utils/validation';
 import AddReview from '../../components/AddReview';
 import './HotelDetails.css';
@@ -470,7 +470,7 @@ export default function HotelDetails() {
       <div className="hotel-header">
         <div className="hotel-main-image-wrapper">
           <OptimizedImage 
-            src={hotel.photos?.[0] ? getImageUrl(hotel.photos[0]) : ''} 
+            src={hotel.photos?.[0] ? getOptimizedImageUrl(hotel.photos[0], 1200) : ''} 
             alt={hotel.name} 
             className="hotel-main-image"
           />

@@ -2,7 +2,7 @@ import { memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, Star, ArrowRight, ShieldCheck, Heart, Coffee, Briefcase, Zap } from 'lucide-react';
 import './HotelCard.css';
-import { getImageUrl } from '../../../utils/imageUrl';
+import { getImageUrl, getOptimizedImageUrl } from '../../../utils/imageUrl';
 import OptimizedImage from '../../common/OptimizedImage';
 import { useDispatch,useSelector } from 'react-redux';
 import { toggleWishlist, toggleWishlistLocal } from '../../../store/slices/wishlistSlice';
@@ -33,7 +33,7 @@ function HotelCard({ hotel }) {
         <div className="hotel-card-image">
           {hotel.photos?.[0] ? (
             <OptimizedImage
-              src={getImageUrl(hotel.photos[0])}
+              src={getOptimizedImageUrl(hotel.photos[0], 600)}
               alt={hotel.name}
               placeholderText={hotel.name}
               className="hotel-optimized-image"

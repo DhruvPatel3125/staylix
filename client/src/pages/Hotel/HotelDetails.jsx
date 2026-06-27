@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useLenis } from 'lenis/react';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { 
@@ -36,6 +37,7 @@ export default function HotelDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const lenis = useLenis();
   const [hotel, setHotel] = useState(null);
   const [rooms, setRooms] = useState([]);
   const [reviews, setReviews] = useState([]);
@@ -133,10 +135,14 @@ export default function HotelDetails() {
   }, [id, bookingData.checkIn, bookingData.checkOut]);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (lenis) {
+      lenis.scrollTo(0);
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     setVisibleRoomsCount(ROOMS_BATCH_SIZE);
     setVisibleReviewsCount(REVIEWS_BATCH_SIZE);
-  }, [id]);
+  }, [id, lenis]);
 
   const visibleRooms = useMemo(
     () => rooms.slice(0, visibleRoomsCount),

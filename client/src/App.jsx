@@ -21,6 +21,7 @@ import ChatBot from './components/common/ChatBot/ChatBot';
 import Footer from './components/layout/Footer/Footer';
 import BlogList from './pages/Blog/BlogList';
 import BlogDetails from './pages/Blog/BlogDetails';
+import ScrollToTop from './components/common/ScrollToTop';
 
 
 // Admin Tab Components
@@ -72,6 +73,7 @@ function App() {
 
   return (
     <Router>
+        <ScrollToTop />
         <Navbar />
 
         <main className="main-content">

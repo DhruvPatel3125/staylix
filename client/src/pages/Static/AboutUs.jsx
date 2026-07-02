@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import './AboutUs.css';
 import aboutHero from '../../assets/about-hero-luxe.jpg';
-import { Target, Eye, Award, Globe, ShieldCheck, Zap, Users, Sparkles } from 'lucide-react';
+import developerDhruv from '../../assets/developer-dhruv.png';
+import { Target, Eye, Award, Globe, ShieldCheck, Zap, Users, Sparkles, Code } from 'lucide-react';
 
 export default function AboutUs() {
   useEffect(() => {
@@ -124,6 +125,45 @@ export default function AboutUs() {
               <h3>Concierge Care</h3>
               <p>24/7 human support whenever plans change or you need help during your journey.</p>
             </article>
+          </div>
+        </div>
+      </section>
+
+      <section className="about-developer reveal-on-scroll">
+        <div className="about-shell developer-grid">
+          <div className="developer-image-wrapper">
+            <div className="developer-image-frame">
+              <img src={developerDhruv} alt="Dhruv Patel" className="developer-img" />
+            </div>
+            <div className="developer-status-badge">
+              <Code size={14} />
+              <span>Lead Developer</span>
+            </div>
+          </div>
+          <div className="developer-details">
+            <span className="section-kicker">The Creator</span>
+            <h2>Developed by <span>Dhruv Patel</span></h2>
+            <p className="developer-pitch">
+              Staylix is designed and engineered by Dhruv Patel. Driven by a vision for high-performance and beautifully visual products, Dhruv implemented advanced client-side interactivity, responsive layouts, and robust server architectures to make Staylix an outstanding premium hotel booking experience.
+            </p>
+            <div className="developer-stats">
+              <div className="stat-card">
+                <h5>Tech Stack</h5>
+                <p>MERN & CSS3</p>
+              </div>
+              <div className="stat-card">
+                <h5>Role</h5>
+                <p>Lead Engineer</p>
+              </div>
+            </div>
+            <div className="developer-tech-pills">
+              <span className="tech-pill">React</span>
+              <span className="tech-pill">Node.js</span>
+              <span className="tech-pill">Express</span>
+              <span className="tech-pill">MongoDB</span>
+              <span className="tech-pill">Socket.io</span>
+              <span className="tech-pill">Vanilla CSS</span>
+            </div>
           </div>
         </div>
       </section>

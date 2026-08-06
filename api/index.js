@@ -1,11 +1,29 @@
 const mongoose = require('mongoose');
 const app = require('../server/src/app');
 
-// Connect to MongoDB
-if (process.env.MONGO_URI && !mongoose.connections[0].readyState) {
-  mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('Connected to MongoDB via Vercel Serverless'))
-    .catch(err => console.error('MongoDB connection error:', err));
+let isConnected = false;
+
+async function connectToDatabase() {
+  if (isConnected && mongoose.connection.readyState === 1) {
+    return;
+  }
+
+  const mongoUri = process.env.MONGO_URI;
+  if (!mongoUri) {
+    console.error('MONGO_URI environment variable is missing!');
+    return;
+  }
+
+  try {
+    await mongoose.connect(mongoUri);
+    isConnected = true;
+    console.log('Connected to MongoDB via Vercel Serverless');
+  } catch (err) {
+    console.error('MongoDB connection error in Vercel Serverless:', err);
+  }
 }
 
-module.exports = app;
+module.exports = async (req, res) => {
+  await connectToDatabase();
+  return app(req, res);
+};

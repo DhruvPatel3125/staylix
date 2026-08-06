@@ -23,12 +23,21 @@ const rateLimit = require('express-rate-limit')
 
 const app = express();
 
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? [process.env.FRONTEND_URL]
-  : [/localhost:\d+$/, 'http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
+// Set COOP header to allow Google OAuth postMessage & popups
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  next();
+});
 
 app.use(cors({
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (process.env.NODE_ENV !== 'production') return callback(null, true);
+      if (!process.env.FRONTEND_URL || origin === process.env.FRONTEND_URL || origin.endsWith('.vercel.app')) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true
 }));
 app.use(express.json());

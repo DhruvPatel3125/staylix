@@ -33,6 +33,20 @@ import './HotelDetails.css';
 const ROOMS_BATCH_SIZE = 15;
 const REVIEWS_BATCH_SIZE = 15;
 
+const loadRazorpayScript = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export default function HotelDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -367,6 +381,12 @@ export default function HotelDetails() {
           color: "#3399cc"
         }
       };
+
+      const isLoaded = await loadRazorpayScript();
+      if (!isLoaded || !window.Razorpay) {
+        showToast.error('Failed to load Razorpay SDK. Please check your internet connection.');
+        return;
+      }
 
       const rzp1 = new window.Razorpay(options);
       rzp1.on('payment.failed', function (response){

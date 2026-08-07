@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Room = require("../models/room");
 const Hotel = require("../models/hotel");
 const Booking = require("../models/booking");
@@ -68,10 +69,10 @@ exports.getRoomsByHotel = async (req, res) => {
         const { hotelId } = req.params;
         const { checkIn, checkOut } = req.query;
 
-        if (!hotelId) {
-            return res.status(400).json({
-                success: false,
-                message: "Hotel ID is required"
+        if (!hotelId || !mongoose.Types.ObjectId.isValid(hotelId)) {
+            return res.json({
+                success: true,
+                rooms: []
             });
         }
 

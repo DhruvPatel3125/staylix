@@ -7,17 +7,8 @@ import {
   MapPin, 
   Star, 
   ShieldCheck, 
-  Clock, 
-  Users, 
-  ChevronRight, 
-  X, 
-  CheckCircle, 
-  Info,
-  Calendar,
-  CreditCard,
-  Tag,
-  Edit2,
-  Trash2
+  Edit2, 
+  Trash2 
 } from 'lucide-react';
 import { showToast, showAlert } from '../../utils/swal';
 import useAuth from '../../hooks/useAuth';
@@ -86,21 +77,38 @@ export default function HotelDetails() {
       try {
         setLoading(true);
         setError('');
-        const [hotelRes, reviewsRes] = await Promise.all([
-          api.hotels.getById(id),
-          api.reviews.getByHotel(id)
-        ]);
 
-        if (!isMounted) {
+        let hotelRes;
+        try {
+          hotelRes = await api.hotels.getById(id);
+        } catch (err) {
+          if (isMounted) {
+            setError(err.message || err.response?.data?.message || 'Failed to load hotel details');
+          }
           return;
         }
 
-        if (hotelRes.success) setHotel(hotelRes.hotel);
-        if (reviewsRes.success) setReviews(reviewsRes.reviews || []);
+        if (!isMounted) return;
+
+        if (hotelRes?.success && hotelRes.hotel) {
+          setHotel(hotelRes.hotel);
+        } else {
+          setError(hotelRes?.message || 'Hotel not found');
+          return;
+        }
+
+        try {
+          const reviewsRes = await api.reviews.getByHotel(id);
+          if (isMounted && reviewsRes?.success) {
+            setReviews(reviewsRes.reviews || []);
+          }
+        } catch (reviewsErr) {
+          console.error('Failed to fetch reviews', reviewsErr);
+        }
       } catch (err) {
         console.error('Failed to fetch hotel data', err);
         if (isMounted) {
-          setError('Failed to load hotel details');
+          setError(err.message || 'Failed to load hotel details');
         }
       } finally {
         if (isMounted) {
@@ -482,7 +490,28 @@ export default function HotelDetails() {
   }
 
   if (!hotel) {
-    return <div className="error-container">Hotel not found</div>;
+    return (
+      <div className="error-container" style={{ textAlign: 'center', padding: '60px 20px' }}>
+        <h2 style={{ marginBottom: '12px', color: '#1e293b' }}>{error || 'Hotel not found'}</h2>
+        <p style={{ color: '#64748b', marginBottom: '24px' }}>
+          The hotel you are looking for may have been removed or is temporarily unavailable.
+        </p>
+        <button 
+          onClick={() => navigate('/hotels')} 
+          style={{
+            padding: '10px 24px',
+            backgroundColor: '#0f172a',
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: '600'
+          }}
+        >
+          Back to Hotels
+        </button>
+      </div>
+    );
   }
 
   return (

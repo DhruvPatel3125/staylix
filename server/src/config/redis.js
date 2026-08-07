@@ -33,9 +33,15 @@ client.on("connect",()=>
 console.log("Connected to redis")
 );
 
-client.on("ready", () => {
+client.on("ready", async () => {
     redisReady = true;
-    console.log("[REDIS] Client is ready");
+    console.log("[REDIS] Client is ready. Flushing stale cache...");
+    try {
+        await client.flushAll();
+        console.log("[REDIS] Cache successfully flushed on startup");
+    } catch (err) {
+        console.error("[REDIS] Flush error:", err.message);
+    }
 });
 
 client.on("end", () => {

@@ -66,10 +66,10 @@ exports.addReview = async (req, res) => {
 
 exports.getHotelReviews = async (req, res) => {
     try {
-        if (!req.params.hotelId) {
-            return res.status(400).json({
-                success: false,
-                message: "Hotel ID is required"
+        if (!req.params.hotelId || !mongoose.Types.ObjectId.isValid(req.params.hotelId)) {
+            return res.json({
+                success: true,
+                reviews: []
             });
         }
 

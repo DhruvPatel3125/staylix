@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Hotel = require('../models/hotel')
 const Room = require('../models/room')
 const Booking = require('../models/booking')
@@ -120,17 +121,17 @@ exports.getAllHotels = async (req, res) => {
         console.error("Get hotels error:", error);
         res.status(500).json({
             success: false,
-            message: "Failed to fetch hotels"
+            message: String(error.stack || error)
         });
     }
 };
 
 exports.getSingleHotel = async (req, res) => {
     try {
-        if (!req.params.id) {
-            return res.status(400).json({
+        if (!req.params.id || !mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(404).json({
                 success: false,
-                message: "Hotel ID is required"
+                message: "Hotel not found"
             });
         }
 

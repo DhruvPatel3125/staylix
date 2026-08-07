@@ -3,7 +3,8 @@ const redis = require('redis');
 const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const maxRetries = Number(process.env.REDIS_MAX_RETRIES || 3);
 const connectTimeout = Number(process.env.REDIS_CONNECT_TIMEOUT_MS || 10000);
-const redisDisabled = String(process.env.REDIS_DISABLED || 'false').toLowerCase() === 'true';
+const isVercelWithoutRedis = Boolean(process.env.VERCEL) && !process.env.REDIS_URL;
+const redisDisabled = String(process.env.REDIS_DISABLED || 'false').toLowerCase() === 'true' || isVercelWithoutRedis;
 
 const client = redis.createClient({
     url: redisUrl,

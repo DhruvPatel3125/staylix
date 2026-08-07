@@ -15,8 +15,10 @@ async function connectToDatabase() {
   }
 
   try {
-    await mongoose.connect(mongoUri);
-    isConnected = true;
+    const db = await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 5000,
+    });
+    isConnected = db.connections[0].readyState === 1;
     console.log('Connected to MongoDB via Vercel Serverless');
   } catch (err) {
     console.error('MongoDB connection error in Vercel Serverless:', err);

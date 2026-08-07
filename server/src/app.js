@@ -22,6 +22,7 @@ const rateLimit = require('express-rate-limit')
 
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Set COOP header to allow Google OAuth postMessage & popups
 app.use((req, res, next) => {

@@ -6,7 +6,6 @@ const Review = require('../models/review')
 const User = require('../models/user')
 const { getCoordinates } = require('../utils/geocoder');
 const { uploadToCloudinary } = require('../utils/cloudinaryUpload');
-const redisClient = require('../config/redis')
 const { triggerAutomation } = require('../utils/webhookUtils');
 
 exports.createHotel = async (req, res) => {

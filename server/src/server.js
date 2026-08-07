@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
+const path = require('path');
 const dotenv = require('dotenv');
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 const http = require('http');
 const app = require('./app');
 const { initSocket } = require('./socket');

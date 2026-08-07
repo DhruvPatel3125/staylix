@@ -4,7 +4,7 @@
   "buildCommand": "cd client && npm run build",
   "outputDirectory": "client/dist",
   "functions": {
-    "api/index.js": {
+    "api/**/*.js": {
       "memory": 1024,
       "maxDuration": 30,
       "includeFiles": "server/**"
@@ -25,3 +25,4 @@
     }
   ]
 }
+

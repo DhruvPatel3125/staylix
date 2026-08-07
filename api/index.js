@@ -14,9 +14,17 @@ if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = 'production';
 }
 
-const app = require('../server/src/app');
+let app;
+let loadError = null;
+try {
+  app = require('../server/src/app');
+} catch (err) {
+  console.error('[Vercel] App import error:', err);
+  loadError = err.message;
+}
 
 let isConnected = false;
+let dbError = null;
 
 async function connectDB() {
   if (isConnected && mongoose.connection.readyState === 1) return true;
@@ -28,27 +36,47 @@ async function connectDB() {
       socketTimeoutMS: 45000,
     });
     isConnected = true;
+    dbError = null;
     console.log('[Vercel] MongoDB connected');
     return true;
   } catch (err) {
-    console.error('[Vercel] MongoDB error:', err.message);
+    console.error('[Vercel] MongoDB connection error:', err.message);
+    dbError = err.message;
     isConnected = false;
     return false;
   }
 }
 
 module.exports = async (req, res) => {
-  if (req.url && !req.url.startsWith('/api')) {
-    req.url = '/api' + (req.url.startsWith('/') ? req.url : '/' + req.url);
-  }
+  try {
+    if (!app) {
+      return res.status(500).json({
+        success: false,
+        message: 'Server application failed to load.',
+        error: loadError
+      });
+    }
 
-  const ok = await connectDB();
-  if (!ok) {
+    if (req.url && !req.url.startsWith('/api')) {
+      req.url = '/api' + (req.url.startsWith('/') ? req.url : '/' + req.url);
+    }
+
+    const ok = await connectDB();
+    if (!ok) {
+      return res.status(500).json({
+        success: false,
+        message: 'Database connection failed. Please ensure 0.0.0.0/0 is allowed in MongoDB Atlas Network Access.',
+        error: dbError
+      });
+    }
+
+    return app(req, res);
+  } catch (err) {
+    console.error('[Vercel Function Error]:', err);
     return res.status(500).json({
       success: false,
-      message: 'DB connection failed. Check MONGO_URI and Atlas IP whitelist.'
+      message: err.message || 'Internal Serverless Function Error'
     });
   }
-
-  return app(req, res);
 };
+

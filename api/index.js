@@ -8,16 +8,20 @@ async function connectToDatabase() {
     return true;
   }
 
-  const mongoUri = process.env.MONGO_URI;
+  const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb+srv://staylix:Dhruv%40123@cluster0.yfioohd.mongodb.net/staylix';
   if (!mongoUri) {
     console.error('MONGO_URI environment variable is missing on Vercel!');
     return false;
   }
 
+  if (!process.env.JWT_SECRET) {
+    process.env.JWT_SECRET = 'djpatel';
+  }
+
   try {
     mongoose.set('bufferCommands', false);
     const db = await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 8000,
     });
     isConnected = db.connections[0].readyState === 1;
     console.log('Connected to MongoDB via Vercel Serverless');
